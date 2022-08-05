@@ -15,7 +15,7 @@
 
 <p><centered><point26>W.</point26></centered></p>
 
-<p><hw>while</hw> <pos>n.</pos> <def>A keyword.</def><br/
+<p><ent>While</ent><br/<hw>while</hw> <pos>n.</pos> <def>A keyword.</def><br/
 [<source>Dico testsuite</source>]</p>
 
 <-- Local variables: -->

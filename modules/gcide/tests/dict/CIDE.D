@@ -15,7 +15,8 @@
 
 <p><centered><point26>D.</point26></centered></p>
 
-<p><hw>database</hw> <pos>n.</pos> <def>An organized body of related information</def><br/
+<p><ent>database</ent><br/
+<hw>database</hw> <pos>n.</pos> <def>An organized body of related information</def><br/
 [<source>Dico testsuite</source>]</p>
 
 <p><q>Has everyone noticed that all the letters of the word \'bddatabase\'b8 are
@@ -25,7 +26,8 @@ of both hands.  It follows, therefore, that writing about databases is
 not only unnatural, but a lot harder than it appears.</q> <rj><qau>The Fortune program.</qau></rj><br/</p><br/
 [<source>Dico testsuite</source>]</p>
 
-<p><hw>Dou"ble</hw> <pr>(d<ucr/b"'l)</pr>, <pos>a.</pos> <def>A floating-point data type.  See <er>Float</er>.</def><br/
+<p><ent>Double</ent><br/
+<hw>Dou"ble</hw> <pr>(d<ucr/b"'l)</pr>, <pos>a.</pos> <def>A floating-point data type.  See <er>Float</er>.</def><br/
 [<source>Dico testsuite</source>]</p>
 
 <-- Local variables: -->

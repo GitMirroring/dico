@@ -15,10 +15,12 @@
 
 <p><centered><point26>K.</point26></centered></p>
 
-<p><hw>kludge</hw> <pos>n.</pos> <def>A working solution, not particularly elegant.</def><br/
+<p><ent>Kludge</ent><br/
+<hw>kludge</hw> <pos>n.</pos> <def>A working solution, not particularly elegant.</def><br/
 [<source>Dico testsuite</source>]</p>
 
-<p><hw>kludge</hw> <pos>v.</pos> <def>To use such a solution.</def><br/
+<p><ent>Kludge</ent><br/
+<hw>kludge</hw> <pos>v.</pos> <def>To use such a solution.</def><br/
 [<source>Dico testsuite</source>]</p>
 
 <-- Local variables: -->

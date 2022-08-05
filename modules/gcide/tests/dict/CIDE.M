@@ -15,10 +15,12 @@
 
 <p><centered><point26>M.</point26></centered></p>
 
-<p><hw>macro</hw> <pos>n.</pos> <def>An instruction that is expanded into a series of statements.</def><br/
+<p><ent>Macro</ent><br/
+<hw>macro</hw> <pos>n.</pos> <def>An instruction that is expanded into a series of statements.</def><br/
 [<source>Dico testsuite</source>]</p>
 
-<p><hw>Mad"man</hw> <pos>n.</pos> <def>A programmer after writing a testsuite.</def><br/
+<p><ent>Madman</ent><br/
+<hw>Mad"man</hw> <pos>n.</pos> <def>A programmer after writing a testsuite.</def><br/
 [<source>Dico testsuite</source>]</p>
 
 <-- Local variables: -->

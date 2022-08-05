@@ -15,10 +15,12 @@
 
 <p><centered><point26>L.</point26></centered></p>
 
-<p><hw>long</hw> <pos>n.</pos> <def>A datatype.</def><br/
+<p><ent>Long</ent><br/
+<hw>long</hw> <pos>n.</pos> <def>A datatype.</def><br/
 [<source>Dico testsuite</source>]</p>
 
-<p><hw>loop</hw> <pos>n.</pos> <def>Continuous repetition of a series of instructions in a program.</def><br/
+<p><ent>Loop</ent><br/
+<hw>loop</hw> <pos>n.</pos> <def>Continuous repetition of a series of instructions in a program.</def><br/
 [<source>Dico testsuite</source>]</p>
 
 <-- Local variables: -->

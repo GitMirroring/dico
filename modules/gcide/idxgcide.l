@@ -54,6 +54,7 @@ struct obstack stk;
 struct obstack refstk;
 int retstate;
 char *endtag;
+int at_ent;
 
 #define YY_USER_ACTION do {						\
     char_position = file_position;                                      \
@@ -130,7 +131,7 @@ flush_refs()
 }
 
 static void
-flush_headwords()
+flush_headwords(void)
 {
     char *p;
     unsigned long size;
@@ -161,45 +162,43 @@ flush_headwords()
     }
     headword = NULL;
     headword_position = char_position;
+    at_ent = 1;
 }
 
+#define SET_HWPOS() {\
+	if (at_ent) {\
+	    at_ent = 0;\
+            headword_position = char_position;\
+        }\
+ }
 #define BEGIN_HEADWORD(end) \
-    { retstate = YYSTATE; endtag = (end); BEGIN(HEADWORD); }
+    {   retstate = YYSTATE; \
+	endtag = (end); \
+	SET_HWPOS(); \
+	BEGIN(HEADWORD); }
 
 %}
 %option 8bit
 %option nounput
 %option noinput
 
-%x HEADWORD MHW COMMENT HTMLCOM
+%x HEADWORD COMMENT HTMLCOM
 
 XD [0-9a-f]
 %%
 <INITIAL>{
-  "<--"      { BEGIN(COMMENT); }
-  "<!"       { BEGIN(HTMLCOM); }
-  ("\\'d8")?"<hw>"  {
-	       flush_headwords();
-	       BEGIN_HEADWORD("hw");
-             }
-  "<p><mhw>"|"<mhw>" {
-	       flush_headwords();
-               BEGIN(MHW);
-             }
-  "<p><ent>" flush_headwords();
+  "<--"       { BEGIN(COMMENT); }
+  "<!"        { BEGIN(HTMLCOM); }
+  ("\\'d8")?"<hw>"  { BEGIN_HEADWORD("hw"); }
+  "<mhw>"     SET_HWPOS();
+  "<p><ent>"  flush_headwords();
   "<asp>"     BEGIN_HEADWORD("asp");
   "<altname>" BEGIN_HEADWORD("altname");
   "<decf>"    BEGIN_HEADWORD("decf");
   "<colf>"    BEGIN_HEADWORD("colf");
   "<conjf>"   BEGIN_HEADWORD("conjf");
-  .          ;
-  \n         line++;
-}
-<MHW>{
-  "<hw>"     BEGIN_HEADWORD("hw");
-  "</mhw>"   { BEGIN(INITIAL); }
-  .          ;
-  \n         line++;
+  .           ;
+  \n          line++;
 }
 <HEADWORD>{
   "</"[a-zA-Z][a-zA-Z]*">" {
@@ -222,7 +221,7 @@ XD [0-9a-f]
 		   infile, line, yytext);
   }
   "<"[a-zA-Z][^/>]*">"   /* ignore tag */;
-  [""*`]      ;
+  ["*`]       ;
   "\\'d8"     ;       /* ignore double vertical bar */
   "\\'"{XD}{XD} {
                  char const *s = gcide_escape_to_utf8(yytext+2);
@@ -253,7 +252,7 @@ XD [0-9a-f]
 %%
 
 int
-yywrap()
+yywrap(void)
 {
     flush_headwords();
 

@@ -15,10 +15,12 @@
 
 <p><centered><point26>J.</point26></centered></p>
 
-<p><hw>Jab"berwo*cky</hw> <pos>n.</pos> <def>Something... An animal, perhaps.</def><br/
+<p><ent>Jabberwocky</ent><br/
+<hw>Jab"berwo*cky</hw> <pos>n.</pos> <def>Something... An animal, perhaps.</def><br/
 [<source>Dico testsuite</source>]</p>
 
-<p><hw>Jan"u*a*ry</hw> <pos>n.</pos> <def>The first month of the <er>year</er>.</def><br/
+<p><ent>January</ent><br/
+<hw>Jan"u*a*ry</hw> <pos>n.</pos> <def>The first month of the <er>year</er>.</def><br/
 [<source>Dico testsuite</source>]</p>
 
 <-- Local variables: -->

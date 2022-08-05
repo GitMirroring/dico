@@ -15,16 +15,20 @@
 
 <p><centered><point26>E.</point26></centered></p>
 
-<p><hw>Ed</hw> <pos>n.</pos> <def>An editor.</def><br/
+<p><ent>Ed</ent><br/
+<hw>Ed</hw> <pos>n.</pos> <def>An editor.</def><br/
 [<source>Dico testsuite</source>]</p>
 
-<p><hw>Emacs</hw> <pos>n.</pos> <def>An editor too.</def><br/
+<p><ent>Emacs</ent><br/
+<hw>Emacs</hw> <pos>n.</pos> <def>An editor too.</def><br/
 [<source>Dico testsuite</source>]</p>
 
-<p><hw>Ed"it</hw> <pos>v. t.</pos> <def>Kind of exhausting work.</def><br/
+<p><ent>Edit</ent><br/
+<hw>Ed"it</hw> <pos>v. t.</pos> <def>Kind of exhausting work.</def><br/
 [<source>Dico testsuite</source>]</p>
 
-<p><hw>E*nu"mer*a*tion</hw> <pos>n.</pos> <def>A data type.</def>
+<p><ent>Enumeration</ent><br/
+<hw>E*nu"mer*a*tion</hw> <pos>n.</pos> <def>A data type.</def>
 [<source>Dico testsuite</source>]</p>
 
 <-- Local variables: -->

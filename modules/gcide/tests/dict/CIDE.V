@@ -15,10 +15,10 @@
 
 <p><centered><point26>V.</point26></centered></p>
 
-<p><hw>vi</hw> <pos>n.</pos> <def>A visual editor.</def><br/
+<p><ent>Vi</ent><br/<hw>vi</hw> <pos>n.</pos> <def>A visual editor.</def><br/
 [<source>Dico testsuite</source>]</p>
 
-<p><hw>value</hw> <pos>n.</pos> <def>Something a LISP programmer always knows, at the expence of not knowing the cost of it.</def><br/
+<p><ent>Value</ent><br/<hw>value</hw> <pos>n.</pos> <def>Something a LISP programmer always knows, at the expence of not knowing the cost of it.</def><br/
 [<source>Dico testsuite</source>]</p>
 
 <-- Local variables: -->

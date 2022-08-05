@@ -15,7 +15,8 @@
 
 <p><centered><point26>Q.</point26></centered></p>
 
-<p><hw>Q</hw> <pos>n.</pos> <def>A source.</def><br/
+<p><ent>Q</ent><br/
+<hw>Q</hw> <pos>n.</pos> <def>A source.</def><br/
 [<source>Dico testsuite</source>]</p>
 
 <-- Local variables: -->

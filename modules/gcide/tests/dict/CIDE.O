@@ -15,13 +15,16 @@
 
 <p><centered><point26>O.</point26></centered></p>
 
-<p><hw>Oc"ci*dent</hw> <pos>n.</pos> <def>The part of the world opposite to <er>Orient</er></def><br/
+<p><ent>Occident</ent><br/
+<hw>Oc"ci*dent</hw> <pos>n.</pos> <def>The part of the world opposite to <er>Orient</er></def><br/
 [<source>Dico testsuite</source>]</p>
 
-<p><hw>Odd</hw> <pos>n.</pos> <def>Not <er>even</er>.</def><br/
+<p><ent>Odd</ent><br/
+<hw>Odd</hw> <pos>n.</pos> <def>Not <er>even</er>.</def><br/
 [<source>Dico testsuite</source>]</p>
 
-<p><hw>Off*set"</hw> <pos>n.</pos> <def>A distance from the beginning of a <er>file</er> where something begins</def><br/
+<p><ent>Offset</ent><br/
+<hw>Off*set"</hw> <pos>n.</pos> <def>A distance from the beginning of a <er>file</er> where something begins</def><br/
 [<source>Dico testsuite</source>]</p>
 
 <-- Local variables: -->

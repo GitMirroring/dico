@@ -15,7 +15,8 @@
 
 <p><centered><point26>R.</point26></centered></p>
 
-<p><hw>Re*cur"sion</hw> <pos>n.</pos> <def>Inherent to God. See <er>iteration</er>.<def><br/
+<p><ent>Recursion</ent><br/
+<hw>Re*cur"sion</hw> <pos>n.</pos> <def>Inherent to God. See <er>iteration</er>.<def><br/
 [<source>Dico testsuite</source>]</p>
 
 <-- Local variables: -->

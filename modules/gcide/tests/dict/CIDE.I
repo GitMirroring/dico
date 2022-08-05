@@ -15,10 +15,12 @@
 
 <p><centered><point26>I.</point26></centered></p>
 
-<p><hw>In"te*ger</hw> <pos>n.</pos> <def>A datatype.</def><br/
+<p><ent>Integer</ent><br/
+<hw>In"te*ger</hw> <pos>n.</pos> <def>A datatype.</def><br/
 [<source>Dico testsuite</source>]</p>
 
-<p><hw>It`er*a"tion</hw> <pos>n.</pos> <def>Inherent to man. See <er>Recursion</er></def><br/
+<p><ent>Iteration</ent><br/
+<hw>It`er*a"tion</hw> <pos>n.</pos> <def>Inherent to man. See <er>Recursion</er></def><br/
 [<source>Dico testsuite</source>]</p>
 
 <-- Local variables: -->

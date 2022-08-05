@@ -15,13 +15,16 @@
 
 <p><centered><point26>T.</point26></centered></p>
 
-<p><hw>tee</hw> <pos>n.</pos> <def>A UNIX command.<def><br/
+<p><ent>Tee</ent><br/
+<hw>tee</hw> <pos>n.</pos> <def>A UNIX command.<def><br/
 [<source>Dico testsuite</source>]</p>
 
-<p><hw>Trans*pose"</hw> <pos>v. t.</pos> <def>To change order of elements in something.</def><br/
+<p><ent>Transpose</ent><br/
+<hw>Trans*pose"</hw> <pos>v. t.</pos> <def>To change order of elements in something.</def><br/
 [<source>Dico testsuite</source>]</p>
 
-<p><hw>Trans`po*si"tion</hw> <pos>n.</pos> <def>The act of transposing or the result thereof.</def><br/
+<p><ent>Transposition</ent><br/
+<hw>Trans`po*si"tion</hw> <pos>n.</pos> <def>The act of transposing or the result thereof.</def><br/
 [<source>Dico testsuite</source>]</p>
 
 <-- Local variables: -->

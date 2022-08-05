@@ -15,7 +15,7 @@
 
 <p><centered><point26>Y.</point26></centered></p>
 
-<p><hw>yank</hw> <pos>v.</pos> <def>Get a string from the <er>Emacs</er> killring.</def><br/
+<p><ent>Yank</ent><br/<hw>yank</hw> <pos>v.</pos> <def>Get a string from the <er>Emacs</er> killring.</def><br/
 [<source>Dico testsuite</source>]</p>
 
 <-- Local variables: -->

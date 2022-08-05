@@ -15,13 +15,16 @@
 
 <p><centered><point26>N.</point26></centered></p>
 
-<p><hw>Name</hw> <pos>n.</pos> <def>An <er>identifier</er>.</def><br/
+<p><ent>Name</ent><br/
+<hw>Name</hw> <pos>n.</pos> <def>An <er>identifier</er>.</def><br/
 [<source>Dico testsuite</source>]</p>
 
-<p><hw>Ne*ga"tion</hw> <pos>n.</pos> <def>A statement inverting a boolean value.</def><br/
+<p><ent>Negation</ent><br/
+<hw>Ne*ga"tion</hw> <pos>n.</pos> <def>A statement inverting a boolean value.</def><br/
 [<source>Dico testsuite</source>]</p>
 
-<p><hw>not</hw> <pos>n.</pos> <def>A negation operator.</def><br/
+<p><ent>Not</ent><br/
+<hw>not</hw> <pos>n.</pos> <def>A negation operator.</def><br/
 [<source>Dico testsuite</source>]</p>
 
 <-- Local variables: -->

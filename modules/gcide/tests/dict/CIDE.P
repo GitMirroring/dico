@@ -15,13 +15,16 @@
 
 <p><centered><point26>P.</point26></centered></p>
 
-<p><hw>Page</hw> <pos>n.</pos> <def>A part of book.</def><br/
+<p><ent>Page</ent><br/
+<hw>Page</hw> <pos>n.</pos> <def>A part of book.</def><br/
 [<source>Dico testsuite</source>]</p>
 
-<p><hw>Pooh</hw> <pos>n.</pos> <def>Winnie</def><br/
+<p><ent>Pooh</ent><br/
+<hw>Pooh</hw> <pos>n.</pos> <def>Winnie</def><br/
 [<source>Dico testsuite</source>]</p>
 
-<p><hw>PROLOG</hw> <pos>n.</pos> <def>A computer language.</def><br/
+<p><ent>PROLOG</ent><br/
+<hw>PROLOG</hw> <pos>n.</pos> <def>A computer language.</def><br/
 [<source>Dico testsuite</source>]</p>
 
 <-- Local variables: -->

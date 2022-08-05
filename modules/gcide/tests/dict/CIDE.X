@@ -15,7 +15,7 @@
 
 <p><centered><point26>X.</point26></centered></p>
 
-<p><hw>x</hw> <pos>n.</pos> <def>Unknown value.</def><br/
+<p><ent>X</ent><br/<hw>x</hw> <pos>n.</pos> <def>Unknown value.</def><br/
 [<source>Dico testsuite</source>]</p>
 
 <-- Local variables: -->

@@ -15,10 +15,12 @@
 
 <p><centered><point26>S.</point26></centered></p>
 
-<p><hw>seek</hw> <pos>n.</pos> <def>A function in PDP-11 libc.<def><br/
+<p><ent>Seek</ent><br/
+<hw>seek</hw> <pos>n.</pos> <def>A function in PDP-11 libc.<def><br/
 [<source>Dico testsuite</source>]</p>
 
-<p><hw>Stat"ic</hw> <pos>a.</pos> <def>An identifier visible only within the current compilation unit.</def><br/
+<p><ent>Static</ent><br/
+<hw>Stat"ic</hw> <pos>a.</pos> <def>An identifier visible only within the current compilation unit.</def><br/
 [<source>Dico testsuite</source>]</p>
 
 <-- Local variables: -->

@@ -15,11 +15,13 @@
 
 <p><centered><point26>Z.</point26></centered></p>
 
-<p><hw>zap</hw> <pos>v. t.</pos> <def><sn>1.</sn> To modify, correct.<br/
+<p><ent>Zap</ent><br/
+<hw>zap</hw> <pos>v. t.</pos> <def><sn>1.</sn> To modify, correct.<br/
 <sn>2.</n> To erase..</def><br/
 [<source>Dico testsuite</source>]</p>
 
-<p><hw>Zawinski's Law</hw> <pos>n.</pos> <def>A law of software envelopment formulated by Jamie Zawinski <q>Every program attempts to expand until it can read mail. Those programs which cannot so expand are replaced by ones which can.</q></def><br/
+<p><ent>Zawinski's Law</ent><br/
+<hw>Zawinski's Law</hw> <pos>n.</pos> <def>A law of software envelopment formulated by Jamie Zawinski <q>Every program attempts to expand until it can read mail. Those programs which cannot so expand are replaced by ones which can.</q></def><br/
 [<source>Dico testsuite</source>]</p>
 
 <-- Local variables: -->

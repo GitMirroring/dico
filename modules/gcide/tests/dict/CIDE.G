@@ -15,13 +15,16 @@
 
 <p><centered><point26>G.</point26></centered></p>
 
-<p><hw>GNU</hw> <pos>n.</pos> <def>GNU's Not UNIX.<def><br/
+<p><ent>GNU</ent><br/
+<hw>GNU</hw> <pos>n.</pos> <def>GNU's Not UNIX.<def><br/
 [<source>Dico testsuite</source>]</p>
 
-<p><hw>Gram"mar</hw> <pos>n.</pos> <def>A branch of linguistics.</def><br/
+<p><ent>Grammar</ent><br/
+<hw>Gram"mar</hw> <pos>n.</pos> <def>A branch of linguistics.</def><br/
 [<source>Dico testsuite</source>]</p>
 
-<p><hw>Gy`ro*scop"ic</hw> <pos>a.</pos> <def>Going in circles.</def><br/
+<p><ent>Gyroscopic</ent><br/
+<hw>Gy`ro*scop"ic</hw> <pos>a.</pos> <def>Going in circles.</def><br/
 [<source>Dico testsuite</source>]</p>
 
 <-- Local variables: -->

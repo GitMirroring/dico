@@ -15,15 +15,18 @@
 
 <p><centered><point26>C.</point26></centered></p>
 
-<p><hw>C</hw> <pos>n.</pos> <def>A language remarkable for its
+<p><ent>C</ent><br/
+<hw>C</hw> <pos>n.</pos> <def>A language remarkable for its
 expression and wild power</def><br/
 [<source>Dico testsuite</source>]</p>
 
-<p><hw>cam"el</hw> <pr>(k<acrf/m"<ecr/l)</pr>, <pos>n.</pos>
+<p><ent>Camel</ent><br/
+<hw>cam"el</hw> <pr>(k<acrf/m"<ecr/l)</pr>, <pos>n.</pos>
 <def>An animal that hardly passes through the eye of a needle.</def><br/
 [<source>Dico testsuite</source>]</p>
 
-<p><mhw>{ <hw>Cyc"lic</hw>, <hw>Cyc"lic*al</hw>}</mhw> <pos>a.</pos>
+<p><ent>Cyclic</ent><br/
+<mhw>{ <hw>Cyc"lic</hw>, <hw>Cyc"lic*al</hw>}</mhw> <pos>a.</pos>
 <ety>[Gr. <grk>kykliko`s</grk>, fr. <grk>ky`klos</grk> See <er>Cycle</er>.]
 </ety><def>Going in cycles</def><br/
 [<source>Dico testsuite</source>]</p>

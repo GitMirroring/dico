@@ -15,13 +15,16 @@
 
 <p><centered><point26>F.</point26></centered></p>
 
-<p><hw>File</hw> <pos>n.</pos> <def>A set of related data kept together.</def><br/
+<p><ent>File</ent><br/
+<hw>File</hw> <pos>n.</pos> <def>A set of related data kept together.</def><br/
 [<source>Dico testsuite</source>]</p>
 
-<p><hw>Float</hw> <pos>n.</pos> <def>A datatype. See <er>Double</er>.</def><br/
+<p><ent>Float</ent><br/
+<hw>Float</hw> <pos>n.</pos> <def>A datatype. See <er>Double</er>.</def><br/
 [<source>Dico testsuite</source>]</p>
 
-<p><hw>FORTRAN</hw> <pos>n.</pos> <def>A language.</def><br/
+<p><ent>FORTRAN</ent><br/
+<hw>FORTRAN</hw> <pos>n.</pos> <def>A language.</def><br/
 [<source>Dico testsuite</source>]</p>
 
 <p><q>FORTRAN, \'bdthe infantile disorder\'b8, by now nearly 20 years old, is hopelessly 

@@ -15,10 +15,12 @@
 
 <p><centered><point26>H.</point26></centered></p>
 
-<p><hw>Help</hw> <pos>n.</pos> <def>A thing greatly needed when writing this stuff.</def><br/
+<p><ent>Help</ent><br/
+<hw>Help</hw> <pos>n.</pos> <def>A thing greatly needed when writing this stuff.</def><br/
 [<source>Dico testsuite</source>]</p>
 
-<p><hw>Hack</hw> <pos>v.</pos> <def>To work on a program.</def><br/
+<p><ent>Hack</ent><br/
+<hw>Hack</hw> <pos>v.</pos> <def>To work on a program.</def><br/
 [<source>Dico testsuite</source>]</p>
 
 

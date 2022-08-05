@@ -15,13 +15,16 @@
 
 <p><centered><point26>B.</point26></centered></p>
 
-<p><hw>Ba"bel</hw>, <pos>n.</pos> <def>A tower thanks to which we need dictionaries.</def><br/
+<p><ent>Babel</ent><br/
+<hw>Ba"bel</hw>, <pos>n.</pos> <def>A tower thanks to which we need dictionaries.</def><br/
 [<source>Dico testsuite</source>]</p>
 
-<p><hw>Bloom</hw>, <pos>n.</pos> <def>A flower.</def><br/
+<p><ent>Bloom</ent><br/
+<hw>Bloom</hw>, <pos>n.</pos> <def>A flower.</def><br/
 [<source>Dico testsuite</source>]</p>
 
-<p><hw>Bot"tle</hw>, <pos>n.</pos> <def>A vessel for keeping liquids.</def><br/
+<p><ent>Bottle</ent><br/
+<hw>Bot"tle</hw>, <pos>n.</pos> <def>A vessel for keeping liquids.</def><br/
 [<source>Dico testsuite</source>]</p>
 
 <p><hw>Bot"tle</hw>, <pos>v. t.</pos> <def>To put into bottles; <as>as, to <ex>bottle</ex> wine</as>.</def><br/
