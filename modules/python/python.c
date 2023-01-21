@@ -483,7 +483,7 @@ mod_init_db (const char *dbname, int argc, char **argv)
 {
     int pindex;
     struct _python_database *db;
-    PyObject *py_err, *py_out, *py_name, *py_module, *py_class;
+    PyObject *py_name, *py_module, *py_class;
     PyThreadState *py_ths;
 
     if (dico_parseopt (init_option, argc, argv, DICO_PARSEOPT_PERMUTE,
@@ -869,7 +869,7 @@ mod_define (dico_handle_t hp, const char *word)
 static int
 mod_output_result (dico_result_t rp, size_t n, dico_stream_t str)
 {
-    PyObject *py_args, *py_fnc, *py_out;
+    PyObject *py_args, *py_fnc;
     struct python_result *gres = (struct python_result *)rp;
     struct _python_database *db = (struct _python_database *)gres->db;
 
