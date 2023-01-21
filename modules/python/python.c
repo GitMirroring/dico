@@ -55,11 +55,17 @@ find_method (PyMethodDef *methods, PyObject *self, const char *name)
 typedef struct {
     PyObject_HEAD;
     struct dico_key *key;
+    int key_alloc;
 } PySelectionKey;
 
 static void 
 _PySelectionKey_dealloc (PyObject *self)
 {
+    PySelectionKey *py_key = (PySelectionKey *)self;
+    if (py_key->key_alloc) {
+	dico_key_deinit(py_key->key);
+	free(py_key->key);
+    }
 }
 
 static PyMethodDef selection_key_methods[] = {
@@ -317,6 +323,7 @@ _python_selector (int cmd, struct dico_key *key, const char *dict_word)
     PyTuple_SetItem (py_args, 0, PyLong_FromLong (cmd));
     py_key = PyObject_NEW (PySelectionKey, &PySelectionKeyType);
     py_key->key = key;
+    py_key->key_alloc = 0;
     PyTuple_SetItem (py_args, 1, (PyObject*)py_key);
     PyTuple_SetItem (py_args, 2, PyUnicode_FromString (dict_word));
 
@@ -769,33 +776,50 @@ mod_lang (dico_handle_t hp, dico_list_t list[2])
 }
 
 struct python_result {
-    struct _python_database *db;
-    PyObject *result;
+    struct _python_database *db; /* Database */
+    PyObject *result;  /* Result obtained from match_word or define_word call*/
+    PyObject *arg;     /* Arguments passed to the match_ call.  These are
+			  preserved for the life time of the result, because
+			  the returned result object might reference any of
+			  them */
 };
 
 static dico_result_t
-_make_python_result (struct _python_database *db, PyObject *res)
+_make_python_result (struct _python_database *db, PyObject *res, PyObject *arg)
 {
     struct python_result *rp = malloc (sizeof (*rp));
     if (rp) {
 	rp->db = db;
 	rp->result = res;
+	rp->arg = arg;
     }
     return (dico_result_t)rp;
 }
 
 dico_result_t
 do_match(struct _python_database *db, const dico_strategy_t strat,
-	 struct dico_key *key)
+	 const char *word)
 {
     PyStrategy *py_strat;
     PySelectionKey *py_key;
     PyObject *py_args, *py_fnc, *py_res;
-    
+
     py_key = PyObject_NEW(PySelectionKey, &PySelectionKeyType);
     if (!py_key)
 	return NULL;
-    py_key->key = key;
+
+    if ((py_key->key = malloc(sizeof(*py_key->key))) == NULL) {
+	dico_log(L_ERR, 0, _("mod_match: memory allocation failed"));
+	return NULL;
+    }
+
+    if (dico_key_init(py_key->key, strat, word)) {
+	dico_log(L_ERR, 0, _("mod_match: key initialization failed"));
+	free(py_key->key);
+	py_key->key_alloc = 0;
+	return NULL;
+    }
+    py_key->key_alloc = 1;
     
     py_strat = PyObject_NEW(PyStrategy, &PyStrategyType);
     if (py_strat) {
@@ -807,13 +831,12 @@ do_match(struct _python_database *db, const dico_strategy_t strat,
 	py_fnc = PyObject_GetAttrString(db->py_instance, "match_word");
 	if (py_fnc && PyCallable_Check(py_fnc)) {
 	    py_res = PyObject_CallObject(py_fnc, py_args);
-	    Py_DECREF(py_args);
 	    Py_DECREF(py_fnc);
 	    if (py_res) {
 		if (PyBool_Check(py_res) && py_res == Py_False)
-		    return NULL;
+		    /* Do nothing; NULL will be returned */;
 		else
-		    return _make_python_result(db, py_res);
+		    return _make_python_result(db, py_res, py_args);
 	    } else if (PyErr_Occurred())
 		PyErr_Print();
 	}
@@ -825,18 +848,8 @@ static dico_result_t
 mod_match (dico_handle_t hp, const dico_strategy_t strat, const char *word)
 {
     struct _python_database *db = (struct _python_database *)hp;
-    struct dico_key key;
-    dico_result_t res;
-    
     PyThreadState_Swap(db->py_ths);
-
-    if (dico_key_init(&key, strat, word)) {
-	dico_log(L_ERR, 0, _("mod_match: key initialization failed"));
-	return NULL;
-    }
-    res = do_match(db, strat, &key);
-    dico_key_deinit(&key);
-    return res;
+    return do_match(db, strat, word);
 }
 
 static dico_result_t
@@ -853,16 +866,16 @@ mod_define (dico_handle_t hp, const char *word)
     py_fnc = PyObject_GetAttrString (db->py_instance, "define_word");
     if (py_fnc && PyCallable_Check (py_fnc)) {
 	py_res = PyObject_CallObject (py_fnc, py_args);
-	Py_DECREF (py_args);
 	Py_DECREF (py_fnc);
 	if (py_res) {
 	    if (PyBool_Check (py_res) && py_res == Py_False)
-		return NULL;
+		/* Do nothing and return NULL */;
 	    else
-		return _make_python_result (db, py_res);
+		return _make_python_result (db, py_res, py_args);
 	} else if (PyErr_Occurred ())
 	    PyErr_Print ();
     }
+    Py_DECREF (py_args);
     return NULL;
 }
 
@@ -889,13 +902,13 @@ mod_output_result (dico_result_t rp, size_t n, dico_stream_t str)
 
     py_fnc = PyObject_GetAttrString (db->py_instance, "output");
     if (py_fnc && PyCallable_Check (py_fnc)) {
-	/* FIXME: should we checj/propagate the retval? */
+	/* FIXME: should we check/propagate the retval? */
 	PyObject_CallObject (py_fnc, py_args);
-	Py_DECREF (py_args);
 	Py_DECREF (py_fnc);
 	if (PyErr_Occurred ())
 	    PyErr_Print ();
     }
+    Py_DECREF (py_args);
 
     stdout_info_init ();
 
@@ -980,12 +993,13 @@ mod_free_result (dico_result_t rp)
     py_fnc = PyObject_GetAttrString (db->py_instance, "free_result");
     if (py_fnc && PyCallable_Check (py_fnc)) {
 	PyObject_CallObject (py_fnc, py_args);
-	Py_DECREF (py_args);
 	Py_DECREF (py_fnc);
 	if (PyErr_Occurred ())
 	    PyErr_Print ();
     }
+    Py_DECREF (py_args);
     Py_DECREF (gres->result);
+    Py_DECREF (gres->arg);
     free (gres);
 }
 
@@ -1040,23 +1054,23 @@ mod_result_headers (dico_result_t rp, dico_assoc_list_t hdr)
 
     py_args = PyTuple_New (2);
     PyTuple_SetItem (py_args, 0, gres->result);
-    PyTuple_SetItem (py_args, 1, py_dict);
     Py_INCREF (gres->result);
+    PyTuple_SetItem (py_args, 1, py_dict);
 
     py_fnc = PyObject_GetAttrString (db->py_instance, "result_headers");
     if (py_fnc && PyCallable_Check (py_fnc)) {
 	py_res = PyObject_CallObject (py_fnc, py_args);
-	Py_DECREF (py_args);
 	Py_DECREF (py_fnc);
 	if (py_res && PyDict_Check (py_res)) {
 	    _dict_to_assoc (hdr, py_res);
+
 	    Py_DECREF (py_res);
 	} else if (PyErr_Occurred ()) {
 	    PyErr_Print ();
 	    return 1;
 	}
     }
-    Py_DECREF (py_dict);
+    Py_DECREF (py_args);
     return 0;
 }
 
