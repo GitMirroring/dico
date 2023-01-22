@@ -2073,25 +2073,46 @@ Requests additional capabilities from the @var{list}.
 of existing @command{dicod} capabilities.  These are listed in the
 following table:
 
-@table @asis
-@item auth
+@defvr {capability} auth
 The @code{AUTH} command is supported.  @xref{Authentication}.
+@end defvr
 
-@item mime
+@defvr {capability} mime
 The @code{OPTION MIME} command is supported.  Notice that
 @acronym{RFC} 2229 requires all servers to support that command, so
 you should always specify this capability.
+@end defvr
 
-@item xversion
-The @code{XVERSION} command is supported.  It is a GNU extension that
-displays the @command{dicod} implementation and version number. 
-@xref{Extended Commands, XVERSION}.
+@defvr {capability} lang
+The @dfn{lang} extensions are enabled.  @pxref{lang extensions}.
+@end defvr
 
-@item xlev
+@defvr {capability} markup
+The @code{OPTION MARKUP} command is supported.  This extended command
+sets the preferred markup language for the output.  Supported markups
+are reported as @code{markup-@var{name}} capabilities.
+@xref{Extended Commands, OPTION MARKUP}.
+@end defvr
+
+@defvr {capability} xidle
+The @code{XIDLE} command is supported.  This is an experimental
+command that asks the server to report the configured value of
+inactivitiy timeout for the client session.
+
+@xref{Extended Commands, XIDLE}.
+@end defvr
+
+@defvr {capability} xlev
 The @code{XLEV} command is supported.  This command allows the remote
 party to set and query maximal Levenshtein distance for @code{lev}
 matching strategy.  @xref{MATCH, strategy}.  @xref{Extended Commands, XLEV}.
-@end table
+@end defvr
+
+@defvr {capability} xversion
+The @code{XVERSION} command is supported.  It is a GNU extension that
+displays the @command{dicod} implementation and version number. 
+@xref{Extended Commands, XVERSION}.
+@end defvr
 
   The capabilities set using this directive are
 displayed in the initial server reply (@pxref{initial reply}), and

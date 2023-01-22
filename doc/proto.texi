@@ -429,3 +429,134 @@ S: 280 3
 @end smallexample
 @end deffn
 
+@deffn Command OPTION MARKUP
+@deffnx Command OPTION MARKUP @var{name}
+Used without arguments, this command reports the markup language
+preferred for the output.  If an argument is supplied, the preferred
+markup language is set to @var{name}.  This command is enabled if the
+statement
+
+@example
+capability markup;
+@end example
+
+is used in the configuration file (@pxref{Capabilities}).
+
+As of version @value{VERSION} the preferred markup language may be used by
+@command{dicod} modules written in Python (@pxref{python}).
+@end deffn
+
+@menu
+* lang extensions:: Set and report database language preferences.
+@end menu
+
+@node lang extensions
+@subsection lang extensions
+
+These experimental extensions allow the administrator to group
+databases into classes depending on the language of their headwords
+(the language they translate from, or the @dfn{source} language) and
+the one the definitions are written in (the language they translate
+from, or the @dfn{destination} language).
+
+The two languages are declared in the database definition in the
+@command{dicod} configuration file (@pxref{Databases}) using the
+@code{languages-from} and @code{languages-to} configuration
+statements:
+
+@deffn {Database} languages-from @var{lang}
+Sets the database source language.  The @var{lang} argument is
+normally the ISO 639 language code, although @command{dicod} does not
+enforce that in any way.  More than one @var{lang} may be specified in
+case the database contains headwords in several languages.
+@end deffn
+
+@deffn {Database} languages-to @var{lang}
+Defines the database destination language.  The @var{lang} argument is
+as described above.
+@end deffn
+
+For example:
+
+@example
+@group
+database @{
+    name "en-fr";
+    language-from "en";
+    language-to "fr";
+@};
+@end group
+@end example
+
+The client may use the following commands to declare the preferred
+languages and list the databases and their languages.
+
+@deffn Command OPTION LANG
+@deffnx Command OPTION LANG @var{source-list} : @var{dest-list}
+Declares the sets of source and destination languages.  Only databases
+supporting at least one of these langages will be visible for the
+client.  Any or both of these lists may be empty, which means any
+language is acceptable.  For example:
+
+@example
+@group
+OPTION LANG pl cz :
+250 ok - set language preferences
+@end group
+@end example
+
+The statement above informs the server that the client is interested
+only in databases that contain keywords in Polish and Czech languages.
+
+The statement
+
+@example
+OPTION LANG :
+@end example
+
+empties both lists.  Consequently, all databases become visible
+again.  This is the default.
+
+Used without arguments, this statement has the same effect as
+@code{OPTION LANG :}.
+@end deffn
+
+@deffn Command SHOW LANG PREF
+Displays the currently selected source and destination languages:
+
+@example
+@group
+SHOW LANG PREF
+280 pl cz :
+@end group
+@end example
+@end deffn
+
+@deffn Command SHOW LANG DB
+@deffnx Command SHOW LANG DATABASES
+Lists the visible database along with the languages they support:
+
+@example
+@group
+SHOW LANG DB
+110 3 databases present
+gcide en : en
+polish-english pl : en
+czech-franch cz : fr
+.
+250 ok
+@end group
+@end example
+@end deffn
+
+@deffn Command SHOW LANG INFO @var{dbname}
+Shows the languages supported by the database @var{dbname}.  E.g.:
+
+@example
+@group
+show lang info gcide
+280 en : en
+@end group
+@end example
+@end deffn
+
