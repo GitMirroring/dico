@@ -30,49 +30,28 @@ skipws(char *buf)
 int
 hostcmp(const char *a, const char *b)
 {
-    struct hostent *hp = gethostbyname(a);
-    char **addrlist;
-    char *dptr;
-    char **addr;
-    size_t i, count;
-    size_t entry_length;
-    int entry_type;
+    struct addrinfo *ai, *ap, *bi, *bp;
+    int result = 1;
 
-    if (!hp)
-	return 1;
-
-    for (count = 1, addr = hp->h_addr_list; *addr; addr++)
-	count++;
-    addrlist = xmalloc (count * (sizeof *addrlist + hp->h_length)
-			- hp->h_length);
-    dptr = (char *) (addrlist + count);
-    for (i = 0; i < count - 1; i++) {
-	memcpy(dptr, hp->h_addr_list[i], hp->h_length);
-	addrlist[i] = dptr;
-	dptr += hp->h_length;
-    }
-    addrlist[i] = NULL;
-    entry_length = hp->h_length;
-    entry_type = hp->h_addrtype;
-
-    hp = gethostbyname(b);
-    if (!hp || entry_length != hp->h_length || entry_type != hp->h_addrtype) {
-	free(addrlist);
-	return 1;
-    }
-
-    for (addr = addrlist; *addr; addr++) {
-	char **p;
-
-	for (p = hp->h_addr_list; *p; p++) {
-	    if (memcmp(*addr, *p, entry_length) == 0) {
-		free(addrlist);
-		return 0;
-	    }
+    if (getaddrinfo(a, NULL, NULL, &ai) == 0) {
+	if (getaddrinfo(b, NULL, NULL, &bi) == 0) {
+	    for (ap = ai; ap; ap = ap->ai_next)
+		for (bp = bi; bp; bp = bp->ai_next) {
+		    if (ap->ai_family == bp->ai_family &&
+			ap->ai_socktype == bp->ai_socktype &&
+			ap->ai_protocol == bp->ai_protocol &&
+			ap->ai_addrlen == bp->ai_addrlen &&
+			memcmp(ap->ai_addr, bp->ai_addr, bp->ai_addrlen) == 0) {
+			result = 0;
+			goto end;
+		    }
+		}
+	end:
+	    freeaddrinfo(bi);
 	}
+	freeaddrinfo(ai);
     }
-    free(addrlist);
-    return 1;
+    return result;
 }
 
 static int
@@ -145,7 +124,7 @@ static int
 match_line(struct wordsplit *ws, struct matches *matches, int line)
 {
     int rc = 0;
-    
+
     if (strcmp(ws->ws_wordv[0], "machine") == 0) {
 	if (hostcmp(ws->ws_wordv[1], matches->host) == 0) {
 	    XDICO_DEBUG_F1(1, _("Found matching line %d\n"), line);

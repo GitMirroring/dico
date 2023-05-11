@@ -56,7 +56,6 @@ LTDL_INIT([nonrecursive])
 
 dnl Checks for libraries.
 AC_CHECK_LIB(socket, socket)
-AC_CHECK_LIB(nsl, gethostbyaddr)
 AC_CHECK_LIB(rt, nanosleep)
 
 dnl Checks for header files.

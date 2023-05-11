@@ -25,14 +25,16 @@
 char *
 xdico_local_hostname(void)
 {
-    struct hostent *hp;
+    struct addrinfo *addr, hints;
     char *hostpart = xgethostname();
     char *ret;
-	
-    hp = gethostbyname(hostpart);
-    if (hp) 
-	ret = xstrdup(hp->h_name);
-    else {
+
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_flags = AI_CANONNAME;
+    if (getaddrinfo(hostpart, NULL, &hints, &addr) == 0) {
+	ret = xstrdup(addr->ai_canonname);
+	freeaddrinfo(addr);
+    } else {
 	char *domainpart = xgetdomainname();
 
 	if (domainpart && domainpart[0] && strcmp(domainpart, "(none)")) {

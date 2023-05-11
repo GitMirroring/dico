@@ -130,21 +130,18 @@ alog_print(FILE *fp, struct alog_instr *instr, int argc, char **argv)
 static char *
 sockaddr_to_hostname(struct sockaddr *sa, int resolve)
 {
-    struct sockaddr_in *s_in;
+    char hostbuf[NI_MAXHOST]; /* IPv4 address in dotted-quad form. */
     char *ret;
-    
+
     switch (sa->sa_family) {
     case AF_INET:
-	s_in = (struct sockaddr_in*)sa;
-	if (resolve) {
-	    struct hostent *hp;
-	    hp = gethostbyaddr((char*) &s_in->sin_addr,
-			       sizeof(s_in->sin_addr),
-			       AF_INET);
-	    if (hp)
-		return xstrdup(hp->h_name);
-	}
-	ret = xstrdup(inet_ntoa(s_in->sin_addr));
+	if (getnameinfo(sa, sizeof(struct sockaddr_in),
+			hostbuf, sizeof(hostbuf),
+			NULL, 0, 
+			resolve ? 0 : NI_NUMERICHOST) == 0)
+	    ret = xstrdup(hostbuf);
+	else
+	    ret = xstrdup("unknown");
 	break;
 	
     case AF_UNIX:

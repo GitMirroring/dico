@@ -38,7 +38,7 @@ B<bootstrap>
 =head1 DESCRIPTION
 
 Bootstrap the Dico project.  This is the first command that should be run
-after cloning the project from the repository in order to be able to built
+after cloning the project from the repository in order to be able to build
 it.
 
 When run without arguments performs the following actions:
