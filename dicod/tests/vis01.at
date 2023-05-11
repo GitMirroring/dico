@@ -44,7 +44,7 @@ database b {
 	description "Visible for group admin";
 }
 
-user-db text://$abs_srcdir {
+user-db "text://$abs_srcdir" {
         password-resource passwd;
         group-resource group;
 }

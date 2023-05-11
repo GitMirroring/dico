@@ -78,7 +78,6 @@ grecs/src/grecs-lex.l
 grecs/src/lineacc.c
 grecs/src/opthelp.c
 grecs/src/path-parser.c
-grecs/src/preproc.c
 grecs/src/sockaddr.c
 grecs/src/symtab.c
 grecs/src/tree.c

@@ -27,13 +27,13 @@ dnl Process this file with -*- autoconf -*- to produce a configure script.
 # You should have received a copy of the GNU General Public License
 # along with GNU Dico.  If not, see <http://www.gnu.org/licenses/>.
 
-AC_PREREQ(2.64)
+AC_PREREQ(2.71)
 AC_INIT([GNU dico], 2.11, [bug-dico@gnu.org])
 AC_CONFIG_SRCDIR([dicod/main.c])
 AC_CONFIG_HEADERS(include/prog/config.h include/lib/config.h)
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR(m4)	
-AM_INIT_AUTOMAKE([1.15 nostdinc gnits tar-ustar dist-bzip2 dist-xz std-options subdir-objects])
+AM_INIT_AUTOMAKE([1.16.5 nostdinc gnits tar-ustar dist-bzip2 dist-xz std-options subdir-objects])
 
 dnl Enable silent rules by default:
 AM_SILENT_RULES([yes])
@@ -47,7 +47,7 @@ gl_EARLY
 AC_PROG_CPP
 AC_PROG_AWK
 AC_PROG_YACC
-AC_PROG_LEX
+AC_PROG_LEX([noyywrap])
 
 LT_PREREQ(2.4)
 LT_CONFIG_LTDL_DIR([libltdl])
@@ -61,7 +61,6 @@ AC_CHECK_LIB(rt, nanosleep)
 
 dnl Checks for header files.
 AC_HEADER_DIRENT dnl not needed ?
-AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(fcntl.h limits.h strings.h sys/time.h \
                  sys/socket.h socket.h syslog.h unistd.h \
@@ -75,7 +74,7 @@ AC_C_INLINE
 AC_TYPE_PID_T
 AC_TYPE_OFF_T
 AC_TYPE_SIZE_T
-AC_HEADER_TIME
+
 AC_SYS_LARGEFILE
 AC_CHECK_TYPE([socklen_t],,
   AC_DEFINE(socklen_t, int, [Define to int if <sys/types.h> does not define]),
@@ -92,8 +91,7 @@ AC_CHECK_TYPE([socklen_t],,
 ])
 
 dnl Checks for library functions.
-AC_TYPE_SIGNAL
-AC_CHECK_FUNCS(gethostname select socket strdup strerror strtol \
+AC_CHECK_FUNCS(select socket strdup strerror strtol \
                setegid setregid setresgid seteuid setreuid \
 	       sysconf getdtablesize)
 
@@ -178,7 +176,7 @@ GRECS_HOST_PROJECT_INCLUDES='$(DICO_LIB_CONFIG) -I$(top_builddir)/include'
 
 # Tcl/tk
 AC_ARG_WITH([tk],
-            AC_HELP_STRING([--with-tk],
+            AS_HELP_STRING([--with-tk],
 	                   [build Tcl/Tk-based applications (GCIDER)]),
 	    [
 case "${withval}" in
@@ -196,7 +194,7 @@ if test $status_tk=yes; then
 fi
 #
 AC_ARG_WITH(autologin-file,
-            AC_HELP_STRING([--with-autologin-file@<:@=NAME@:>@],
+            AS_HELP_STRING([--with-autologin-file@<:@=NAME@:>@],
 	                   [Use the autologin file (default NAME is .dicologin)]),
             [case $withval in
 	     yes) DEFAULT_AUTOLOGIN_FILE=".dicologin";;
@@ -213,7 +211,7 @@ else
 fi
 
 AC_ARG_WITH([readline],
-            AC_HELP_STRING([--without-readline],
+            AS_HELP_STRING([--without-readline],
                            [do not use readline]),
             [
 case "${withval}" in

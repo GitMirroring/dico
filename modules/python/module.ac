@@ -15,7 +15,7 @@
 ## along with GNU Dico.  If not, see <http://www.gnu.org/licenses/>.
 
 AC_ARG_WITH([python],
-            AC_HELP_STRING([--without-python],
+            AS_HELP_STRING([--without-python],
                            [do not build Python interface]),
               [
 case "${withval}" in
@@ -60,7 +60,7 @@ PY_VERSION],
       AC_SUBST([PYTHON_SITE_DIR])
       AC_SUBST([PYTHON_EXEC_DIR])
       AC_ARG_WITH([pythondir],
-           AC_HELP_STRING([--with-pythondir=DIR],
+           AS_HELP_STRING([--with-pythondir=DIR],
                           [Specify the directory to install Python modules to]),
            [case $withval in
             /*)  PYTHON_SITE_DIR="${withval}/mailutils"

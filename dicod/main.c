@@ -1760,8 +1760,7 @@ main(int argc, char **argv)
 	dicod_log_setup();
 
     if (mode == MODE_PREPROC)
-	exit(grecs_preproc_run(config_file, grecs_preprocessor) ?
-	      EX_CONFIG : 0);
+	exit(grecs_preprocess(config_file, 0) ? EX_CONFIG : 0);
     else if (mode == MODE_TEST) {
 	dicod_loader_init();
 	exit(dicod_module_test(argc, argv));

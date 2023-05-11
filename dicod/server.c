@@ -348,19 +348,19 @@ int restart;
 int stop;
 int need_cleanup;
 
-static RETSIGTYPE
+static void
 sig_stop(int sig)
 {
     stop = 1;
 }
 
-static RETSIGTYPE
+static void
 sig_restart(int sig)
 {
     restart = 1;
 }
 
-static RETSIGTYPE
+static void
 sig_child(int sig)
 {
     need_cleanup = 1;
@@ -508,7 +508,7 @@ static int
 pre_restart_lint(void)
 {
     int rc;
-    RETSIGTYPE (*sf)(int);
+    void (*sf)(int);
     
     sf = signal(SIGCHLD, SIG_DFL);
     rc = pre_restart_lint_internal();

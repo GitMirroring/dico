@@ -17,7 +17,7 @@
 ## module description: LDAP
 
 AC_ARG_WITH(ldap,
-            [AC_HELP_STRING([--with-ldap],
+            [AS_HELP_STRING([--with-ldap],
 		            [Configure to work with OpenLDAP])],
 	    [status_ldap=$withval],
             [status_ldap=maybe])

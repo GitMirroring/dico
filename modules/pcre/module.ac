@@ -17,7 +17,7 @@
 ## module description: Perl-compatible regexs
 
 AC_ARG_WITH([pcre],
-            AC_HELP_STRING([--with-pcre],
+            AS_HELP_STRING([--with-pcre],
                            [compile Perl-compatible regular expressions support]),
             [
 case "${withval}" in

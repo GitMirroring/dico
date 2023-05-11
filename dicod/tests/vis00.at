@@ -32,7 +32,7 @@ database {
 	name dummy;
 	handler echo;
 }
-user-db text://$abs_srcdir {
+user-db "text://$abs_srcdir" {
         password-resource passwd;
         group-resource group;
 }

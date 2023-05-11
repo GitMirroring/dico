@@ -18,7 +18,7 @@
 
 status_pam=maybe
 AC_ARG_ENABLE([pam],
-              AC_HELP_STRING([--enable-pam],
+              AS_HELP_STRING([--enable-pam],
                              [enable PAM]),
               [
 case "${enableval}" in

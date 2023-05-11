@@ -45,7 +45,7 @@ dnl ------------------------------------------------------------
 dnl DICOD_RUN([config],[errflt])
 dnl
 m4_define([DICOD_RUN],[dnl
-m4_if($2,,,[(])dicod --config m4_if($1,,.,$1)/dicod.conf --stderr -i < input dnl
+m4_if($2,,,[(])dicod --no-preprocessor --config m4_if($1,,.,$1)/dicod.conf --stderr -i < input dnl
  m4_if($2,,,[2>dicod.err])|dnl
  tr -d '\r' | sed 's/^\(2[[25][0-9]]\) .*/\1/;s/ *$//'dnl
  m4_if($2,,,[; cat dicod.err|$2 >&2)])])

@@ -86,7 +86,7 @@ get_input_line(dico_stream_t str, char **buf, size_t *size, size_t *rdbytes)
     return rc;
 }
 
-RETSIGTYPE
+void
 sig_alarm(int sig)
 {
     exit(EXIT_TIMEOUT);

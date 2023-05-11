@@ -19,7 +19,7 @@
 AC_SUBST(WORDNET_LOPT)
 AC_SUBST(WORDNET_IOPT)
 AC_ARG_WITH([wordnet],
-            AC_HELP_STRING([--with-wordnet@<:@=DIR@:>@],
+            AS_HELP_STRING([--with-wordnet@<:@=DIR@:>@],
                            [use wordnet]),
             [
 case "${withval}" in
@@ -33,7 +33,7 @@ esac],[status_wordnet=maybe])
 
 AC_SUBST([WORDNET_LIBWN],[WN])
 AC_ARG_WITH([libWN],
-            AC_HELP_STRING([--with-libWN@<:@=NAME@:>@],
+            AS_HELP_STRING([--with-libWN@<:@=NAME@:>@],
                            [use libNAME instead of libWN]),
             [WORDNET_LIBWN=${withval#lib}])
 

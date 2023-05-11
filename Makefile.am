@@ -55,6 +55,10 @@ MOSTLYCLEANFILES   =
 
 include libltdl/Makefile.inc
 
+# Automake 1.16.5 fails to add these.
+# To be removed when dico finally gets rid of libltdl.
+DISTCLEANFILES = libltdl/$(DEPDIR)/lt__dirent.Plo libltdl/$(DEPDIR)/lt__strl.Plo
+
 #  Start Git ChangeLog from this date.
 gen_start_date = 2008-05-05
 
