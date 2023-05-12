@@ -1,0 +1,11 @@
+timing no;
+prepend-load-path ("~moddir~/outline","~moddir~/pcre");
+load-module (outline,pcre);
+database {
+	name "dict";
+	handler "outline ~dictdir~/dict.out";
+}
+
+
+
+

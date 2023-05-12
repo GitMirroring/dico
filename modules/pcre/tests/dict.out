@@ -1,0 +1,48 @@
+* Description
+Test dictionary for pcre matcher
+
+* Info
+No special info available
+
+* Dictionary   
+
+** ab
+
+** abå
+
+** abærå
+
+** ababanabab
+
+** ababenabab
+
+** anebab
+
+** abénéb
+
+** abcynub
+
+** báb
+
+** Bábeneb
+
+** bábenebeb
+
+** Bábenebebur
+
+** bácérè
+
+** benabáb
+
+** cê
+
+** craçy
+
+** d
+
+
+Local Variables:
+mode: outline
+paragraph-separate: "[ 	]*$"
+version-control: never
+End:

@@ -1,5 +1,5 @@
-# This file is part of GNU Dico
-# Copyright (C) 2010-2023 Sergey Poznyakoff
+# This file is part of GNU Dico. -*- Autotest -*-
+# Copyright (C) 2023 Sergey Poznyakoff
 #
 # GNU Dico is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,13 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with GNU Dico.  If not, see <http://www.gnu.org/licenses/>.
 
-SUBDIRS = . tests
-moddir=@DICO_MODDIR@
+m4_include(testsuite.inc)
 
-mod_LTLIBRARIES=pcre.la
+AT_INIT
+m4_include([pcre00.at])
+m4_include([pcre01.at])
+m4_include([pcre02.at])
 
-pcre_la_SOURCES = pcre.c
-pcre_la_LIBADD = ../../lib/libdico.la -lpcre2-8
-AM_LDFLAGS = -module -avoid-version -no-undefined
-AM_CPPFLAGS = @DICO_MODULE_INCLUDES@
-EXTRA_DIST=module.ac
