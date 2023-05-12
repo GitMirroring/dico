@@ -1105,16 +1105,16 @@ strategy_deny_all_cb(enum grecs_callback_command cmd,
 		     grecs_value_t *value,
 		     void *cb_data)
 {
-    int bool;
+    int bv;
 
     if (cmd != grecs_callback_set_value) {
 	grecs_error(locus, 0, _("Unexpected block statement"));
 	return 1;
     }
     if (value->type == GRECS_TYPE_STRING
-	&& grecs_string_convert(&bool, grecs_type_bool,
+	&& grecs_string_convert(&bv, grecs_type_bool,
 				value->v.string, locus) == 0) {
-	if (bool)
+	if (bv)
 	    stratcl_add_disable(*(dico_list_t*) varptr);
     } else
 	grecs_error(locus, 0, _("Expected boolean value"));

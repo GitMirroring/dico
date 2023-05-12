@@ -47,6 +47,7 @@ mod_LTLIBRARIES=echo.la
 echo_la_SOURCES = echo.c
 echo_la_LIBADD = ../../lib/libdico.la
 echo_la_LDFLAGS = -module -avoid-version -no-undefined
+echo_la_CPPFLAGS = @DICO_MODULE_INCLUDES@
 
 ## ------------ ##
 ## Auxiliaries. ##
