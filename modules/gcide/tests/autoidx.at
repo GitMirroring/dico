@@ -18,8 +18,9 @@ AT_SETUP(Automatic indexing)
 AT_KEYWORDS([idx autoidx])
 
 AT_CHECK([rm -f $IDXDIR/GCIDE.IDX
-echo "quit" | dicod --config $abs_builddir/dicod.conf --stderr -i 2>&1 | dnl
- tr -d '\r' | sed 's/^\(2[[25][0-9]]\) .*/\1/;s/ *$//;s|'"$IDXDIR"'/*||'  
+echo "quit" | \
+ dicod --no-preprocessor --config $abs_builddir/dicod.conf --stderr -i 2>&1 | \
+ tr -d '\r' | sed 's/^\(2[[25][0-9]]\) .*/\1/;s/ *$//;s|'"$IDXDIR"'/*||'
 ],
 [0],
 [dicod: Notice: gcide_open_idx: creating index GCIDE.IDX

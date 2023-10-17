@@ -42,12 +42,14 @@ echo "Not authenticated"
 DICOD_RUN() | sed 's/dicod server on .*/dicod server/'
 
 echo "Authenticated user"  
-apopauth -script=input smith testtset dicod --config ./dicod.conf dnl
-         --stderr -i | sed 's/dicod server on .*/dicod server/'
+apopauth -script=input smith testtset dicod --no-preprocessor \
+         --config ./dicod.conf --stderr -i | \
+	 sed 's/dicod server on .*/dicod server/'
 
 echo "Authenticated admin"
-apopauth -script=input gray guessme dicod --config ./dicod.conf dnl
-         --stderr -i | sed 's/dicod (AT_PACKAGE_NAME AT_PACKAGE_VERSION).*/dicod version/'
+apopauth -script=input gray guessme dicod --no-preprocessor \
+         --config ./dicod.conf --stderr -i | \
+	 sed 's/dicod (AT_PACKAGE_NAME AT_PACKAGE_VERSION).*/dicod version/'
 ],
 [0],
 [Not authenticated

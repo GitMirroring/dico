@@ -54,10 +54,12 @@ echo "Not authenticated"
 DICOD_RUN
 
 echo "Authenticated user"  
-apopauth -script=input smith testtset dicod --config ./dicod.conf --stderr -i
+apopauth -script=input smith testtset dicod --no-preprocessor \
+    --config ./dicod.conf --stderr -i
 
 echo "Authenticated admin"
-apopauth -script=input gray guessme dicod --config ./dicod.conf --stderr -i
+apopauth -script=input gray guessme dicod --no-preprocessor \
+    --config ./dicod.conf --stderr -i
 ],
 [0],
 [Not authenticated

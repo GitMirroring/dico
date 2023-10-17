@@ -42,7 +42,8 @@ echo "Not authenticated"
 DICOD_RUN
 
 echo "Authenticated"  
-apopauth -script=input gray guessme dicod --config ./dicod.conf --stderr -i
+apopauth -script=input gray guessme dicod --no-preprocessor \
+    --config ./dicod.conf --stderr -i
 ],
 [0],
 [Not authenticated

@@ -18,8 +18,10 @@ m4_include(testsuite.inc)
 m4_pushdef([AT_DICOD],[
 AT_DATA([input],dico_quote($1))
 AT_CHECK([dnl
-dicod --config $abs_builddir/dicod.conf --stderr -i < input 2>err | dnl
-    tr -d '\r' | sed 's/^\(2[[25][0-9]]\) .*/\1/;s/ *$//' 
+dicod --no-preprocessor --config $abs_builddir/dicod.conf \
+      --stderr -i < input 2>err | \
+      tr -d '\r' | \
+      sed 's/^\(2[[25][0-9]]\) .*/\1/;s/ *$//'
 sed '/Notice: gcide_open_idx: creating index/d' err >&2],
 [0],
 [$2],

@@ -30,6 +30,7 @@ user-db "text://$abs_srcdir" {
 }
 ])
 
-apopauth gray guessme dicod --config ./dicod.conf --stderr -i])
+apopauth gray guessme dicod --no-preprocessor --config ./dicod.conf \
+   --stderr -i])
 
 AT_CLEANUP
