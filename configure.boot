@@ -170,7 +170,17 @@ AC_SUBST([DICO_MODULE_INCLUDES],[dnl
  $(GRECS_INCLUDES)'])
 
 # Grecs configuration system
+AC_SUBST([DEFAULT_PP_SETUP])
+# Don't install pp-setup if user explicitly requested another preprocessor,
+if test -z "$DEFAULT_PREPROCESSOR"; then
+   DEFAULT_PP_SETUP=pp-setup
+fi
 GRECS_SETUP(grecs, [shared tests getopt git2chg sockaddr-list])
+# Don't install pp-setup if they disabled preprocessor.
+# FIXME: use_ext_pp is an internal grecs variable.
+if test "$use_ext_pp" == no; then
+   unset DEFAULT_PP_SETUP
+fi
 GRECS_HOST_PROJECT_INCLUDES='$(DICO_LIB_CONFIG) -I$(top_builddir)/include'
 
 # Tcl/tk

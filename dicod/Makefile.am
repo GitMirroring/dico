@@ -82,4 +82,4 @@ BUILT_SOURCES=cmdline.c
 EXTRA_DIST=cmdline.opt pp-setup
 
 incdir=$(pkgdatadir)/$(VERSION)/include
-inc_DATA = pp-setup
+inc_DATA = @DEFAULT_PP_SETUP@
