@@ -1,6 +1,6 @@
 %top {
 /* This file is part of GNU Dico.
-   Copyright (C) 2012-2023 Sergey Poznyakoff
+   Copyright (C) 2012-2024 Sergey Poznyakoff
 
    GNU Dico is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -130,6 +130,12 @@ flush_refs()
 	flush_page();
 }
 
+static int
+strrefcmp(void const *a, void const *b)
+{
+    return utf8_strcasecmp(*(char**)a, *(char**)b);
+}
+
 static void
 flush_headwords(void)
 {
@@ -140,10 +146,25 @@ flush_headwords(void)
     obstack_1grow(&stk, 0);
     headword = obstack_finish(&stk);
     if (headword[0]) {
-	size = char_position - headword_position;
-	for (p = headword; *p; p += strlen(p) + 1) {
-	    struct gcide_ref ref;
+	char **hv;
+	int i, hc = 0;
 	
+	for (p = headword; *p; p += strlen(p) + 1) {
+	    obstack_grow(&stk, &p, sizeof(p));
+	    hc++;
+	}
+
+	hv = obstack_finish(&stk);
+	qsort(hv, hc, sizeof(hv[0]), strrefcmp);
+	    
+	size = char_position - headword_position;
+	for (i = 0; i < hc; i++) {
+	    struct gcide_ref ref;
+	    
+	    if (i > 0 && utf8_strcasecmp(hv[i], hv[i-1]) == 0)
+		continue;
+
+	    p = hv[i];
 	    if (verbose_option > 1)
 		dico_log(L_INFO, 0, "%s: %c %lu %lu", p, letters[letno-1],
 			 headword_position, size);
