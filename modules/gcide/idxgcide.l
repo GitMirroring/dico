@@ -18,19 +18,19 @@
 #include <config.h>
 #include <dico.h>
 #include <unistd.h>
-#include <getopt.h>    
+#include <getopt.h>
 #include <stdio.h>
-#include <stdlib.h>    
+#include <stdlib.h>
 #define obstack_chunk_alloc malloc
 #define obstack_chunk_free free
 #include <obstack.h>
 #include <errno.h>
-#include <sysexits.h>    
+#include <sysexits.h>
 #include <appi18n.h>
 #include "gcide.h"
 }
 %{
-    
+
 int verbose_option;
 int dry_run_option;
 
@@ -58,20 +58,20 @@ int at_ent;
 
 #define YY_USER_ACTION do {						\
     char_position = file_position;                                      \
-    file_position += yyleng;				                \
+    file_position += yyleng;						\
     } while (0);
 
 static void
 full_write(void *data, size_t size)
 {
     if (fwrite(data, size, 1, idxfile) != 1) {
-        DICO_LOG_ERRNO();
+	DICO_LOG_ERRNO();
 	exit(EX_UNAVAILABLE);
     }
 }
 
 static void
-flush_page()    
+flush_page()
 {
     if (idx_page->ipg_header.hdr.phdr_numentries == 0 ||
 	idx_page->ipg_header.hdr.phdr_text_offset == 0) {
@@ -88,10 +88,10 @@ static void
 store_ref(struct gcide_ref *ref)
 {
     char *textarea;
-    
+
     if (idx_page->ipg_header.hdr.phdr_numentries == idx_header.ihdr_maxpageref
 	|| idx_page->ipg_header.hdr.phdr_text_offset + ref->ref_hwbytelen >
-          	idx_header.ihdr_pagesize)
+		idx_header.ihdr_pagesize)
 	flush_page();
 
     ref->ref_hwoff = idx_page->ipg_header.hdr.phdr_text_offset;
@@ -118,11 +118,11 @@ flush_refs()
     struct gcide_ref *ref = obstack_finish(&refstk);
 
     if (verbose_option)
-        dico_log(L_INFO, 0, _("Sorting references"));
+	dico_log(L_INFO, 0, _("Sorting references"));
     qsort(ref, idx_header.ihdr_num_headwords, sizeof(ref[0]), refcmp);
-    
+
     if (verbose_option)
-        dico_log(L_INFO, 0, _("Writing references"));
+	dico_log(L_INFO, 0, _("Writing references"));
 
     for (i = 0; i < idx_header.ihdr_num_headwords; i++, ref++)
 	store_ref(ref);
@@ -148,7 +148,7 @@ flush_headwords(void)
     if (headword[0]) {
 	char **hv;
 	int i, hc = 0;
-	
+
 	for (p = headword; *p; p += strlen(p) + 1) {
 	    obstack_grow(&stk, &p, sizeof(p));
 	    hc++;
@@ -156,11 +156,11 @@ flush_headwords(void)
 
 	hv = obstack_finish(&stk);
 	qsort(hv, hc, sizeof(hv[0]), strrefcmp);
-	    
+
 	size = char_position - headword_position;
 	for (i = 0; i < hc; i++) {
 	    struct gcide_ref ref;
-	    
+
 	    if (i > 0 && utf8_strcasecmp(hv[i], hv[i-1]) == 0)
 		continue;
 
@@ -189,8 +189,8 @@ flush_headwords(void)
 #define SET_HWPOS() {\
 	if (at_ent) {\
 	    at_ent = 0;\
-            headword_position = char_position;\
-        }\
+	    headword_position = char_position;\
+	}\
  }
 #define BEGIN_HEADWORD(end) \
     {   retstate = YYSTATE; \
@@ -236,7 +236,7 @@ XD [0-9a-f]
 	      dico_log(L_WARN, 0,
 		       _("%s:%u: unknown or illegible character in a headword"),
 		       infile, line);
-          obstack_grow(&stk, s, strlen(s));
+	  obstack_grow(&stk, s, strlen(s));
       } else
 	  dico_log(L_WARN, 0, _("%s:%u: unrecognized entity: %s"),
 		   infile, line, yytext);
@@ -245,18 +245,18 @@ XD [0-9a-f]
   ["*`]       ;
   "\\'d8"     ;       /* ignore double vertical bar */
   "\\'"{XD}{XD} {
-                 char const *s = gcide_escape_to_utf8(yytext+2);
+		 char const *s = gcide_escape_to_utf8(yytext+2);
 
-                 if (s) {
-                     int len = strlen(s);
-                     obstack_grow(&stk, s, len);
-                 } else {
-                     obstack_grow(&stk, yytext, yyleng);
-	             dico_log(L_WARN, 0,
-                              _("%s:%u: unknown character sequence %s"),
-		              infile, line, yytext);
-                 }
-             }
+		 if (s) {
+		     int len = strlen(s);
+		     obstack_grow(&stk, s, len);
+		 } else {
+		     obstack_grow(&stk, yytext, yyleng);
+		     dico_log(L_WARN, 0,
+			      _("%s:%u: unknown character sequence %s"),
+			      infile, line, yytext);
+		 }
+	     }
   .          obstack_grow(&stk, yytext, yyleng);
   \n         line++;
 }
@@ -278,16 +278,16 @@ yywrap(void)
     flush_headwords();
 
     if (letters[letno] == 0)
-        return 1;
+	return 1;
     *suf = letters[letno++];
     if (yyin)
-         fclose(yyin);
+	 fclose(yyin);
     if (verbose_option)
-         dico_log(L_INFO, 0, _("Indexing %s"), infile);
+	 dico_log(L_INFO, 0, _("Indexing %s"), infile);
     yyin = fopen(infile, "r");
     if (!yyin) {
-         dico_log(L_ERR, errno, _("cannot open file %s"), infile);
-         exit(EX_NOINPUT);
+	 dico_log(L_ERR, errno, _("cannot open file %s"), infile);
+	 exit(EX_NOINPUT);
     }
     file_position = char_position = headword_position = 0;
     line = 1;
@@ -301,13 +301,13 @@ int
 main(int argc, char **argv)
 {
     int index;
-    
+
     appi18n_init();
     dico_set_program_name(argv[0]);
     yy_flex_debug = 0;
 
     get_options(argc, argv, &index);
-    
+
     idx_page = malloc(idx_header.ihdr_pagesize);
     if (!idx_page) {
 	DICO_LOG_ERRNO();
@@ -317,66 +317,66 @@ main(int argc, char **argv)
     idx_page->ipg_header.hdr.phdr_text_offset = idx_header.ihdr_pagesize / 2;
 
     idx_header.ihdr_maxpageref = idx_header.ihdr_pagesize / 2 /
-	                         sizeof(struct gcide_ref);
+				 sizeof(struct gcide_ref);
     if (idx_header.ihdr_maxpageref < 1) {
 	dico_log(L_ERR, 0, _("page size too small"));
 	exit(EX_USAGE);
     }
     idx_header.ihdr_maxpageref--;
-    
+
     argc -= index;
     argv += index;
-    
+
     if (argc < 1 || argc > 2) {
-        dico_log(L_ERR, 0, _("bad number of arguments"));
-        exit(EX_USAGE);
+	dico_log(L_ERR, 0, _("bad number of arguments"));
+	exit(EX_USAGE);
     }
     dictdir = argv[0];
     idxdir = argc == 2 ? argv[1] : dictdir;
 
     infile = dico_full_file_name(dictdir, "CIDE.A");
     if (!infile) {
-        DICO_LOG_MEMERR();
-        exit(EX_UNAVAILABLE);
-    }    
+	DICO_LOG_MEMERR();
+	exit(EX_UNAVAILABLE);
+    }
     suf = infile + strlen(infile) - 1;
-    
+
     if (dry_run_option)
 	idxname = "/dev/null";
-    else 
+    else
 	idxname = dico_full_file_name(idxdir, "GCIDE.IDX");
     if (!idxname) {
-        DICO_LOG_MEMERR();
-        exit(EX_UNAVAILABLE);
+	DICO_LOG_MEMERR();
+	exit(EX_UNAVAILABLE);
     }
-    
+
     idxfile = fopen(idxname, "w");
     if (!idxfile) {
-        dico_log(L_ERR, errno, _("cannot create index file `%s'"), idxname);
-        exit(EX_CANTCREAT);
-    }    
+	dico_log(L_ERR, errno, _("cannot create index file `%s'"), idxname);
+	exit(EX_CANTCREAT);
+    }
     fseek(idxfile, idx_header.ihdr_pagesize, SEEK_SET);
-    
+
     obstack_init(&stk);
     obstack_init(&refstk);
 
     letno = 0;
     yywrap();
     while (yylex ())
-        ;
+	;
 
     flush_refs();
 
     fseek(idxfile, 0, SEEK_SET);
     full_write(&idx_header, sizeof(idx_header));
     fclose(idxfile);
-	
+
     if (verbose_option)
-        dico_log(L_INFO, 0,
+	dico_log(L_INFO, 0,
 		 _("headwords=%lu, definitions=%lu, refs per page=%lu, "
 		   "pages=%lu"),
-                 idx_header.ihdr_num_headwords,
-                 idx_header.ihdr_num_defs,
+		 idx_header.ihdr_num_headwords,
+		 idx_header.ihdr_num_defs,
 		 idx_header.ihdr_maxpageref,
 		 idx_header.ihdr_num_pages);
 
