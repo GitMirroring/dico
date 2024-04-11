@@ -87,6 +87,7 @@ static struct gcide_entity gcide_entity[] = {
     { "aemac",  "ǣ" },
     { "ucr",    "ŭ" },
     { "acr",    "ă" },
+    { "ycr",    "y̆" },
     { "ymac",   "ȳ" },
     { "asl",    "a" },   /* FIXME: a "semilong" (has a macron above with a short */
     { "esl",    "e" },   /* FIXME: e "semilong" */ 
