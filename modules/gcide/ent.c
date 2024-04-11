@@ -1,5 +1,5 @@
 /* This file is part of GNU Dico.
-   Copyright (C) 2012-2023 Sergey Poznyakoff
+   Copyright (C) 2012-2024 Sergey Poznyakoff
 
    GNU Dico is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -89,11 +89,11 @@ static struct gcide_entity gcide_entity[] = {
     { "acr",    "ă" },
     { "ycr",    "y̆" },
     { "ymac",   "ȳ" },
-    { "asl",    "a" },   /* FIXME: a "semilong" (has a macron above with a short */
-    { "esl",    "e" },   /* FIXME: e "semilong" */ 
-    { "isl",    "i" },   /* FIXME: i "semilong" */
-    { "osl",    "o" },   /* FIXME: o "semilong" */
-    { "usl",    "u" },   /* FIXME: u "semilong" */
+    { "asl",    "ā́" },   /* a "semilong" */
+    { "esl",    "ḗ" },   /* e "semilong" */
+    { "isl",    "ī́" },   /* i "semilong" */
+    { "osl",    "ṓ" },   /* o "semilong" */
+    { "usl",    "ū́" },   /* u "semilong" */
     { "adot",   "ȧ" },   /* a with dot above */
     { "edh",    "ð" },
     { "thorn",  "þ" },
@@ -219,11 +219,11 @@ static struct gcide_entity gcide_entity[] = {
     { "xit",      "x" },
     { "yit",      "y" },
     { "zit",      "z" },
-    /* FIXME: Vowels with a double dot below. There's nothing suitable in the Unicode */
-    { "add",      "a" }, 
-    { "udd",      "u" },
-    { "ADD",      "A" }, 
-    { "UDD",      "U" },
+
+    { "add",      "a̤" },
+    { "udd",      "ṳ" },
+    { "ADD",      "A̤" },
+    { "UDD",      "Ṳ" },
 
     /* Accents */
     { "prime",    "´" },
