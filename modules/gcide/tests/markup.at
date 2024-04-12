@@ -23,7 +23,7 @@ AT_DATA([input],
 
 AT_CHECK([degcide input],
 [0],
-[Acroterial (ăkrotērĭal), a. Pertaining to an acroterium; as, ``acroterial ornaments''.  P. Cyc.
+[Acroterial (ăkrṓtērĭal), a. Pertaining to an acroterium; as, ``acroterial ornaments''.  P. Cyc.
 
 [[1913 Webster]]
 ])
