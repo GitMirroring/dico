@@ -1,7 +1,8 @@
+"""
 #  Django settings for Dicoweb project.
 #
 #  This file is part of GNU Dico.
-#  Copyright (C) 2008-2010, 2012-2014 Wojciech Polak
+#  Copyright (C) 2008-2010, 2012-2014, 2023 Wojciech Polak
 #
 #  GNU Dico is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -14,13 +15,15 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with GNU Dico.  If not, see <http://www.gnu.org/licenses/>.
+#  along with GNU Dico.  If not, see <https://www.gnu.org/licenses/>.
+"""
 
 import os
+
 SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
 BASE_DIR = SITE_ROOT
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     'localhost',
@@ -41,6 +44,8 @@ LOCALE_PATHS = (
 )
 
 TIME_ZONE = 'UTC'
+USE_TZ = True
+
 LANGUAGE_CODE = 'en-us'
 LANGUAGE_COOKIE_NAME = 'dicoweb_lang'
 
@@ -48,23 +53,39 @@ SESSION_COOKIE_NAME = 'dicoweb_sid'
 SESSION_ENGINE = 'django.contrib.sessions.backends.file'
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 
-# Caching, see http://docs.djangoproject.com/en/dev/topics/cache/#topics-cache
+# Caching, see https://docs.djangoproject.com/en/dev/topics/cache/#topics-cache
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        # 'BACKEND': 'django.core.cache.backends.memcached.PyMemcacheCache',
         'LOCATION': '127.0.0.1:11211',
         'KEY_PREFIX': 'dicoweb',
     },
 }
 
-# Absolute path to the directory that holds media/static files.
-MEDIA_ROOT = os.path.join(SITE_ROOT, 'static')
+# Absolute path to the directory static files should be collected to.
+# Don't put anything in this directory yourself; store your static files
+# in apps' "static/" subdirectories and in STATICFILES_DIRS.
+# Example: "/var/www/example.com/static/"
+STATIC_ROOT = os.path.abspath(os.path.join(SITE_ROOT, 'static'))
 
-# URL that handles the media served from MEDIA_ROOT.
-MEDIA_URL = '/static/'
+# URL prefix for static files.
+# Example: "http://example.com/static/", "http://static.example.com/"
+STATIC_URL = '/static/'
+
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+)
+STATICFILES_DIRS = (
+    os.path.join(SITE_ROOT, 'assets'),
+)
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'SET THIS TO A RANDOM STRING'
+
+assert SECRET_KEY != 'SET THIS TO A RANDOM STRING', 'SECRET_KEY must be long and unique.'
 
 MIDDLEWARE = [
     'django.middleware.cache.UpdateCacheMiddleware',
@@ -83,23 +104,31 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-#    os.path.join(SITE_ROOT, 'templates'),
-            os.path.dirname(__file__).replace('\\', '/') + '/templates',
-        ]
-    }
+            os.path.join(SITE_ROOT, '../run/templates'),
+            os.path.join(SITE_ROOT, 'templates'),
+        ],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+            ],
+        },
+    },
 ]
 
 INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
+    'django.contrib.staticfiles',
     'dicoweb',
 )
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
 # the site admins on every HTTP 500 error when DEBUG=False.
-# See http://docs.djangoproject.com/en/dev/topics/logging for
+# See https://docs.djangoproject.com/en/dev/topics/logging/ for
 # more details on how to customize your logging configuration.
 LOGGING = {
     'version': 1,
@@ -163,7 +192,7 @@ DICT_TIMEOUT = 10
 #
 
 ONERROR = {
-    'UNSUPPORTED_CONTENT_TYPE' : {
+    'UNSUPPORTED_CONTENT_TYPE': {
         'action': 'replace',
         'message': 'Article cannot be displayed due to unsupported content type',
         'format_html': False,

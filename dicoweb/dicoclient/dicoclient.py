@@ -1,6 +1,6 @@
-# -*- coding: utf-8 -*-
+"""
 #  This file is part of GNU Dico.
-#  Copyright (C) 2008-2010, 2012, 2013, 2015 Wojciech Polak
+#  Copyright (C) 2008-2010, 2012, 2013, 2015, 2023 Wojciech Polak
 #
 #  GNU Dico is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -13,19 +13,21 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with GNU Dico.  If not, see <http://www.gnu.org/licenses/>.
+#  along with GNU Dico.  If not, see <https://www.gnu.org/licenses/>.
+"""
 
 import re
 import socket
 import base64
 import quopri
+from functools import reduce
+from io import TextIOWrapper
+from typing import cast, TypeAlias
 
-try:
-    from django.utils.six.moves import range, reduce
-except ImportError:
-    from six.moves import range, reduce
 
-__version__ = '1.1'
+__version__ = '1.2'
+
+DicoResponse: TypeAlias = list[str | list[str] | tuple[str, list[str]]]
 
 
 class DicoClient:
@@ -38,21 +40,25 @@ class DicoClient:
     mime = False
 
     verbose = 0
+    fd: TextIOWrapper
+    socket: socket.socket
+    server_capas: list[str]
+    server_msgid: str
     timeout = 10
     transcript = False
     __connected = False
 
-    def __init__(self, host=None):
-        if host != None:
+    def __init__(self, host: str | None = None):
+        if host is not None:
             self.host = host
 
     def __del__(self):
         if self.__connected:
             self.socket.close()
 
-    def open(self, host=None, port=2628):
+    def open(self, host: str | None = None, port: int = 2628) -> None:
         """Open the connection to the DICT server."""
-        if host != None:
+        if host is not None:
             self.host = host
         if self.verbose:
             self.__debug('Connecting to %s:%d' % (self.host, port))
@@ -63,16 +69,15 @@ class DicoClient:
         self.__connected = True
         self.fd = self.socket.makefile()
 
-        self.server_banner = self.__read()[0]
-        capas, msgid = re.search('<(.*)> (<.*>)$',
-                                 self.server_banner).groups()
+        server_banner: str = cast(str, self.__read()[0])
+        capas, msgid = re.search('<(.*)> (<.*>)$', server_banner).groups()
         self.server_capas = capas.split('.')
         self.server_msgid = msgid
 
         self.__send_client()
         self.__read()
 
-    def close(self):
+    def close(self) -> None:
         """Close the connection."""
         if self.__connected:
             self.__send_quit()
@@ -80,25 +85,25 @@ class DicoClient:
             self.socket.close()
             self.__connected = False
 
-    def option(self, name, *args):
+    def option(self, name: str, *args) -> bool:
         """Send the OPTION command."""
         if self.__connected:
             self.__send('OPTION %s%s' %
                         (name, reduce(lambda x, y: str(x) + ' ' + str(y),
                                       args, '')))
             res = self.__read()
-            code, msg = res[0].split(' ', 1)
+            code, _msg = cast(str, res[0]).split(' ', 1)
             if int(code) == 250:
                 if name.lower() == 'mime':
                     self.mime = True
                 return True
-            return False
+        return False
 
-    def __get_mime(self, lines):
+    def __get_mime(self, lines: list[str]) -> dict:
         cnt = 0
         mimeinfo = {}
         firstline = lines[0].lower()
-        if firstline.find ('content-type:') != -1 or \
+        if firstline.find('content-type:') != -1 or \
            firstline.find('content-transfer-encoding:') != -1:
             cnt += 1
             for line in lines:
@@ -107,14 +112,14 @@ class DicoClient:
                 t = line.split(':', 1)
                 mimeinfo[t[0].lower()] = t[1].strip()
                 cnt += 1
-            for i in range(0, cnt):
+            for _i in range(0, cnt):
                 lines.pop(0)
         else:
             lines.pop(0)
         if 'content-transfer-encoding' in mimeinfo:
             if mimeinfo['content-transfer-encoding'].lower() == 'base64':
                 buf = base64.decodestring('\n'.join(lines))
-                lines[:] = (buf.split('\r\n'))
+                lines[:] = buf.split('\r\n')
                 if lines[-1] == '':
                     del lines[-1]
                 del mimeinfo['content-transfer-encoding']
@@ -129,43 +134,44 @@ class DicoClient:
                 del mimeinfo['content-transfer-encoding']
         return mimeinfo
 
-    def __get_rs(self, line):
+    def __get_rs(self, line: str) -> tuple[int, str]:
+        code: str
+        text: str
         code, text = line.split(' ', 1)
-        code = int(code)
-        return code, text
+        return int(code), text
 
-    def __read(self):
+    def __read(self) -> DicoResponse:
         if not self.__connected:
             raise DicoNotConnectedError('Not connected')
-        buf = []
+        buf: DicoResponse = []
         line = self.__readline()
         if len(line) == 0:
             raise DicoNotConnectedError('Not connected')
         buf.append(line)
-        code, text = self.__get_rs(line)
+        code, _text = self.__get_rs(line)
 
-        if code >= 100 and code < 200:
+        if 100 <= code < 200:
             if code == 150:
                 while True:
                     rs = self.__readline()
-                    code, text = self.__get_rs(rs)
+                    code, _text = self.__get_rs(rs)
                     if code != 151:
                         buf.append(rs)
                         break
-                    buf.append([rs, self.__readblock()])
+                    buf.append((rs, self.__readblock()))
             else:
                 buf.append(self.__readblock())
                 buf.append(self.__readline())
         return buf
 
-    def __readline(self):
+    def __readline(self) -> str:
         line = self.fd.readline().rstrip()
         if self.transcript:
-            self.__debug('S:%s' % line)
+            self.__debug(f'S:{line}')
         return line
 
-    def __readblock(self):
-        buf = []
+    def __readblock(self) -> list[str]:
+        buf: list[str] = []
         while True:
             line = self.__readline()
             if line == '.':
@@ -173,7 +179,7 @@ class DicoClient:
             buf.append(line)
         return buf
 
-    def __send(self, command):
+    def __send(self, command: str) -> None:
         if not self.__connected:
             raise DicoNotConnectedError('Not connected')
         cmd = command + "\r\n"
@@ -182,45 +188,45 @@ class DicoClient:
         except (UnicodeEncodeError, TypeError):
             self.socket.send(cmd.encode('utf-8'))
         if self.transcript:
-            self.__debug('C:%s' % command)
+            self.__debug(f'C:{command}')
 
-    def __send_client(self):
+    def __send_client(self) -> None:
         if self.verbose:
             self.__debug('Sending client information')
         self.__send('CLIENT "%s %s"' % ("GNU Dico (Python Edition)",
                                         __version__))
 
-    def __send_quit(self):
+    def __send_quit(self) -> None:
         if self.verbose:
             self.__debug('Quitting')
         self.__send('QUIT')
 
-    def __send_show(self, what, arg=None):
-        if arg != None:
-            self.__send('SHOW %s "%s"' % (what, arg))
+    def __send_show(self, what: str, arg=None) -> DicoResponse:
+        if arg is not None:
+            self.__send(f'SHOW {what} "{arg}"')
         else:
-            self.__send('SHOW %s' % what)
+            self.__send(f'SHOW {what}')
         return self.__read()
 
-    def __send_define(self, database, word):
+    def __send_define(self, database: str, word: str) -> DicoResponse:
         if self.verbose:
             self.__debug('Sending query for word "%s" in database "%s"' %
                          (word, database))
-        self.__send('DEFINE "%s" "%s"' % (database, word))
+        self.__send(f'DEFINE "{database}" "{word}"')
         return self.__read()
 
-    def __send_match(self, database, strategy, word):
+    def __send_match(self, database: str, strategy: str, word: str) -> DicoResponse:
         if self.verbose:
             self.__debug('Sending query to match word "%s" in database "%s", using "%s"'
                          % (word, database, strategy))
         self.__send('MATCH "%s" "%s" "%s"' % (database, strategy, word))
         return self.__read()
 
-    def __send_xlev(self, distance):
+    def __send_xlev(self, distance: str) -> DicoResponse:
         self.__send('XLEV %u' % distance)
         return self.__read()
 
-    def show_databases(self):
+    def show_databases(self) -> dict:
         """List all accessible databases."""
         if self.verbose:
             self.__debug('Getting list of databases')
@@ -238,7 +244,7 @@ class DicoClient:
         }
         return dct
 
-    def show_strategies(self):
+    def show_strategies(self) -> dict:
         """List available matching strategies."""
         if self.verbose:
             self.__debug('Getting list of strategies')
@@ -256,7 +262,7 @@ class DicoClient:
         }
         return dct
 
-    def show_info(self, database):
+    def show_info(self, database: str) -> dict:
         """Provide information about the database."""
         res = self.__send_show("INFO", database)
         code, msg = res[0].split(' ', 1)
@@ -265,10 +271,9 @@ class DicoClient:
                 mimeinfo = self.__get_mime(res[1])
             dsc = res[1]
             return {'desc': '\n'.join(dsc)}
-        else:
-            return {'error': code, 'msg': msg}
+        return {'error': code, 'msg': msg}
 
-    def show_lang_db(self):
+    def show_lang_db(self) -> dict:
         """Show databases with their language preferences."""
         res = self.__send_show('LANG DB')
         code, msg = res[0].split(' ', 1)
@@ -281,38 +286,35 @@ class DicoClient:
             for i in dsc:
                 pair = i.split(' ', 1)[1]
                 src, dst = pair.split(':', 1)
-                for j in src:
+                for _j in src:
                     lang_src[src.strip()] = True
-                for j in dst:
+                for _j in dst:
                     lang_dst[dst.strip()] = True
             return {
                 'desc': '\n'.join(dsc),
                 'lang_src': list(lang_src.keys()),
                 'lang_dst': list(lang_dst.keys()),
             }
-        else:
-            return {'error': code, 'msg': msg}
+        return {'error': code, 'msg': msg}
 
-    def show_lang_pref(self):
+    def show_lang_pref(self) -> dict:
         """Show server language preferences."""
         res = self.__send_show('LANG PREF')
         code, msg = res[0].split(' ', 1)
         if int(code) < 500:
             return {'msg': msg}
-        else:
-            return {'error': code, 'msg': msg}
+        return {'error': code, 'msg': msg}
 
-    def show_server(self):
+    def show_server(self) -> dict:
         """Provide site-specific information."""
         res = self.__send_show('SERVER')
         code, msg = res[0].split(' ', 1)
         if int(code) < 500:
             dsc = res[1]
             return {'desc': '\n'.join(dsc)}
-        else:
-            return {'error': code, 'msg': msg}
+        return {'error': code, 'msg': msg}
 
-    def define(self, database, word):
+    def define(self, database: str, word: str) -> dict:
         """Look up word in database."""
         database = database.replace('"', "\\\"")
         word = word.replace('"', "\\\"")
@@ -322,7 +324,7 @@ class DicoClient:
             defs_res = res[1:-1]
             defs = []
             rx = re.compile(
-                '^\d+ ("[^"]+"|\w+) ([a-zA-Z0-9_\-]+) ("[^"]*"|\w+)')
+                '^\d+ ("[^"]+"|\w+) ([a-zA-Z0-9_/\-]+) ("[^"]*"|\w+)')
             for i in defs_res:
                 term, db, db_fullname = rx.search(i[0]).groups()
                 df = {
@@ -340,10 +342,9 @@ class DicoClient:
                 'definitions': defs,
             }
             return dct
-        else:
-            return {'error': code, 'msg': msg}
+        return {'error': code, 'msg': msg}
 
-    def match(self, database, strategy, word):
+    def match(self, database: str, strategy: str, word: str) -> dict:
         """Match word in database using strategy."""
         if not self.__connected:
             raise DicoNotConnectedError('Not connected')
@@ -376,19 +377,18 @@ class DicoClient:
                 'matches': mts,
             }
             return dct
-        else:
-            return {'error': code, 'msg': msg}
+        return {'error': code, 'msg': msg}
 
-    def xlev(self, distance):
+    def xlev(self, distance: str) -> bool:
         """Set Levenshtein distance."""
         self.levenshtein_distance = distance
         res = self.__send_xlev(distance)
-        code, msg = res[0].split(' ', 1)
+        code, _msg = res[0].split(' ', 1)
         if int(code) == 250:
             return True
         return False
 
-    def __unquote(self, s):
+    def __unquote(self, s: str) -> str:
         s = s.replace("\\\\'", "'")
         if s[0] == '"' and s[-1] == '"':
             s = s[1:-1]
@@ -398,16 +398,16 @@ class DicoClient:
             pass
         return s
 
-    def __decode(self, encoded):
+    def __decode(self, encoded: str) -> str:
         for octc in (c for c in re.findall(r'\\(\d{3})', encoded)):
             encoded = encoded.replace(r'\%s' % octc, chr(int(octc, 8)))
         return encoded
 
-    def __debug(self, msg):
-        print('dico: Debug: %s' % msg)
+    def __debug(self, msg: str) -> None:
+        print(f'dico: Debug: {msg}')
 
 
-class DicoNotConnectedError (Exception):
+class DicoNotConnectedError(Exception):
 
     def __init__(self, value):
         self.parameter = value

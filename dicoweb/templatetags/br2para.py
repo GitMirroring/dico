@@ -1,5 +1,6 @@
+"""
 #  This file is part of GNU Dico.
-#  Copyright (C) 2008-2009, 2012, 2013 Wojciech Polak
+#  Copyright (C) 2023 Wojciech Polak
 #
 #  GNU Dico is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -12,19 +13,21 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with GNU Dico.  If not, see <http://www.gnu.org/licenses/>.
+#  along with GNU Dico.  If not, see <https://www.gnu.org/licenses/>.
+"""
 
 from django.template import Library
 
 register = Library()
 
 
-def media_prefix():
-    """Return the string contained in the setting MEDIA_URL."""
-    try:
-        from django.conf import settings
-    except ImportError:
-        return ''
-    return settings.MEDIA_URL
+def br2para(s: str) -> str:
+    paragraphs = s.split('\n\n')
+    wrapped_paragraphs = []
+    for paragraph in paragraphs:
+        wrapped_paragraph = f'<p>{paragraph}</p>'
+        wrapped_paragraphs.append(wrapped_paragraph)
+    return '\n'.join(wrapped_paragraphs)
 
-media_prefix = register.simple_tag(media_prefix)
+
+register.filter(br2para)

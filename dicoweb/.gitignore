@@ -1,0 +1,12 @@
+*.pyc
+*.pyo
+*.mo
+*.iml
+.idea/
+.mypy_cache/
+.pytest_cache/
+pip-selfcheck.json
+pyvenv.cfg
+venv*/
+static/
+settings.py*

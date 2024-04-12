@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-#
+
+"""
 #  This file is part of GNU Dico.
 #  Copyright (C) 2008-2009, 2012, 2013 Wojciech Polak
 #
@@ -14,16 +15,17 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with GNU Dico.  If not, see <http://www.gnu.org/licenses/>.
+#  along with GNU Dico.  If not, see <https://www.gnu.org/licenses/>.
+"""
 
-from distutils.core import setup
+from setuptools import setup
 import dicoclient
 
 setup(name='dicoclient',
       version='1.0',
       author='Wojciech Polak',
       author_email='polak@gnu.org',
-      url='http://www.gnu.org/software/dico/',
+      url='https://www.gnu.org/software/dico/',
       py_modules=['dicoclient', 'dicoshell'],
       license='GPL License',
       description='A DICT protocol (RFC 2229) client library.',
@@ -35,5 +37,4 @@ setup(name='dicoclient',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Topic :: Software Development :: Libraries :: Python Modules'
-      ]
-)
+      ])

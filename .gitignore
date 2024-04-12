@@ -9,6 +9,7 @@
 *.tar.gz
 *.tar.xz
 *~
+.DS_Store
 .bootstrap
 .deps
 .emacs.*
@@ -33,11 +34,6 @@ config.status
 configure
 configure.ac
 core
-dicoweb/bin
-dicoweb/include
-dicoweb/lib
-dicoweb/lib64
-dicoweb/settings.py
 gmon.out
 gnulibinit
 libltdl

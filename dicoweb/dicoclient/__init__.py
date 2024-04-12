@@ -1,3 +1,4 @@
+"""
 #  This file is part of GNU Dico.
 #  Copyright (C) 2008-2009, 2012, 2013 Wojciech Polak
 #
@@ -12,8 +13,9 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with GNU Dico.  If not, see <http://www.gnu.org/licenses/>.
+#  along with GNU Dico.  If not, see <https://www.gnu.org/licenses/>.
+"""
 
-__all__ = ["dicoclient"]
+__all__ = ['dicoclient']
 
 from .dicoclient import *

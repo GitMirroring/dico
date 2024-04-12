@@ -1,5 +1,6 @@
+"""
 #  This file is part of GNU Dico.
-#  Copyright (C) 2008-2010, 2012, 2013, 2015 Wojciech Polak
+#  Copyright (C) 2008-2010, 2012, 2013, 2015, 2023 Wojciech Polak
 #
 #  GNU Dico is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -12,7 +13,8 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with GNU Dico.  If not, see <http://www.gnu.org/licenses/>.
+#  along with GNU Dico.  If not, see <https://www.gnu.org/licenses/>.
+"""
 
 import re
 import os
@@ -23,11 +25,6 @@ import readline
 import curses.ascii
 import socket
 import dicoclient
-
-try:
-    from django.utils.six.moves import range, input
-except ImportError:
-    from six.moves import range, input
 
 
 class Shell:
@@ -74,10 +71,10 @@ class Shell:
             except dicoclient.DicoNotConnectedError:
                 try:
                     self.dc.open()
-                    dict = self.dc.show_databases()
-                    self.last_databases = dict['databases']
-                    dict = self.dc.show_strategies()
-                    self.last_strategies = dict['strategies']
+                    d = self.dc.show_databases()
+                    self.last_databases = d['databases']
+                    d = self.dc.show_strategies()
+                    self.last_strategies = d['strategies']
                     self.parse(inputcmd)
                 except socket.error as serror:
                     (errno, strerror) = serror.args
@@ -96,29 +93,30 @@ class Shell:
         elif re.match(r'^[0-9]+$', inputcmd):
             try:
                 match = self.last_matches[int(inputcmd)]
-                dict = self.dc.define(match[0], match[1])
-                if 'count' in dict:
-                    for d in dict['definitions']:
+                df = self.dc.define(match[0], match[1])
+                if 'count' in df:
+                    for d in df['definitions']:
+                        print()
                         print('From %s, %s:' % (d['db'], d['db_fullname']))
                         print(d['desc'])
-                elif 'error' in dict:
-                    print(dict['msg'])
+                elif 'error' in df:
+                    print(df['msg'])
             except IndexError:
                 self.__error('No previous match')
 
         elif inputcmd[0] == '/':
             if len(inputcmd) > 1:
-                dict = self.dc.match(self.database, self.strategy, inputcmd[1:])
-                if 'matches' in dict:
+                df = self.dc.match(self.database, self.strategy, inputcmd[1:])
+                if 'matches' in df:
                     self.last_matches = []
                     lmi = 0
-                    for db in dict['matches']:
+                    for db in df['matches']:
                         print('From %s, %s:' % (db, self.__lookup_db(db)))
-                        for term in dict['matches'][db]:
+                        for term in df['matches'][db]:
                             print('%4d) "%s"' % (lmi, term))
                             self.last_matches.append([db, term])
                             lmi = lmi + 1
-                elif 'error' in dict:
+                elif 'error' in df:
                     print(dict['msg'])
             else:
                 if len(self.last_matches) > 0:
@@ -143,13 +141,14 @@ class Shell:
                 readline.redisplay()
 
         else:
-            dict = self.dc.define(self.database, inputcmd)
-            if 'count' in dict:
-                for d in dict['definitions']:
+            df = self.dc.define(self.database, inputcmd)
+            if 'count' in df:
+                for d in df['definitions']:
+                    print()
                     print('From %s, %s:' % (d['db'], d['db_fullname']))
                     print(d['desc'])
-            elif 'error' in dict:
-                print(dict['msg'])
+            elif 'error' in df:
+                print(df['msg'])
 
     def parse_command(self, inputcmd):
         inputcmd = inputcmd.split(' ', 1)
@@ -160,7 +159,7 @@ class Shell:
 
         if cmd == 'open':
             try:
-                if args != None:
+                if args is not None:
                     args = args.split(' ', 1)
                     if len(args) == 2:
                         self.dc.open(args[0], int(args[1]))
@@ -168,27 +167,27 @@ class Shell:
                         self.dc.open(args[0])
                 else:
                     self.dc.open()
-                dict = self.dc.show_databases()
-                self.last_databases = dict['databases']
-                dict = self.dc.show_strategies()
-                self.last_strategies = dict['strategies']
+                d = self.dc.show_databases()
+                self.last_databases = d['databases']
+                d = self.dc.show_strategies()
+                self.last_strategies = d['strategies']
             except socket.error as serror:
                 (errno, strerror) = serror.args
                 self.__error(strerror)
         elif cmd == 'close':
             self.dc.close()
         elif cmd == 'database':
-            if args != None:
+            if args is not None:
                 self.database = args
             else:
                 print(self.database)
         elif cmd == 'strategy':
-            if args != None:
+            if args is not None:
                 self.strategy = args
             else:
                 print(self.strategy)
         elif cmd == 'distance':
-            if args != None:
+            if args is not None:
                 self.dc.levenshtein_distance = int(args)
             else:
                 if self.dc.levenshtein_distance:
@@ -197,32 +196,32 @@ class Shell:
                 else:
                     print('No distance configured')
         elif cmd == 'ls':
-            dict = self.dc.show_strategies()
-            self.last_strategies = dict['strategies']
+            d = self.dc.show_strategies()
+            self.last_strategies = d['strategies']
             if len(self.last_strategies):
                 for i in self.last_strategies:
                     print('%s "%s"' % (i[0], i[1]))
         elif cmd == 'ld':
-            dict = self.dc.show_databases()
-            self.last_databases = dict['databases']
+            d = self.dc.show_databases()
+            self.last_databases = d['databases']
             if len(self.last_databases):
                 for i in self.last_databases:
                     print('%s "%s"' % (i[0], i[1]))
         elif cmd == 'mime':
             print(self.dc.option('MIME'))
         elif cmd == 'server':
-            dict = self.dc.show_server()
-            if 'desc' in dict:
-                print(dict['desc'])
-            elif 'error' in dict:
-                self.__error(dict['error'] + ' ' + dict['msg'])
+            df = self.dc.show_server()
+            if 'desc' in df:
+                print(df['desc'])
+            elif 'error' in df:
+                self.__error(df['error'] + ' ' + df['msg'])
         elif cmd == 'info':
-            if args != None:
-                dict = self.dc.show_info(args)
-                if 'desc' in dict:
-                    print(dict['desc'])
-                elif 'error' in dict:
-                    self.__error(dict['error'] + ' ' + dict['msg'])
+            if args is not None:
+                df = self.dc.show_info(args)
+                if 'desc' in df:
+                    print(df['desc'])
+                elif 'error' in df:
+                    self.__error(df['error'] + ' ' + df['msg'])
         elif cmd == 'history':
             hl = int(readline.get_current_history_length())
             for i in range(0, hl):
@@ -230,7 +229,7 @@ class Shell:
         elif cmd == 'help':
             self.print_help()
         elif cmd == 'transcript':
-            if args != None:
+            if args is not None:
                 if args in ('yes', 'on', 'true'):
                     self.dc.transcript = True
                 elif args in ('no', 'off', 'false'):
@@ -243,18 +242,18 @@ class Shell:
                 else:
                     print('transcript is off')
         elif cmd == 'verbose':
-            if args != None:
+            if args is not None:
                 self.dc.verbose = args
             else:
                 print(self.dc.verbose)
         elif cmd == 'prompt':
-            if args != None:
+            if args is not None:
                 self.prompt = args
             else:
                 self.__error('not enough arguments')
         elif cmd == 'prefix':
-            if args != None:
-                if len (args) == 1 and args != '#' and \
+            if args is not None:
+                if len(args) == 1 and args != '#' and \
                         curses.ascii.ispunct(args):
                     self.prefix = args
                 else:
@@ -280,7 +279,7 @@ class Shell:
 
     def print_warranty(self):
         self.print_version()
-        print("""Copyright (C) 2008-2010, 2012, 2013 Wojciech Polak
+        print("""Copyright (C) 2008-2010, 2012, 2013, 2023 Wojciech Polak
 
    GNU Dico is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -293,7 +292,7 @@ class Shell:
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with GNU Dico.  If not, see <http://www.gnu.org/licenses/>.""")
+   along with GNU Dico.  If not, see <https://www.gnu.org/licenses/>.""")
 
     def print_help(self):
         print('WORD                     Define WORD.')
@@ -319,6 +318,7 @@ class Shell:
         print(self.prefix + 'version                 Print program version.')
         print(self.prefix + 'warranty                Print copyright statement.')
         print(self.prefix + 'quit                    Quit the shell.')
+
 
 if __name__ == '__main__':
     try:

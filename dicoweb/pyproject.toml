@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "dicoweb"
+version = "3.0.0"
+description = "GNU Dico WebSearch Interface"
+authors = ["Wojciech Polak", "Sergey Poznyakoff"]
+license = "GPLv3"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+django = "^4.2.6"
+pymemcache = "^4.0.0"
+wikitrans = "^1.2"
+uwsgi = "^2.0.22"
+
+[tool.poetry.group.dev.dependencies]
+django-stubs = {extras = ["compatible-mypy"], version = "^4.2.4"}
+mypy = "1.5.1"
+pylint = "^3.0.1"
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+plugins = ["mypy_django_plugin.main"]
+
+[tool.django-stubs]
+django_settings_module = "dicoweb.settings"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

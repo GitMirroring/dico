@@ -1,5 +1,6 @@
+"""
 #  This file is part of GNU Dico.
-#  Copyright (C) 2008-2010, 2012-2015 Wojciech Polak
+#  Copyright (C) 2008-2010, 2012-2015, 2023 Wojciech Polak
 #
 #  GNU Dico is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -12,11 +13,14 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with GNU Dico.  If not, see <http://www.gnu.org/licenses/>.
+#  along with GNU Dico.  If not, see <https://www.gnu.org/licenses/>.
+"""
 
 import re
 import hashlib
 import socket
+from typing import Match
+
 from django.conf import settings
 try:
     from django.core.urlresolvers import reverse
@@ -25,7 +29,7 @@ except ImportError:
 from django.core.cache import cache
 from django.shortcuts import render
 from django.utils.encoding import force_bytes
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
 from .dicoclient import dicoclient
 try:
@@ -34,18 +38,23 @@ except ImportError:
     wiki2html = None
     print('WARNING: wikitrans is not installed.')
 
-def onerror(err, dfl=None):
+CACHE_KEY_PREFIX = 'dicoweb/'
+
+
+def onerror(err: str, dfl=None) -> dict:
     try:
         act = settings.ONERROR[err]
-    except:
+    except KeyError:
         act = dfl
     return act
+
 
 def index(request):
     page = {
         'robots': 'index',
     }
     selects = {}
+    server: str
     mtc = {}
     result = {}
     markup_style = 'default'
@@ -63,7 +72,7 @@ def index(request):
     else:
         server = settings.DICT_SERVERS[0]
     server = request.GET.get('server', server)
-    if not server in settings.DICT_SERVERS:
+    if server not in settings.DICT_SERVERS:
         server = settings.DICT_SERVERS[0]
     request.session['server'] = server
 
@@ -74,17 +83,17 @@ def index(request):
         '%s/%s' % (sid, server.encode('ascii', 'backslashreplace'))))
     sid = key.hexdigest()
 
-    type = 'search'
+    query_type = 'search'
     if 'define' in request.GET:
-        type = 'define'
+        query_type = 'define'
     else:
-        type = 'search'
+        query_type = 'search'
 
     database = request.GET.get('db', '*')
     strategy = request.GET.get('strategy', '.')
 
-    key_databases = str('dicoweb/databases/' + server)
-    key_strategies = str('dicoweb/strategies/' + server)
+    key_databases = f'{CACHE_KEY_PREFIX}databases/{server}'
+    key_strategies = f'{CACHE_KEY_PREFIX}strategies/{server}'
 
     databases = cache.get(key_databases)
     strategies = cache.get(key_strategies)
@@ -125,11 +134,11 @@ def index(request):
             langkey = ','.join(accept_lang)
 
         key = hashlib.md5(force_bytes(
-            '%s:%d/%s/%s/%s/%s/%s' % (server, port, langkey, type,
+            '%s:%d/%s/%s/%s/%s/%s' % (server, port, langkey, query_type,
                                       database, strategy,
                                       q.encode('ascii', 'backslashreplace'))))
         key = key.hexdigest()
-        result = cache.get('dicoweb/' + key)
+        result = cache.get(CACHE_KEY_PREFIX + key)
 
         if not result:
             try:
@@ -146,27 +155,27 @@ def index(request):
 
                 if database == 'dbinfo':
                     result = dc.show_info(q)
-                elif type == 'define':
+                elif query_type == 'define':
                     result = dc.define(database, q)
                 else:
                     result = dc.match(database, strategy, q)
                 dc.close()
 
                 result['markup_style'] = markup_style
-                cache.set('dicoweb/' + key, result, timeout=3600)
+                cache.set(CACHE_KEY_PREFIX + key, result, timeout=3600)
 
             except (socket.timeout, socket.error,
                     dicoclient.DicoNotConnectedError):
                 return render(request, 'index.html', {'selects': selects})
 
         # get last match results
-        if sid and type == 'search':
-            cache.set('dicoweb/%s/last_match' % sid, key, timeout=3600)
+        if sid and query_type == 'search':
+            cache.set(f'{CACHE_KEY_PREFIX}{sid}/last_match', key, timeout=3600)
         else:
-            key = cache.get('dicoweb/%s/last_match' % sid)
+            key = cache.get(f'{CACHE_KEY_PREFIX}{sid}/last_match')
 
-        if key != None:
-            mtc = cache.get('dicoweb/' + key)
+        if key is not None:
+            mtc = cache.get(CACHE_KEY_PREFIX + key)
         if not mtc:
             mtc = result
 
@@ -188,14 +197,13 @@ def index(request):
         rx1 = re.compile('{+(.*?)}+', re.DOTALL)
         for i, df in enumerate(result['definitions']):
             if 'content-type' in df:
-                if (df['content-type'].startswith('text/x-wiki')
-                    and wiki2html):
+                if df['content-type'].startswith('text/x-wiki') and wiki2html:
                     lang = df['x-wiki-language'] \
                           if 'x-wiki-language' in df else 'en'
                     wikiparser = wiki2html.HtmlWiktionaryMarkup(
-                                          text=df['desc'],
-                                          html_base='?q=',
-                                          lang=lang)
+                        text=df['desc'],
+                        html_base='?q=',
+                        lang=lang)
                     wikiparser.parse()
                     df['desc'] = str(wikiparser)
                     df['format_html'] = True
@@ -204,11 +212,14 @@ def index(request):
                 elif df['content-type'].startswith('text/'):
                     df['format_html'] = False
                 else:
-                    act = onerror('UNSUPPORTED_CONTENT_TYPE',
-                                  { 'action': 'replace',
-                                    'message': 'Article cannot be displayed due to unsupported content type' })
+                    act = onerror(
+                        'UNSUPPORTED_CONTENT_TYPE',
+                        {
+                            'action': 'replace',
+                            'message': 'Article cannot be displayed due to unsupported content type'
+                        })
                     if act['action'] == 'delete':
-                        del(result['definitions'][i])
+                        del result['definitions'][i]
                         result['count'] -= 1
                     elif act['action'] == 'replace':
                         df['desc'] = act['message']
@@ -227,13 +238,14 @@ Article cannot be displayed due to unsupported content type (%s).
 Additionally, ONERROR['UNSUPPORTED_CONTENT_TYPE'] has unsupported value (%s).
 """ % (df['content-type'], act))
                     else:
-                        del(result['definitions'][i])
+                        del result['definitions'][i]
                         result['count'] -= 1
             else:
                 df['desc'] = re.sub('_(.*?)_', '<b>\\1</b>', df['desc'])
                 df['desc'] = re.sub(rx1, __subs1, df['desc'])
+
         if result['count'] == 0:
-            result = { 'error': 552, 'msg': 'No match' }
+            result = {'error': 552, 'msg': 'No match'}
 
     return render(request, 'index.html', {'page': page,
                                           'q': q,
@@ -245,23 +257,27 @@ Additionally, ONERROR['UNSUPPORTED_CONTENT_TYPE'] has unsupported value (%s).
 def opensearch(request):
     url_query = request.build_absolute_uri(reverse('index'))
     url_media = request.build_absolute_uri(settings.MEDIA_URL)
-    return render(request, 'opensearch.xml', {'url_query': url_query,
-                                              'url_media': url_media},
-                              content_type='application/xml')
+    return render(request, 'opensearch.xml', {
+        'url_query': url_query,
+        'url_media': url_media},
+        content_type='application/xml')
 
 
-def __subs1(match):
+def __subs1(match: Match) -> str:
     s = re.sub(r' +', ' ', match.group(1))
     return '<a href="?q=%s" title="Search for %s">%s</a>' \
         % (s.replace('\n', ''), s.replace('\n', ''), s)
 
 
 class HtmlOptions:
-    def __init__(self, lst=[], value=''):
-        self.lst = lst
+    """
+    Utility class to help generate HTML options for select element
+    """
+    def __init__(self, lst=None, value=''):
+        self.lst = lst or []
         self.value = value
 
-    def html(self):
+    def html(self) -> str:
         buf = []
         for opt in self.lst:
             if len(opt) == 2:
@@ -269,7 +285,7 @@ class HtmlOptions:
                     opt[1] = opt[0]
                 try:
                     opt[1] = opt[1].decode('utf-8')
-                except:
+                except Exception:
                     pass
                 if opt[0] == self.value:
                     buf.append('<option value="%s" selected="selected">%s</option>' % (

@@ -1,5 +1,6 @@
+"""
 #  This file is part of GNU Dico.
-#  Copyright (C) 2008-2009, 2012, 2013 Wojciech Polak
+#  Copyright (C) 2008-2009, 2012, 2013, 2023 Wojciech Polak
 #
 #  GNU Dico is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -12,14 +13,16 @@
 #  GNU General Public License for more details.
 #
 #  You should have received a copy of the GNU General Public License
-#  along with GNU Dico.  If not, see <http://www.gnu.org/licenses/>.
+#  along with GNU Dico.  If not, see <https://www.gnu.org/licenses/>.
+"""
 
 import os
 import sys
+from django.core.wsgi import get_wsgi_application
 
 SITE_ROOT = os.path.dirname(os.path.realpath(__file__))
-os.environ['DJANGO_SETTINGS_MODULE'] = 'dicoweb.settings'
+if 'DJANGO_SETTINGS_MODULE' not in os.environ:
+    os.environ['DJANGO_SETTINGS_MODULE'] = 'dicoweb.settings'
 sys.path.insert(0, os.path.join(SITE_ROOT, '../'))
 
-from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
