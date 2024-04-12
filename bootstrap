@@ -25,6 +25,7 @@ B<bootstrap>
 [B<-ahmnv>]
 [B<--add>]
 [B<--dry-run>]
+[B<--force>]
 [B<--help>]
 [B<--new>]
 [B<--modules>]
@@ -136,6 +137,11 @@ add them to F<configure.ac> and F<modules/Makefile.am>
 =item B<-n>, B<--dry-run>
 
 Don't do anything, just print what would have been done.
+
+=item B<--force>
+
+Force bootstrapping even in the absence of F<.git> directory.  Use this
+option B<dico> is used as a git submodule.
 
 =item B<-m>, B<--modules>
 
@@ -449,6 +455,7 @@ my $modules;
 my $skip_reconf;
 my $skip_po;
 my $update_po;
+my $force;
 my $autoconf = "module.ac";
 my $config_stub = "configure.boot";
 my $makefile_stub = "modules/stub.am";
@@ -1209,7 +1216,8 @@ GetOptions("h" => sub {
 	   "modules|m" => \$modules,
 	   "skip-reconfigure|s" => \$skip_reconf,
 	   "skip-po" => \$skip_po,
-	   "update-po" => \$update_po
+	   "update-po" => \$update_po,
+	   "force" => \$force
 ) or exit(EX_USAGE);
 
 abend(EX_USAGE, "must run from the Dico source tree topmost directory")
@@ -1237,9 +1245,9 @@ if ($addmod) {
     abend(EX_USAGE, "too many arguments; did you mean --new?");
 } elsif ($update_po) {
     po_sync($pkg_info{PACKAGE_TARNAME});
-} elsif (-d '.git') {
+} elsif (-d '.git' || $force) {
     error("Initializing submodules", fd => \*STDOUT) unless $quiet;
-    run('git submodule update --init --recursive');
+    run('git submodule update --init --recursive') if -d '.git';
     make_tree();
     modproc();
     gnulib_init();
