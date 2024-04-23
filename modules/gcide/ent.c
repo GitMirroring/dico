@@ -42,7 +42,7 @@ static struct gcide_entity gcide_entity[] = {
     { "igrave", "ì" },
     { "Aum",    "Ä" },
     { "Aring",  "Å" },
-    { "Eacute", "È" },
+    { "Eacute", "É" },
     { "ae",     "æ" },
     { "AE",     "Æ" },
     { "ocir",   "ô" },
