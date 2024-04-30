@@ -59,12 +59,19 @@ static struct gcide_entity gcide_entity[] = {
     { "pound",  "£", },
     { "aacute", "á" },
     { "iacute", "í" },
+    { "dele",   "₰" }, /* FIXME: <dele/ is used to represent the Deleatur
+			  sign in the entry for "Dele". There is no
+			  corresponding symbol in Unicode, so the German
+			  pfennig sign is used instead.  See
+			  https://www.unicode.org/L2/L2021/21230-delete-sign.pdf
+		       */
     { "frac23", "⅔" },
     { "frac13", "⅓" },
     { "frac12", "½" },
     { "frac14", "¼" },
     { "?",      "<?>" }, /* Place-holder for unknown or illegible character. */
     { "hand",   "☞" },   /* pointing hand (printer's "fist") */
+    { "nabla",  "∇" },
     { "sect",   "§" },
     { "amac",   "ā" },
     { "nsm",    "ṉ" },   /* "n sub-macron" */
