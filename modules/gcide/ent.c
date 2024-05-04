@@ -122,6 +122,8 @@ static struct gcide_entity gcide_entity[] = {
     { "deg",    "°" },
     { "middot", "•" },
     { "root",   "√" },
+    { "segno",  "𝄋" }, /* Introduced recently in entries for Segno, Al
+			     segno, and Del segno. */
     /* Greek alphabet */
     { "alpha",    "α" },
     { "beta",     "β" },	
