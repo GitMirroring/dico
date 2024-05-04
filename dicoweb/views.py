@@ -30,6 +30,7 @@ from django.core.cache import cache
 from django.shortcuts import render
 from django.utils.encoding import force_bytes
 from django.utils.translation import gettext as _
+from django.utils.html import escape
 
 from .dicoclient import dicoclient
 try:
@@ -210,6 +211,7 @@ def index(request):
                 elif df['content-type'].startswith('text/html'):
                     df['format_html'] = True
                 elif df['content-type'].startswith('text/'):
+                    df['desc'] = escape(df['desc'])
                     df['format_html'] = False
                 else:
                     act = onerror(
@@ -241,7 +243,7 @@ Additionally, ONERROR['UNSUPPORTED_CONTENT_TYPE'] has unsupported value (%s).
                         del result['definitions'][i]
                         result['count'] -= 1
             else:
-                df['desc'] = re.sub('_(.*?)_', '<b>\\1</b>', df['desc'])
+                df['desc'] = re.sub('_(.*?)_', '<b>\\1</b>', escape(df['desc']))
                 df['desc'] = re.sub(rx1, __subs1, df['desc'])
 
         if result['count'] == 0:
