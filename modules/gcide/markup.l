@@ -70,6 +70,10 @@ static size_t input_len;
 static unsigned token_beg;
 static unsigned token_end;
 
+#ifndef SIZE_MAX
+# define SIZE_MAX ((size_t)-1)
+#endif
+
 static char *textspace;  /* Text storage space */
 static size_t textsize;  /* Size of text space */
 static size_t textpos;   /* Current position in the text space */
@@ -113,11 +117,11 @@ text_add_str(char const *s, size_t l)
 	char *newp;
 	
 	if (SIZE_MAX / 2 < textsize)
-	    memerr("text_add");    
+	    memerr("text_add_str");    
 	nsize = 2 * textsize;
 	newp = realloc(textspace, nsize);
 	if (!newp)
-	    memerr("text_add");
+	    memerr("text_add_str");
 	textspace = newp;
 	textsize = nsize;
     }
