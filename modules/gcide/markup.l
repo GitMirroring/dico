@@ -108,10 +108,14 @@ static char *endtag;
 static void
 text_add_str(char const *s, size_t l)
 {
-    size_t rest = textsize - textpos;
-    if (rest < l) {
-	size_t nsize = 2 * textsize;
-	char *newp = realloc(textspace, nsize);
+    while (textsize - textpos < l) {
+	size_t nsize;
+	char *newp;
+	
+	if (SIZE_MAX / 2 < textsize)
+	    memerr("text_add");    
+	nsize = 2 * textsize;
+	newp = realloc(textspace, nsize);
 	if (!newp)
 	    memerr("text_add");
 	textspace = newp;
@@ -440,7 +444,9 @@ gcide_markup_parse(char const *text, size_t len, int dbg)
 	dico_list_destroy(&tagstk);
 	free_tag(current_tag, NULL);
     }
-    
+
+    if (SIZE_MAX / 2 < len)
+	memerr("gcide_markup_parse");    
     textsize = 2 * len;
     textspace = malloc(textsize);
     if (!textspace)
