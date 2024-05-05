@@ -28,6 +28,8 @@
 
 #define GCIDE_NOPR     0x01
 #define GCIDE_DBGLEX   0x02
+#define GCIDE_WATCHER  0x04
+#define GCIDE_IDX_FAIL 0x08
 
 struct gcide_db {
     char *db_dir;
@@ -43,6 +45,8 @@ struct gcide_db {
     
     size_t idx_cache_size;
     gcide_idx_file_t idx;
+
+    WATCHER watcher;
 };
 
 enum result_type {
@@ -71,8 +75,9 @@ free_db(struct gcide_db *db)
     if (db->file_stream) {
 	dico_stream_close(db->file_stream);
 	dico_stream_destroy(&db->file_stream);
-    }	
+    }
     gcide_idx_file_close(db->idx);
+    watcher_close(db->watcher);
     free(db);
 }
 
@@ -205,12 +210,16 @@ gcide_open_idx(struct gcide_db *db)
         DICO_LOG_MEMERR();
 	return 1;
     }
-    
+
     rc = gcide_access_idx(db, idxname);
     if (rc == 1)
 	rc = run_idxgcide(idxname, db);
 	
     if (rc == 0) {
+	if (db->idx) {
+	    gcide_idx_file_close(db->idx);
+	    db->idx = NULL;
+	}
 	db->idx = gcide_idx_file_open(idxname, db->idx_cache_size);
 	if (!db->idx)
 	    rc = 1;
@@ -239,6 +248,8 @@ gcide_init_db(const char *dbname, int argc, char **argv)
           .v.value = GCIDE_NOPR },
 	{ DICO_OPTSTR(debug-lex), dico_opt_bitmask, &flags, 
           .v.value = GCIDE_DBGLEX },
+	{ DICO_OPTSTR(watch), dico_opt_bitmask, &flags,
+	  .v.value = GCIDE_WATCHER },
 	{ NULL }
     };
     
@@ -260,7 +271,7 @@ gcide_init_db(const char *dbname, int argc, char **argv)
 
     db = calloc(1, sizeof(*db));
     if (!db) {
-        DICO_LOG_ERRNO();
+        DICO_LOG_MEMERR();
 	free(db_dir);
 	free(idx_dir);
 	return NULL;
@@ -286,6 +297,9 @@ gcide_init_db(const char *dbname, int argc, char **argv)
 	free_db(db);
 	return NULL;
     }
+    if (flags & GCIDE_WATCHER) {
+	db->watcher = watcher_setup(db->db_dir);
+    }
     return (dico_handle_t)db;
 }
 
@@ -294,6 +308,22 @@ gcide_free_db(dico_handle_t hp)
 {
     struct gcide_db *db = (struct gcide_db *) hp;
     free_db(db);
+    return 0;
+}
+
+static int
+reload_if_changed(struct gcide_db *db)
+{
+    if ((db->flags & GCIDE_WATCHER) && watcher_is_modified(db->watcher)) {
+	gcide_check_files(db);
+	if (gcide_open_idx(db)) {
+	    db->flags |= GCIDE_IDX_FAIL;
+	} else {
+	    db->flags &= ~GCIDE_IDX_FAIL;
+	}
+    }
+    if (db->flags & GCIDE_IDX_FAIL)
+	return -1;
     return 0;
 }
 
@@ -551,6 +581,9 @@ gcide_match(dico_handle_t hp, const dico_strategy_t strat, const char *word)
     matcher_t matcher = find_matcher(strat->name);
     gcide_iterator_t itr;
     struct gcide_result *res = NULL;
+
+    if (reload_if_changed(db))
+	return NULL;
     
     if (!matcher)
 	return gcide_match_all(db, strat, word);
@@ -587,6 +620,9 @@ gcide_define(dico_handle_t hp, const char *word)
     struct gcide_db *db = (struct gcide_db *) hp;
     gcide_iterator_t itr;
     struct gcide_result *res = NULL;
+
+    if (reload_if_changed(db))
+	return NULL;
     
     itr = exact_match(db, word);
     if (itr) {

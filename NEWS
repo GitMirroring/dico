@@ -1,4 +1,4 @@
-GNU Dico NEWS -- history of user-visible changes. 2024-04-29
+GNU Dico NEWS -- history of user-visible changes. 2024-05-05
 See the end of file for copying conditions.
 
 Please send Dico bug reports to <bug-dico@gnu.org.ua>
@@ -18,6 +18,19 @@ Support for obsolescent libpcre has been withdrawn.
 ** Use Poetry and pyproject.toml
 ** Integrate Pylint and Mypy for development
 ** Implement various fixes and improvements
+
+* The gcide module
+
+** idxgcide skips duplicated headwords
+
+** Fixed some gcide entities, add missing ones
+
+** Fixed Ancient Greek transliteration
+
+** New option: "watch"
+
+When supplied, the module will watch for modifications in the
+dictionary corpus files and rebuild the index file when necessary.
 
 * Bugfixes
 

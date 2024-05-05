@@ -3312,6 +3312,12 @@ not needed, because the module is configured to start the
 useful for the module developers.
 @end deffn
 
+@deffn {gcide parameter} watch
+Watch for modifications in the dictionary corpus.  If any of the
+dictionary files is modified, recreate the index file.  Use this
+option if you expect to update dictionary files often.
+@end deffn
+
 @deffn {gcide parameter} suppress-pr
 This parameter suppresses the output of @samp{pr} (pronunciation)
 tags.  According to GCIDE docs, @cite{very few of the pronunciation

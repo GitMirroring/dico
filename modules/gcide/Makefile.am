@@ -22,6 +22,10 @@ mod_LTLIBRARIES=gcide.la
 noinst_LTLIBRARIES=libgcide.la
 libgcide_la_SOURCES=webchr.c ent.c markup.l grk.c
 
+if INOTIFY_COND
+libgcide_la_SOURCES += watcher.c
+endif
+
 gcide_la_SOURCES = gcide.c idx.c 
 gcide_la_LIBADD = libgcide.la ../../lib/libdico.la $(LIBICONV) @LTLIBINTL@
 gcide_la_LDFLAGS = -module -avoid-version -no-undefined

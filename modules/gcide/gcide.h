@@ -119,5 +119,17 @@ int gcide_parse_tree_inorder(struct gcide_parse_tree *tp,
 			     int (*fun)(int, struct gcide_tag *, void *),
 			     void *data);
 
+typedef struct pollfd *WATCHER;
+
+#if WITH_INOTIFY
+WATCHER watcher_setup(char const *dbdir);
+void watcher_close(WATCHER w);
+int watcher_is_modified(WATCHER w);
+#else
+# define watcher_setup(dbdir) NULL
+# define watcher_close(w)
+# define watcher_is_modified(w) 1
+#endif
+
 
 
