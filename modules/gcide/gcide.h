@@ -1,5 +1,5 @@
 /* This file is part of GNU Dico.
-   Copyright (C) 2012-2023 Sergey Poznyakoff
+   Copyright (C) 2012-2024 Sergey Poznyakoff
 
    GNU Dico is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -57,6 +57,11 @@ struct gcide_idx_page {
 typedef struct gcide_idx_file *gcide_idx_file_t;
 typedef struct gcide_iterator *gcide_iterator_t;
 
+struct gcide_locus {
+    char const *file;
+    size_t offset;
+};
+
 gcide_idx_file_t gcide_idx_file_open(const char *name, size_t cachesize);
 void gcide_idx_file_close(gcide_idx_file_t file);
 size_t gcide_idx_headwords(struct gcide_idx_file *file);
@@ -92,6 +97,7 @@ enum gcide_content_type
 };
 
 struct gcide_tag {
+    size_t offset;
     size_t tag_parmc;
     char **tag_parmv;
 #define tag_name tag_parmv[0]
@@ -113,7 +119,7 @@ struct gcide_parse_tree {
 };
 
 struct gcide_parse_tree *gcide_markup_parse(char const *text, size_t len,
-					    int dbg);
+					    int dbg, struct gcide_locus *loc);
 void gcide_parse_tree_free(struct gcide_parse_tree *tp);
 int gcide_parse_tree_inorder(struct gcide_parse_tree *tp,
 			     int (*fun)(int, struct gcide_tag *, void *),

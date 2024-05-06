@@ -1,5 +1,5 @@
 /* This file is part of GNU Dico.
-   Copyright (C) 2012-2023 Sergey Poznyakoff
+   Copyright (C) 2012-2024 Sergey Poznyakoff
 
    GNU Dico is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -741,6 +741,7 @@ output_def(dico_stream_t str, struct gcide_db *db, struct gcide_ref *ref)
 {
     char *buffer;
     struct gcide_parse_tree *tree;
+    struct gcide_locus locus;
     int rc;
     
     if (db->file_letter != ref->ref_letter) {
@@ -796,7 +797,10 @@ output_def(dico_stream_t str, struct gcide_db *db, struct gcide_ref *ref)
 	return 1;
     }
 
-    tree = gcide_markup_parse(buffer, ref->ref_size, db->flags & GCIDE_DBGLEX);
+    locus.file = db->tmpl_name;
+    locus.offset = ref->ref_offset;
+    tree = gcide_markup_parse(buffer, ref->ref_size, db->flags & GCIDE_DBGLEX,
+			      &locus);
     if (!tree)
 	rc = dico_stream_write(str, buffer, ref->ref_size);
     else {

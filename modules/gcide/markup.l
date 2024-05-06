@@ -1,6 +1,6 @@
 %top {
 /* This file is part of GNU Dico.
-   Copyright (C) 2012-2023 Sergey Poznyakoff
+   Copyright (C) 2012-2024 Sergey Poznyakoff
 
    GNU Dico is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -65,6 +65,7 @@
 }
 %{
 
+static struct gcide_locus *base_locus;
 static char const *input_buf;
 static size_t input_len;
 static unsigned token_beg;
@@ -74,10 +75,14 @@ static unsigned token_end;
 # define SIZE_MAX ((size_t)-1)
 #endif
 
+#define LOCUS_FILE (base_locus ? base_locus->file : "")
+#define LOCUS_OFF(off) ((base_locus ? base_locus->offset : 0) + off)
+
 static char *textspace;  /* Text storage space */
 static size_t textsize;  /* Size of text space */
 static size_t textpos;   /* Current position in the text space */
 static size_t textstart; /* Start of the current text segment */
+static size_t textstart_offset;
 
 static dico_list_t tagstk;
 static struct gcide_tag *current_tag;
@@ -106,12 +111,14 @@ memerr(const char *text)
 
 static int retstate;
 static char *endtag;
+static size_t endtaglen;
 #define BEGIN_COMMENT(end) \
-    { retstate = YYSTATE; endtag = (end); BEGIN(COMMENT); }
+    { retstate = YYSTATE; endtag = (end); endtaglen = strlen(endtag); BEGIN(COMMENT); }
 
 static void
 text_add_str(char const *s, size_t l)
 {
+    if (textstart == textpos) textstart_offset = token_beg;
     while (textsize - textpos < l) {
 	size_t nsize;
 	char *newp;
@@ -162,6 +169,7 @@ alloc_tag(const char *text, size_t len)
     if (tag) {
 	tag->tag_parmc = ws.ws_wordc;
 	tag->tag_parmv = ws.ws_wordv;
+	tag->offset = token_beg;
 	ws.ws_wordc = 0;
 	ws.ws_wordv = NULL; 
     } else
@@ -210,6 +218,7 @@ append_tag(struct gcide_tag *tag)
 	if (!subtag)
 	    memerr("append_tag");
 	subtag->tag_type = gcide_content_text;
+	subtag->offset = current_tag->offset;
 	subtag->tag_v.textpos = current_tag->tag_v.textpos;
 	list = dico_list_create();
 	if (!list) {
@@ -259,8 +268,43 @@ pop_tag(const char *tagstr, size_t taglen)
 	strlen(current_tag->tag_name) == len &&
 	memcmp(current_tag->tag_name, tagstr, len) == 0)
 	current_tag = dico_list_pop(tagstk);
-    else
-	dico_log(L_WARN, 0, "%u: unexpected close tag", token_beg);
+    else {
+	size_t i, count;
+	
+	/* Try to find matching entry */
+	count = dico_list_count(tagstk);
+	for (i = count; i > 0; i--) {
+		struct gcide_tag *p = dico_list_item(tagstk, i-1);
+		if (TAG_HAS_NAME(p) &&
+		    strlen(p->tag_name) == len &&
+		    memcmp(p->tag_name, tagstr, len) == 0) {
+		    do {
+		        if (current_tag->tag_type == gcide_content_taglist &&
+			    TAG_HAS_NAME(current_tag))
+			    dico_log(L_WARN, 0, "%s:%zu: unclosed %s tag",
+				     LOCUS_FILE, LOCUS_OFF(current_tag->offset),
+				     current_tag->tag_name);
+		    } while ((current_tag = dico_list_pop(tagstk)) != p);
+		    return;
+		}
+	}
+	dico_log(L_WARN, 0, "%s:%zu: unexpected close tag",
+		 LOCUS_FILE, LOCUS_OFF(token_beg));
+    }
+}
+
+static void
+flush_text_segment(void)
+{
+    if (text_segment_length()) {
+        struct gcide_tag *tag = calloc(1, sizeof(*tag));
+	if (!tag)
+	    memerr("gcide lexer");
+	tag->tag_type = gcide_content_text;
+	tag->tag_v.textpos = text_segment_finish();
+	tag->offset = textstart_offset;
+	append_tag(tag);
+    }
 }
 %}
 
@@ -277,28 +321,11 @@ XD [0-9a-f]
   "<!"     BEGIN_COMMENT("!>");
   "<p>"|"</p>" ;
   "<"[a-zA-Z][^/>]*">" {
-      struct gcide_tag *tag;
-
-      if (text_segment_length()) {
-	  tag = calloc(1, sizeof(*tag));
-	  if (!tag)
-	      memerr("gcide lexer");
-	  tag->tag_type = gcide_content_text;
-	  tag->tag_v.textpos = text_segment_finish();
-	  append_tag(tag);
-      }
-      
+      flush_text_segment();
       push_tag(alloc_tag(yytext + 1, yyleng - 2));
   }
   "</"[a-zA-Z][^>]*">" {
-      if (text_segment_length()) {
-	  struct gcide_tag *tag = calloc(1, sizeof(*tag));
-	  if (!tag)
-	      memerr("gcide lexer");
-	  tag->tag_type = gcide_content_text;
-	  tag->tag_v.textpos = text_segment_finish();
-	  append_tag(tag);
-      }
+      flush_text_segment();
       pop_tag(yytext + 2, yyleng - 3);
   }
   "<"[a-zA-Z?][a-zA-Z0-9]*"/" {
@@ -306,8 +333,8 @@ XD [0-9a-f]
       if (s)
 	  text_add_str(s, strlen(s));
       else
-	  dico_log(L_WARN, 0, _("%u: unrecognized entity: %s"),
-		   token_beg, yytext);
+	  dico_log(L_WARN, 0, _("%s:%zu: unrecognized entity: %s"),
+		   LOCUS_FILE, LOCUS_OFF(token_beg), yytext);
   }
   [""*`]   { if (in_grk)  text_add_chr(yytext[0]); }
   "\\'"{XD}{XD} {
@@ -318,8 +345,8 @@ XD [0-9a-f]
       else {
 	  text_add_str(yytext, yyleng);
 	  dico_log(L_WARN, 0,
-		   _("%u: unknown character sequence %s"),
-		   token_beg, yytext);
+		   _("%s:%zu: unknown character sequence %s"),
+		   LOCUS_FILE, LOCUS_OFF(token_beg), yytext);
       }
   }
   \r    ;
@@ -327,8 +354,9 @@ XD [0-9a-f]
   \n    text_add_str(yytext, yyleng);
 }
 <COMMENT>{
-  [^< \t][^ \t>]*">" {
-      if (strcmp(yytext, endtag) == 0)
+  [^>]+">" {
+      if (yyleng >= endtaglen &&
+          memcmp(yytext + yyleng - endtaglen, endtag, endtaglen) == 0)
 	  BEGIN(retstate);
   }
   .          ;
@@ -434,7 +462,7 @@ early_fixup(void *item, void *data)
 }
 
 struct gcide_parse_tree *
-gcide_markup_parse(char const *text, size_t len, int dbg)
+gcide_markup_parse(char const *text, size_t len, int dbg, struct gcide_locus *loc)
 {
     struct gcide_parse_tree *tp;
     struct gcide_tag *p;
@@ -442,7 +470,9 @@ gcide_markup_parse(char const *text, size_t len, int dbg)
     input_buf = text;
     input_len = len;
     token_beg = token_end = 0;
-
+    in_grk = 0;
+    base_locus = loc;
+    
     if (setjmp(errbuf)) {
 	free(textspace);
 	dico_list_destroy(&tagstk);
@@ -467,22 +497,18 @@ gcide_markup_parse(char const *text, size_t len, int dbg)
 
     yy_flex_debug = dbg;
     BEGIN(INITIAL);
-    while (yylex ())
+    while (yylex())
         ;
 
     /* Append trailing text segment, if any */
-    if (text_segment_length()) {
-	struct gcide_tag *tag = calloc(1, sizeof(*tag));
-	if (!tag)
-	    memerr("gcide lexer");
-	tag->tag_type = gcide_content_text;
-	tag->tag_v.textpos = text_segment_finish();
-	append_tag(tag);
-    }
+    flush_text_segment();
     
-    while ((p = dico_list_pop(tagstk)))
-	/* FIXME: Report unclosed tag */
+    while ((p = dico_list_pop(tagstk))) {
+	if (p->tag_type == gcide_content_taglist && dico_list_head(tagstk))
+	    dico_log(L_WARN, 0, "%s:%zu: unclosed %s tag",
+		     LOCUS_FILE, LOCUS_OFF(p->offset), p->tag_name);
 	current_tag = p;
+    }
 
     dico_list_destroy(&tagstk);
     

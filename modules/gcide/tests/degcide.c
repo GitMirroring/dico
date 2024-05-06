@@ -1,5 +1,5 @@
 /* This file is part of GNU Dico.
-   Copyright (C) 2012-2023 Sergey Poznyakoff
+   Copyright (C) 2012-2024 Sergey Poznyakoff
 
    GNU Dico is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -150,7 +150,9 @@ main(int argc, char **argv)
     struct gcide_parse_tree *tree;
     struct output_closure clos;
     int show_struct = 0;
+    int check_only = 0;
     int dbglex = 0;
+    struct gcide_locus locus;
     
     dico_set_program_name(argv[0]);
     clos.flags = 0;
@@ -168,6 +170,8 @@ main(int argc, char **argv)
 	    show_struct = 1;
 	else if (strcmp(arg, "-nopr") == 0)
 	    clos.flags = GCIDE_NOPR;
+	else if (strcmp(arg, "-c") == 0 || strcmp(arg, "--check") == 0)
+	    check_only = 1;
 	else if (strcmp(arg, "--") == 0) {
 	    --argc;
 	    ++argv;
@@ -225,13 +229,18 @@ main(int argc, char **argv)
 	dico_log(L_ERR, errno, "%s: read error", file);
 	exit(EX_UNAVAILABLE);
     }
-	
-    tree = gcide_markup_parse(textbuf, size, dbglex);
+
+    locus.file = file;
+    locus.offset = offset;
+    tree = gcide_markup_parse(textbuf, size, dbglex, &locus);
     if (!tree)
 	exit(EX_UNAVAILABLE);
 
-    clos.level = 0;
-    gcide_parse_tree_inorder(tree, show_struct ? print_tag : print_text, &clos);
+    if (!check_only) {
+	clos.level = 0;
+	gcide_parse_tree_inorder(tree, show_struct ? print_tag : print_text,
+				 &clos);
+    }
     
     gcide_parse_tree_free(tree);
     exit(0);
