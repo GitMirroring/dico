@@ -16,7 +16,7 @@
 <p><centered><point26>G.</point26></centered></p>
 
 <p><ent>GNU</ent><br/
-<hw>GNU</hw> <pos>n.</pos> <def>GNU's Not UNIX.<def><br/
+<hw>GNU</hw> <pos>n.</pos> <def>GNU's Not UNIX.</def><br/
 [<source>Dico testsuite</source>]</p>
 
 <p><ent>Grammar</ent><br/

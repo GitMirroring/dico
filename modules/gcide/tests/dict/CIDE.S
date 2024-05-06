@@ -16,7 +16,7 @@
 <p><centered><point26>S.</point26></centered></p>
 
 <p><ent>Seek</ent><br/
-<hw>seek</hw> <pos>n.</pos> <def>A function in PDP-11 libc.<def><br/
+<hw>seek</hw> <pos>n.</pos> <def>A function in PDP-11 libc.</def><br/
 [<source>Dico testsuite</source>]</p>
 
 <p><ent>Static</ent><br/

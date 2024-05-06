@@ -21,7 +21,7 @@ expression and wild power</def><br/
 [<source>Dico testsuite</source>]</p>
 
 <p><ent>Camel</ent><br/
-<hw>cam"el</hw> <pr>(k<acrf/m"<ecr/l)</pr>, <pos>n.</pos>
+<hw>cam"el</hw> <pr>(k<acr/m"<ecr/l)</pr>, <pos>n.</pos>
 <def>An animal that hardly passes through the eye of a needle.</def><br/
 [<source>Dico testsuite</source>]</p>
 

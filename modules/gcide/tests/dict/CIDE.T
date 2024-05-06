@@ -16,7 +16,7 @@
 <p><centered><point26>T.</point26></centered></p>
 
 <p><ent>Tee</ent><br/
-<hw>tee</hw> <pos>n.</pos> <def>A UNIX command.<def><br/
+<hw>tee</hw> <pos>n.</pos> <def>A UNIX command.</def><br/
 [<source>Dico testsuite</source>]</p>
 
 <p><ent>Transpose</ent><br/
