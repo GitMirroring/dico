@@ -34,6 +34,8 @@ static struct gcide_entity gcide_entity[] = {
     { "aring",  "å" },
     { "ccedil", "ç" },
     { "cced",   "ç" },
+    { "ccar",   "č" },
+    { "cacute", "ć" },
     { "ecir",   "ê" },
     { "eum",    "ë" },
     { "egrave", "è" },
@@ -65,10 +67,56 @@ static struct gcide_entity gcide_entity[] = {
 			  pfennig sign is used instead.  See
 			  https://www.unicode.org/L2/L2021/21230-delete-sign.pdf
 		       */
-    { "frac23", "⅔" },
-    { "frac13", "⅓" },
+
+    /* Vulgar fractions */
+    { "frac00",        "0/0" }, /* FIXME */
     { "frac12", "½" },
+    { "frac13", "⅓" },
     { "frac14", "¼" },
+    { "frac15", "⅕" },
+    { "frac16", "⅙" },
+    { "frac17", "⅐" },
+    { "frac18", "⅛" },  
+    { "frac19", "⅑" },
+    { "frac23", "⅔" },
+    { "frac25", "⅖" },
+    { "frac32", "³⁄₂" },
+    { "frac34", "¾" },
+    { "frac35", "⅗" },
+    { "frac36", "³⁄₆" },
+    { "frac37", "³⁄₇" },
+    { "frac38", "⅜" },
+    { "frac43", "⁴⁄₃" },
+    { "frac56", "⅚" },
+    { "frac58", "⅝" },
+    { "frac59", "⁵⁄₉" },
+    { "frac67", "⁶⁄₇" },
+    { "frac95", "⁹⁄₅" },
+    { "frac1000x1434", "¹⁰⁰⁰⁄₁₄₃₄" },
+    { "frac12x13",  "¹²⁄₁₃" },
+    { "frac17x175", "¹⁷⁄₁₇₅" },
+    { "frac1x10",   "⅒" },
+    { "frac1x100",  "¹⁄₁₀₀" },
+    { "frac1x1000", "¹⁄₁₀₀₀" },
+    { "frac1x10000", "¹⁄₁₀₀₀₀" },
+    { "frac1x108719", "¹⁄₁₀₈₇₁₉" },
+    { "frac1x12",      "¹⁄₁₂" },
+    { "frac1x20",   "¹⁄₂₀" },
+    { "frac1x216000", "¹⁄₂₁₆₀₀₀" },
+    { "frac1x24",   "¹⁄₂₄" },
+    { "frac1x2500", "¹⁄₂₅₀₀" },
+    { "frac1x29966", "¹⁄₂₉₉₆₆" },
+    { "frac1x3600", "¹⁄₃₆₀₀" },
+    { "frac1x50000", "¹⁄₅₀₀₀₀" },
+    { "frac1x60",   "¹⁄₆₀" },
+    { "frac1x6000", "¹⁄₆₀₀₀" },
+    { "frac1x6400",  "¹⁄₆₄₀₀₀" },
+    { "frac1x8000", "¹⁄₈₀₀₀" },
+    { "frac25x100", "²⁵⁄₁₀₀" },
+    { "frac2x10",   "²⁄₁₀" },
+    { "frac3x16",   "³⁄₁₆" },
+    { "frac925x1000", "⁹²⁵⁄₁₀₀₀" },
+
     { "?",      "<?>" }, /* Place-holder for unknown or illegible character. */
     { "hand",   "☞" },   /* pointing hand (printer's "fist") */
     { "nabla",  "∇" },
@@ -80,15 +128,23 @@ static struct gcide_entity gcide_entity[] = {
     { "th",     "th" },
     { "imac",   "ī" },
     { "emac",   "ē" },
+    { "csdot",  "c̣"  },
     { "dsdot",  "ḍ" },   /* Sanskrit/Tamil d dot */
+    { "hsdot",  "ḥ" },
+    { "lsdot",  "ḷ" },
+    { "msdot",  "ṃ" },
     { "nsdot",  "ṇ" },   /* Sanskrit/Tamil n dot */
     { "tsdot",  "ṭ" },   /* Sanskrit/Tamil t dot */
+    { "zsdot",  "ẓ" },
     { "ecr",    "ĕ" },
     { "icr",    "ĭ" },
     { "ocr",    "ŏ" },
     { "OE",     "Œ" },
     { "oe",     "œ" },
     { "omac",   "ō" },
+    { "Omac",   "Ō" },
+    { "oomac",  "o͞o" },
+    { "oocr",   "o͝o" },
     { "umac",   "ū" },
     { "ocar",   "ǒ" },
     { "aemac",  "ǣ" },
@@ -103,6 +159,7 @@ static struct gcide_entity gcide_entity[] = {
     { "usl",    "ū́" },   /* u "semilong" */
     { "adot",   "ȧ" },   /* a with dot above */
     { "edh",    "ð" },
+    { "EDH",    "Ð" },
     { "thorn",  "þ" },
     { "atil",   "ã" },
     { "etil",   "ẽ" },
@@ -110,20 +167,37 @@ static struct gcide_entity gcide_entity[] = {
     { "otil",   "õ" },
     { "util",   "ũ" },
     { "ntil",   "ñ" },
+    { "ncir",   "ñ" },
     { "Atil",   "Ã" },
     { "Etil",   "Ẽ" },
     { "Itil",   "Ĩ" },
     { "Otil",   "Õ" },
     { "Util",   "Ũ" },
     { "Ntil",   "Ñ" },
+    { "mdot",   "ṁ" },
     { "ndot",   "ṅ" },
     { "rsdot",  "ṛ" },
+    { "usdot",  "ụ" },
+    { "uring",  "ů" },
+    { "zdot",   "ż" },
     { "yogh",   "ȝ" },
     { "deg",    "°" },
+    { "min",    "′" },
+    { "sec",    "˝" },
     { "middot", "•" },
+    { "ounceap", "℥" },
     { "root",   "√" },
+    { "cuberoot", "∛" },
+    { "asterism", "⁂" },
+
+    /* Music sheet notation */
     { "segno",  "𝄋" }, /* Introduced recently in entries for Segno, Al
 			     segno, and Del segno. */
+    { "pause",   "𝄐" },
+    { "natural", "♮" },
+    { "upslur",   "𝅷" },
+    { "downslur", "𝅸" },
+        
     /* Greek alphabet */
     { "alpha",    "α" },
     { "beta",     "β" },	
@@ -234,11 +308,17 @@ static struct gcide_entity gcide_entity[] = {
     { "ADD",      "A̤" },
     { "UDD",      "Ṳ" },
 
-    /* Accents */
+    /* Diacritics and special symbols */
+    { "cre",      "⌣" },
+    { "breve",    "̆" },
+    { "umlaut",   "̈" },
+    { "asper",    "̔" },
     { "prime",    "´" },
+    { "Prime",    "′" },
     { "bprime",   "˝" },
     { "mdash",    "—" },
     { "divide",   "÷" },
+    { "times",    "×" },
     
     /* Quotes */
     { "lsquo",    "‘" },
@@ -259,7 +339,51 @@ static struct gcide_entity gcide_entity[] = {
     { "br",       "\n" },
     { "and",      "and" },
     { "or",       "or" },
-    { "sec",      "˝" },
+
+    { "iques",    "¿" },
+    { "integral2l", "∫" },
+
+    { "Aries",       "♈" },
+    { "Taurus",      "♉" },
+    { "Gemini",      "♊" },
+    { "Cancer",      "♋" },
+    { "Leo",         "♌" },
+    { "Virgo",       "♍" },
+    { "Libra",       "♎" },
+    { "Scorpio",     "♏" },
+    { "Sagittarius", "♐" },
+    { "Capricorn",   "♑" },
+    { "Aquarius",    "♒" },
+    { "Pisces",      "♓" },
+
+    { "Sun",         "☉" },
+    { "Mercury",     "☿" },
+    { "Venus",       "♀" },
+    { "Mars",        "♂" },
+    { "Jupiter",     "♃" },
+    { "Uranus",      "♅" },
+    { "Neptune",     "♆" },
+    { "Ceres",       "⚳" },
+    { "Chiron",      "⚷" },
+
+    { "astascending",  "☊" },
+    { "astdescending", "☋" },
+    
+    /* See CIDE.M, Mars, 3 */
+    { "Male",        "♂" },
+
+    /* Roman numerals */
+    { "Crev",  "Ↄ" },
+
+    
+    { "filig", "ﬁ" },
+    { "fllig", "ﬂ" },
+    { "fflig", "ﬀ" },
+    { "ffllig", "ﬄ" },
+
+    /* In pronunciacions: */
+    { "ai",    "ɑː" },
+
     { NULL }
 };
 
