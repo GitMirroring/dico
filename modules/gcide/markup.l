@@ -315,12 +315,17 @@ flush_text_segment(void)
 %x COMMENT
 
 XD [0-9a-f]
+WS [ \t]
 %%
 <INITIAL>{
   "<--"    BEGIN_COMMENT("-->");
   "<!"     BEGIN_COMMENT("!>");
   "<p>"|"</p>" ;
-  "<"[a-zA-Z][^/>]*">" {
+  "<"[a-zA-Z][a-zA-Z0-9_-]*">" {
+      flush_text_segment();
+      push_tag(alloc_tag(yytext + 1, yyleng - 2));
+  }
+  "<"[a-zA-Z][a-zA-Z0-9_-]*{WS}[^>]*">" {
       flush_text_segment();
       push_tag(alloc_tag(yytext + 1, yyleng - 2));
   }
