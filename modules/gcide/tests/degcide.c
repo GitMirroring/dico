@@ -54,7 +54,9 @@ print_tag(int end, struct gcide_tag *tag, void *data)
     }
     printf("%*.*s", 2*clos->level,2*clos->level, "");
     switch (tag->tag_type) {
-    case gcide_content_unspecified:
+    case gcide_content_top:
+	printf("BEGIN\n");
+	clos->level++;
 	break;
     case gcide_content_text:
 	printf("TEXT");
@@ -89,7 +91,7 @@ print_text(int end, struct gcide_tag *tag, void *data)
     static char *ref[2] = { "{" , "}" };
 
     switch (tag->tag_type) {
-    case gcide_content_unspecified:
+    case gcide_content_top:
 	break;
     case gcide_content_text:
 	if (clos->flags & GOF_IGNORE)

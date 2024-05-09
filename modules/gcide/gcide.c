@@ -682,7 +682,7 @@ print_text(int end, struct gcide_tag *tag, void *data)
     static char *ref[2] = { "{" , "}" };
 
     switch (tag->tag_type) {
-    case gcide_content_unspecified:
+    case gcide_content_top:
 	break;
     case gcide_content_text:
 	if (clos->flags & GOF_IGNORE)
@@ -731,6 +731,7 @@ print_text(int end, struct gcide_tag *tag, void *data)
 		    dico_stream_write(clos->stream, ref[0], strlen(ref[0]));
 	    }
 	}
+	break;
     }
     return 0;
 }

@@ -91,9 +91,9 @@ const char *gcide_grk_to_utf8(const char *input, size_t *prd);
 
 enum gcide_content_type
 {
-    gcide_content_unspecified,
-    gcide_content_text,
-    gcide_content_taglist
+    gcide_content_top,
+    gcide_content_taglist,
+    gcide_content_text
 };
 
 struct gcide_tag {
@@ -109,8 +109,6 @@ struct gcide_tag {
 	dico_list_t taglist;
     } tag_v;
 };
-
-#define TAG_HAS_NAME(t) ((t) && (t)->tag_parmv && (t)->tag_name)
 
 struct gcide_parse_tree {
     char *textspace;
