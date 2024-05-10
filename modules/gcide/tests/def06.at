@@ -1,5 +1,5 @@
 # This file is part of GNU Dico -*- Autotest -*-
-# Copyright (C) 2012-2023 Sergey Poznyakoff
+# Copyright (C) 2012-2024 Sergey Poznyakoff
 #
 # GNU Dico is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ quit
 [[220
 150 1 definitions found: list follows
 151 "aardvark" gcide "A mock GCIDE dictionary for GNU Dico test suite"
-aardvark (ärdvärk), n. [D., earth-pig.] (Zoöl.) Aardvark is an animal.
+aardvark (ärdˈvärkˌ), n. [D., earth-pig.] (Zoöl.) Aardvark is an animal.
  
 [Dico testsuite]
  

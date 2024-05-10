@@ -1,5 +1,5 @@
 # This file is part of GNU Dico. -*- Autotest -*-
-# Copyright (C) 2012-2023 Sergey Poznyakoff
+# Copyright (C) 2012-2024 Sergey Poznyakoff
 #
 # GNU Dico is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ AT_DATA([input],
 
 AT_CHECK([degcide input],
 [0],
-[Acroterial (ăkrṓtērĭal), a. Pertaining to an acroterium; as, ``acroterial ornaments''.  P. Cyc.
+[Acroterial (ăkˌrṓ‑tēˈrĭ‑al), a. Pertaining to an acroterium; as, ``acroterial ornaments''.  P. Cyc.
 
 [[1913 Webster]]
 ])

@@ -137,6 +137,12 @@ text_add_str(char const *s, size_t l)
 }
 
 static void
+text_add_strz(char const *s)
+{
+    text_add_str(s, strlen(s));
+}
+
+static void
 text_add_chr(int ch)
 {
     char c = ch;
@@ -250,7 +256,114 @@ append_tag(struct gcide_tag *tag)
     dico_list_append(current_tag->tag_v.taglist, tag);
 }
 
-static int in_grk;
+static void push_tag(struct gcide_tag *tag);
+static void pop_tag(const char *tagstr, size_t taglen);
+
+static void
+flush_text_segment(void)
+{
+    if (text_segment_length()) {
+	struct gcide_tag *tag = alloc_tag(gcide_content_text);
+	tag->tag_v.textpos = text_segment_finish();
+	tag->offset = textstart_offset;
+	append_tag(tag);
+    }
+}
+%}
+
+%option 8bit
+%option nounput
+%option noinput
+%option nodefault
+
+%x COMMENT GRK PR HW
+
+XD [0-9a-f]
+WS [ \t]
+%%
+<INITIAL,GRK,PR,HW>{
+  "<--"    BEGIN_COMMENT("-->");
+  "<!"     BEGIN_COMMENT("!>");
+  "<p>"|"</p>" ;
+  "<"[a-zA-Z][a-zA-Z0-9._-]*">" {
+      flush_text_segment();
+      push_tag(alloc_taglist(yytext + 1, yyleng - 2));
+  }
+  "<"[a-zA-Z][a-zA-Z0-9._-]*{WS}[^>]*">" {
+      flush_text_segment();
+      push_tag(alloc_taglist(yytext + 1, yyleng - 2));
+  }
+  "</"[a-zA-Z][^/>]*">" {
+      flush_text_segment();
+      pop_tag(yytext + 2, yyleng - 3);
+  }
+  "</"[a-zA-Z][^>]*"/" {
+      dico_log(L_WARN, 0, _("%s:%zu: malformed entity or tag: %s"),
+	       LOCUS_FILE, LOCUS_OFF(token_beg), yytext);
+  }
+  "<"[a-zA-Z?][a-zA-Z0-9]*"/" {
+      char const *s = gcide_entity_to_utf8(yytext);
+      if (s)
+	  text_add_str(s, strlen(s));
+      else
+	  dico_log(L_WARN, 0, _("%s:%zu: unrecognized entity: %s"),
+		   LOCUS_FILE, LOCUS_OFF(token_beg), yytext);
+  }
+  "\\'"{XD}{XD} {
+      char const *s = gcide_escape_to_utf8(yytext+2);
+		 
+      if (s)
+	  text_add_str(s, strlen(s));
+      else {
+	  text_add_str(yytext, yyleng);
+	  dico_log(L_WARN, 0,
+		   _("%s:%zu: unknown character sequence %s"),
+		   LOCUS_FILE, LOCUS_OFF(token_beg), yytext);
+      }
+  }
+  [<\\](.|\n) {
+      text_add_chr(yytext[0]);
+      yyless(1);
+  }
+  \r    ;
+  \n  text_add_chr(yytext[0]);
+}
+<INITIAL,GRK>{
+  [^<\\\r]+  text_add_str(yytext, yyleng);
+}
+<HW>{
+  [""`*]       ;
+  [^<\\\r""`*]+ text_add_str(yytext, yyleng);
+}
+<PR>{
+  "\""         text_add_strz("ˈ"); /* Main accent */
+  "`"          text_add_strz("ˌ"); /* Secondary accent */
+  "*"          text_add_strz("‑"); /* Syllable break */
+  [^<\\\r""`*]+  text_add_str(yytext, yyleng);
+}
+<COMMENT>{
+  [^>]+">" {
+      if (yyleng >= endtaglen &&
+          memcmp(yytext + yyleng - endtaglen, endtag, endtaglen) == 0)
+	  BEGIN(retstate);
+  }
+  .|\n         ;
+}
+
+<INITIAL,GRK,PR,HW>.  {
+	if (input_len > 0)
+		dico_log(L_NOTICE, 0,
+			 _("%s:%zu: unmatched character %03o; please report"),
+			 LOCUS_FILE, LOCUS_OFF(token_beg), yytext[0]);
+	text_add_chr(yytext[0]);
+}
+%%
+
+int
+yywrap()
+{
+    return 1;
+}
 
 static void
 push_tag(struct gcide_tag *tag)
@@ -258,8 +371,12 @@ push_tag(struct gcide_tag *tag)
     append_tag(tag);
     dico_list_push(tagstk, current_tag);
     current_tag = tag;
-    in_grk =
-	current_tag->tag_parmc && strcmp(current_tag->tag_name, "grk") == 0;
+    if (strcmp(current_tag->tag_name, "grk") == 0)
+	    BEGIN(GRK);
+    else if (strcmp(current_tag->tag_name, "pr") == 0)
+	    BEGIN(PR);
+    else if (strcmp(current_tag->tag_name, "hw") == 0)
+	    BEGIN(HW);
 }
 
 static void
@@ -271,8 +388,10 @@ pop_tag(const char *tagstr, size_t taglen)
 	if (tagstr[len] == ' ' || tagstr[len] == '\t')
 	    break;
 
-    if (len == 3 && memcmp(tagstr, "grk", 3) == 0)
-	in_grk = 0;
+    if ((len == 3 && memcmp(tagstr, "grk", len) == 0) ||
+	(len == 2 && (memcmp(tagstr, "pr", len) == 0 ||
+		      memcmp(tagstr, "hw", len)) == 0))
+	    BEGIN(INITIAL);
     
     if (current_tag->tag_type == gcide_content_taglist &&
 	strlen(current_tag->tag_name) == len &&
@@ -301,88 +420,6 @@ pop_tag(const char *tagstr, size_t taglen)
 	dico_log(L_WARN, 0, "%s:%zu: unexpected closing tag",
 		 LOCUS_FILE, LOCUS_OFF(token_beg));
     }
-}
-
-static void
-flush_text_segment(void)
-{
-    if (text_segment_length()) {
-	struct gcide_tag *tag = alloc_tag(gcide_content_text);
-	tag->tag_v.textpos = text_segment_finish();
-	tag->offset = textstart_offset;
-	append_tag(tag);
-    }
-}
-%}
-
-%option 8bit
-%option nounput
-%option noinput
-
-%x COMMENT
-
-XD [0-9a-f]
-WS [ \t]
-%%
-<INITIAL>{
-  "<--"    BEGIN_COMMENT("-->");
-  "<!"     BEGIN_COMMENT("!>");
-  "<p>"|"</p>" ;
-  "<"[a-zA-Z][a-zA-Z0-9_-]*">" {
-      flush_text_segment();
-      push_tag(alloc_taglist(yytext + 1, yyleng - 2));
-  }
-  "<"[a-zA-Z][a-zA-Z0-9_-]*{WS}[^>]*">" {
-      flush_text_segment();
-      push_tag(alloc_taglist(yytext + 1, yyleng - 2));
-  }
-  "</"[a-zA-Z][^/>]*">" {
-      flush_text_segment();
-      pop_tag(yytext + 2, yyleng - 3);
-  }
-  "</"[a-zA-Z][^>]*"/" {
-      dico_log(L_WARN, 0, _("%s:%zu: malformed entity or tag: %s"),
-	       LOCUS_FILE, LOCUS_OFF(token_beg), yytext);
-  }
-  "<"[a-zA-Z?][a-zA-Z0-9]*"/" {
-      char const *s = gcide_entity_to_utf8(yytext);
-      if (s)
-	  text_add_str(s, strlen(s));
-      else
-	  dico_log(L_WARN, 0, _("%s:%zu: unrecognized entity: %s"),
-		   LOCUS_FILE, LOCUS_OFF(token_beg), yytext);
-  }
-  [""*`]   { if (in_grk)  text_add_chr(yytext[0]); }
-  "\\'"{XD}{XD} {
-      char const *s = gcide_escape_to_utf8(yytext+2);
-		 
-      if (s)
-	  text_add_str(s, strlen(s));
-      else {
-	  text_add_str(yytext, yyleng);
-	  dico_log(L_WARN, 0,
-		   _("%s:%zu: unknown character sequence %s"),
-		   LOCUS_FILE, LOCUS_OFF(token_beg), yytext);
-      }
-  }
-  \r    ;
-  [^<""*`\\]+  text_add_str(yytext, yyleng);
-}
-<COMMENT>{
-  [^>]+">" {
-      if (yyleng >= endtaglen &&
-          memcmp(yytext + yyleng - endtaglen, endtag, endtaglen) == 0)
-	  BEGIN(retstate);
-  }
-  .          ;
-  \n         ;
-}
-%%
-
-int
-yywrap()
-{
-    return 1;
 }
 
 struct walk_closure {
@@ -486,7 +523,6 @@ gcide_markup_parse(char const *text, size_t len, int dbg, struct gcide_locus *lo
     input_buf = text;
     input_len = len;
     token_beg = token_end = 0;
-    in_grk = 0;
     base_locus = loc;
     
     if (setjmp(errbuf)) {
