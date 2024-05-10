@@ -366,8 +366,7 @@ WS [ \t]
       }
   }
   \r    ;
-  .     text_add_str(yytext, yyleng);
-  \n    text_add_str(yytext, yyleng);
+  [^<""*`\\]+  text_add_str(yytext, yyleng);
 }
 <COMMENT>{
   [^>]+">" {
