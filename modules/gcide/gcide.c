@@ -688,7 +688,7 @@ print_text(int end, struct gcide_tag *tag, void *data)
 	if (clos->flags & GOF_IGNORE)
 	    break;
 	if (clos->flags & GOF_AS) {
-	    char *s = tag->tag_v.text;
+	    char *s = tag->v.text;
 	    
 	    if (strncmp(s, "as", 2) == 0 &&
 		(isspace(s[3]) || ispunct(s[3]))) {
@@ -701,11 +701,11 @@ print_text(int end, struct gcide_tag *tag, void *data)
 	    } else
 		dico_stream_write(clos->stream, quote[0], strlen(quote[0]));
 	} else
-	    dico_stream_write(clos->stream, tag->tag_v.text,
-			      strlen(tag->tag_v.text));
+	    dico_stream_write(clos->stream, tag->v.text,
+			      strlen(tag->v.text));
 	break;
     case gcide_content_taglist:
-	if (tag->tag_parmc) {
+	if (tag->v.tag.tag_parmc) {
 	    clos->flags &= ~GOF_AS;
 	    if (end) {
 		if (strcmp(tag->tag_name, "pr") == 0 &&

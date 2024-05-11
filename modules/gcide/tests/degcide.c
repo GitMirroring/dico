@@ -47,7 +47,7 @@ print_tag(int end, struct gcide_tag *tag, void *data)
 	clos->level--;
 	printf("%*.*s", 2*clos->level,2*clos->level, "");
 	printf("END");
-	if (tag->tag_parmc)
+	if (tag->v.tag.tag_parmc)
 	    printf(" %s", tag->tag_name);
 	putchar('\n');
 	return 0;
@@ -60,18 +60,18 @@ print_tag(int end, struct gcide_tag *tag, void *data)
 	break;
     case gcide_content_text:
 	printf("TEXT");
-	for (i = 0; i < tag->tag_parmc; i++)
-	    printf(" %s", tag->tag_parmv[i]);
-	printf(":\n%s\n%*.*sENDTEXT", tag->tag_v.text,
+	for (i = 0; i < tag->v.tag.tag_parmc; i++)
+	    printf(" %s", tag->v.tag.tag_parmv[i]);
+	printf(":\n%s\n%*.*sENDTEXT", tag->v.text,
 	       2*clos->level, 2*clos->level, "");
-	if (tag->tag_parmc)
+	if (tag->v.tag.tag_parmc)
 	    printf(" %s", tag->tag_name);
 	putchar('\n');
 	break;
     case gcide_content_taglist:
 	printf("BEGIN");
-	for (i = 0; i < tag->tag_parmc; i++)
-	    printf(" %s", tag->tag_parmv[i]);
+	for (i = 0; i < tag->v.tag.tag_parmc; i++)
+	    printf(" %s", tag->v.tag.tag_parmv[i]);
 	putchar('\n');
 	clos->level++;
 	break;
@@ -97,7 +97,7 @@ print_text(int end, struct gcide_tag *tag, void *data)
 	if (clos->flags & GOF_IGNORE)
 	    break;
 	if (clos->flags & GOF_AS) {
-	    char *s = tag->tag_v.text;
+	    char *s = tag->v.text;
 	    
 	    if (strncmp(s, "as", 2) == 0 &&
 		(isspace(s[3]) || ispunct(s[3]))) {
@@ -108,10 +108,10 @@ print_text(int end, struct gcide_tag *tag, void *data)
 	    } else
 		fprintf(clos->stream, "%s", quote[0]);
 	} else
-	    fprintf(clos->stream, "%s", tag->tag_v.text);
+	    fprintf(clos->stream, "%s", tag->v.text);
 	break;
     case gcide_content_taglist:
-	if (tag->tag_parmc) {
+	if (tag->v.tag.tag_parmc) {
 	    clos->flags &= ~GOF_AS;
 	    if (end) {
 		if (strcmp(tag->tag_name, "pr") == 0 &&

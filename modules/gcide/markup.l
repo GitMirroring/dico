@@ -179,7 +179,7 @@ alloc_tag(enum gcide_content_type type)
 	        memerr("alloc_tag");
 	    }
 	    dico_list_set_free_item(list, free_tag, NULL);
-            tag->tag_v.taglist = list;
+            tag->v.tag.taglist = list;
 	    break;
     case gcide_content_text:
 	    break;
@@ -199,8 +199,8 @@ alloc_taglist(const char *text, size_t len)
 	longjmp(errbuf, 1);
     }
     tag = alloc_tag(gcide_content_taglist);
-    tag->tag_parmc = ws.ws_wordc;
-    tag->tag_parmv = ws.ws_wordv;
+    tag->v.tag.tag_parmc = ws.ws_wordc;
+    tag->v.tag.tag_parmv = ws.ws_wordv;
     tag->offset = token_beg;
     ws.ws_wordc = 0;
     ws.ws_wordv = NULL;
@@ -220,7 +220,7 @@ free_tag(void *item, void *data)
 	break;
     case gcide_content_top:
     case gcide_content_taglist:
-	dico_list_destroy(&tag->tag_v.taglist);
+	dico_list_destroy(&tag->v.tag.taglist);
     }
     return 0;
 }
@@ -234,7 +234,7 @@ append_tag(struct gcide_tag *tag)
     case gcide_content_text: {
 	struct gcide_tag *subtag = alloc_tag(gcide_content_text);
 	subtag->offset = current_tag->offset;
-	subtag->tag_v.textpos = current_tag->tag_v.textpos;
+	subtag->v.textpos = current_tag->v.textpos;
 	list = dico_list_create();
 	if (!list) {
 	    free(subtag);
@@ -244,7 +244,7 @@ append_tag(struct gcide_tag *tag)
 	dico_list_set_free_item(list, free_tag, NULL);
 	dico_list_append(list, subtag);
 	current_tag->tag_type = gcide_content_taglist;
-	current_tag->tag_v.taglist = list;
+	current_tag->v.tag.taglist = list;
 	break;
     }
 
@@ -253,7 +253,7 @@ append_tag(struct gcide_tag *tag)
 	break;
     }
     
-    dico_list_append(current_tag->tag_v.taglist, tag);
+    dico_list_append(current_tag->v.tag.taglist, tag);
 }
 
 static void push_tag(struct gcide_tag *tag);
@@ -264,7 +264,7 @@ flush_text_segment(void)
 {
     if (text_segment_length()) {
 	struct gcide_tag *tag = alloc_tag(gcide_content_text);
-	tag->tag_v.textpos = text_segment_finish();
+	tag->v.textpos = text_segment_finish();
 	tag->offset = textstart_offset;
 	append_tag(tag);
     }
@@ -434,7 +434,7 @@ inorder_helper(void *item, void *data)
 	return 1;
     if (tag->tag_type == gcide_content_top ||
 	tag->tag_type == gcide_content_taglist) {
-	dico_list_iterate(tag->tag_v.taglist, inorder_helper, data);
+	dico_list_iterate(tag->v.tag.taglist, inorder_helper, data);
 	if (cp->fun(1, tag, cp->data))
 	    return 1;
     }
@@ -461,11 +461,11 @@ tag_fixup(void *item, void *data)
 
     switch (tag->tag_type) {
     case gcide_content_text:
-	tag->tag_v.text = textspace + tag->tag_v.textpos;
+	tag->v.text = textspace + tag->v.textpos;
 	break;
     case gcide_content_top:
     case gcide_content_taglist:
-	dico_list_iterate(tag->tag_v.taglist, tag_fixup, textspace);
+	dico_list_iterate(tag->v.tag.taglist, tag_fixup, textspace);
 	break;
     }
     return 0;
@@ -498,14 +498,14 @@ early_fixup(void *item, void *data)
     switch (tag->tag_type) {
     case gcide_content_text:
 	if (translate)
-	    tag->tag_v.textpos = greek_translit(tag->tag_v.textpos);
+	    tag->v.textpos = greek_translit(tag->v.textpos);
 	break;
     case gcide_content_top:
-	dico_list_iterate(tag->tag_v.taglist, early_fixup, &translate);
+	dico_list_iterate(tag->v.tag.taglist, early_fixup, &translate);
 	break;
     case gcide_content_taglist:
-	translate = (tag->tag_parmc && strcmp(tag->tag_name, "grk") == 0);
-	dico_list_iterate(tag->tag_v.taglist, early_fixup, &translate);
+	translate = (tag->v.tag.tag_parmc && strcmp(tag->tag_name, "grk") == 0);
+	dico_list_iterate(tag->v.tag.taglist, early_fixup, &translate);
 	break;
     }
     return 0;

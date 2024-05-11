@@ -98,16 +98,18 @@ enum gcide_content_type
 
 struct gcide_tag {
     size_t offset;
-    size_t tag_parmc;
-    char **tag_parmv;
-#define tag_name tag_parmv[0]
     enum gcide_content_type tag_type;
     struct gcide_tag *tag_next;
+#   define tag_name v.tag.tag_parmv[0]
     union {
 	char *text;
 	size_t textpos;
-	dico_list_t taglist;
-    } tag_v;
+	struct {
+	    size_t tag_parmc;
+	    char **tag_parmv;
+	    dico_list_t taglist;
+	} tag;
+    } v;
 };
 
 struct gcide_parse_tree {
