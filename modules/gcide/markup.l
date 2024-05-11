@@ -386,8 +386,8 @@ pop_tag(const char *tagstr, size_t taglen)
 	if (tagstr[len] == ' ' || tagstr[len] == '\t')
 	    break;
 
-    if ((len == 2 && (memcmp(tagstr, "pr", len) == 0 ||
-		      memcmp(tagstr, "hw", len)) == 0))
+    if (len == 2 && (memcmp(tagstr, "pr", len) == 0 ||
+		     memcmp(tagstr, "hw", len) == 0))
 	BEGIN(INITIAL);
     
     if (current_tag->tag_type == gcide_content_taglist &&
