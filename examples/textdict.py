@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-# Copyright (C) 2008-2023 Sergey Poznyakoff
+# Copyright (C) 2008-2024 Sergey Poznyakoff
 # Copyright (C) 2008, 2012 Wojciech Polak
 # 
 # GNU Dico is free software; you can redistribute it and/or modify
