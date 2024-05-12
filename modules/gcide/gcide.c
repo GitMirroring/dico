@@ -738,7 +738,7 @@ print_tag(struct gcide_tag *tag, dico_stream_t stream, int flags)
 	print_taglist(tag, stream, flags);
 	break;
 
-    case gcide_content_taglist:
+    case gcide_content_tag:
 	printer = find_printer(tag->tag_name);
 	if (printer)
 	    printer(tag, stream, flags);

@@ -68,7 +68,7 @@ print_tag(int end, struct gcide_tag *tag, void *data)
 	    printf(" %s", tag->tag_name);
 	putchar('\n');
 	break;
-    case gcide_content_taglist:
+    case gcide_content_tag:
 	printf("BEGIN");
 	for (i = 0; i < tag->v.tag.tag_parmc; i++)
 	    printf(" %s", tag->v.tag.tag_parmv[i]);
@@ -110,7 +110,7 @@ print_text(int end, struct gcide_tag *tag, void *data)
 	} else
 	    fprintf(clos->stream, "%s", tag->v.text);
 	break;
-    case gcide_content_taglist:
+    case gcide_content_tag:
 	if (tag->v.tag.tag_parmc) {
 	    clos->flags &= ~GOF_AS;
 	    if (end) {

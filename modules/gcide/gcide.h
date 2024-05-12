@@ -91,9 +91,10 @@ const char *gcide_grk_to_utf8(const char *input, size_t *prd);
 
 enum gcide_content_type
 {
-    gcide_content_top,
-    gcide_content_taglist,
-    gcide_content_text
+    gcide_content_top, /* Top-level element: same as gcide_content_tag, but
+			  with tag_parmc == 0 and tag_parmv == NULL. */
+    gcide_content_tag, /* Regular tag. */
+    gcide_content_text /* Text segment. */
 };
 
 struct gcide_tag {
