@@ -36,39 +36,39 @@ main(int argc, char **argv)
 {
     int c;
     int state = S_INIT;
-    
+
     while ((c = getc(stdin)) > 0) {
 	switch (state) {
 	case S_INIT:
 	    if (c == '<')
 		state = S_OPEN;
 	    break;
-	    
+
 	case S_OPEN:
 	    if (c == 'g')
 		state = S_OG;
 	    else
 		state = S_INIT;
 	    break;
-	    
+
 	case S_OG:
 	    if (c == 'r')
 		state = S_OR;
 	    else
 		state = S_INIT;
 	    break;
-	    
+
 	case S_OR:
 	    if (c == 'k')
 		state = S_OK;
-	    else 
+	    else
 		state = S_INIT;
 	    break;
-	    
+
 	case S_OK:
 	    if (c == '>')
 		state = S_GRK;
-	    else 
+	    else
 		state = S_INIT;
 	    break;
 

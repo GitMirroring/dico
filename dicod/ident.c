@@ -24,7 +24,7 @@
 #define USERNAME_C "USERID :"
 
 /* If the reply matches sscanf expression
-   
+
       "%*[^:]: USERID :%*[^:]:%s"
 
    return a pointer to the %s part.  Otherwise, return NULL. */
@@ -33,7 +33,7 @@ static char *
 ident_extract_username(char *reply)
 {
     char *p;
-    
+
     p = strchr(reply, ':');
     if (!p)
 	return NULL;
@@ -123,10 +123,10 @@ des_string_to_key(char *buf, size_t bufsize, unsigned char key[8])
     gl_des_ctx context;
     char *pstr;
     int forward = 1;
-    
+
     p_char = k_char;
     memset(k_char, 0, sizeof(k_char));
-  
+
     /* get next 8 bytes, strip parity, xor */
     pstr = buf;
     for (i = 1; i <= bufsize; i++) {
@@ -145,7 +145,7 @@ des_string_to_key(char *buf, size_t bufsize, unsigned char key[8])
 	if ((i%8) == 0)
 	    forward = !forward;
     }
-  
+
     p_char = k_char;
     p = (unsigned char *) key;
 
@@ -212,12 +212,12 @@ ident_decrypt(const char *file, const char *name, struct ident_info *info)
 	int i;
 	unsigned char key[8];
 	gl_des_ctx ctx;
-      
+
 	des_string_to_key(keybuf, sizeof(keybuf), key);
 	gl_des_setkey(&ctx, (const char*) key);
-      
+
 	memcpy(id.chars, buf, size);
-      
+
 	gl_des_ecb_decrypt(&ctx, (char *)&id.longs[4], (char *)&id.longs[4]);
 	id.longs[4] ^= id.longs[2];
 	id.longs[5] ^= id.longs[3];
@@ -225,7 +225,7 @@ ident_decrypt(const char *file, const char *name, struct ident_info *info)
 	gl_des_ecb_decrypt(&ctx, (char *)&id.longs[2], (char *)&id.longs[2]);
 	id.longs[2] ^= id.longs[0];
 	id.longs[3] ^= id.longs[1];
-	
+
 	gl_des_ecb_decrypt(&ctx, (char *)&id.longs[0], (char *)&id.longs[0]);
 
 	for (i = 1; i < 6; i++)
@@ -289,7 +289,7 @@ enum socket_io_retval {
     socket_io_error,
 };
 
-enum socket_io_retval 
+enum socket_io_retval
 socket_io(int fd, int conflag, long timeout,
 	  struct io_buffer *inb, struct io_buffer *outb)
 {
@@ -299,10 +299,10 @@ socket_io(int fd, int conflag, long timeout,
     for (;;) {
 	int rc;
 	fd_set rd, wr;
-	
+
 	if (!inb && !outb)
 	    return socket_io_ok;
-	
+
 	FD_ZERO(&rd);
 	FD_ZERO(&wr);
 
@@ -317,23 +317,23 @@ socket_io(int fd, int conflag, long timeout,
 	    errno = ETIMEDOUT;
 	    return socket_io_noreply;
 	}
-	
+
 	rc = select(fd + 1, &rd, &wr, NULL, &tval);
 
 	if (rc == 0) {
 	    errno = ETIMEDOUT;
 	    return socket_io_noreply;
 	}
-	
+
 	if (rc == -1 && errno == EINTR)
 	    continue;
-	if (rc < 0) 
+	if (rc < 0)
 	    return socket_io_failure;
 	if (outb && FD_ISSET(fd, &wr)) {
 	    if (!conflag) {
 		int val;
 		socklen_t len = sizeof(val);
-		if (getsockopt(fd, SOL_SOCKET, SO_ERROR, &val, &len)) 
+		if (getsockopt(fd, SOL_SOCKET, SO_ERROR, &val, &len))
 		    return socket_io_failure;
 		if (val) {
 		    errno = val;
@@ -343,7 +343,7 @@ socket_io(int fd, int conflag, long timeout,
 	    }
 	    rc = write (fd, outb->buffer + outb->level,
 			outb->size - outb->level);
-	    if (rc < 1) 
+	    if (rc < 1)
 		return socket_io_error;
 	    else {
 		outb->level += rc;
@@ -358,7 +358,7 @@ socket_io(int fd, int conflag, long timeout,
 		inb->buffer = x2realloc(inb->buffer, &inb->size);
 	    }
 	    rc = read(fd, inb->buffer + inb->level, inb->size - inb->level);
-	    if (rc < 1) 
+	    if (rc < 1)
 		return socket_io_error;
 	    else {
 		inb->level += rc;
@@ -381,7 +381,7 @@ query_ident_name(struct sockaddr_in *srv_addr, struct sockaddr_in *clt_addr)
     struct io_buffer ib, ob;
     char *name = NULL;
     enum socket_io_retval retval;
-    
+
     fd = socket(PF_INET, SOCK_STREAM, 0);
     if (fd == -1) {
 	dico_log(L_ERR, errno,
@@ -404,7 +404,7 @@ query_ident_name(struct sockaddr_in *srv_addr, struct sockaddr_in *clt_addr)
 
     s = *clt_addr;
     s.sin_port = htons(113);
-    
+
     if (connect(fd, (struct sockaddr*) &s, sizeof(s)) == -1) {
 	if (errno == EINPROGRESS)
 	    conflag = 0;
@@ -424,7 +424,7 @@ query_ident_name(struct sockaddr_in *srv_addr, struct sockaddr_in *clt_addr)
 	     ntohs(clt_addr->sin_port),
 	     ntohs(srv_addr->sin_port));
     ob.size = strlen(ob.buffer);
-    
+
     retval = socket_io(fd, conflag, ident_timeout, &ib, &ob);
     io_buffer_free(&ob);
 
@@ -452,24 +452,24 @@ query_ident_name(struct sockaddr_in *srv_addr, struct sockaddr_in *clt_addr)
 	} else
 	    name = xstrdup(name);
 	break;
-	
+
     case socket_io_failure:
 	dico_log(L_ERR, errno,
 		 _("failure while communicating with AUTH server %s"),
 		 inet_ntoa(s.sin_addr));
 	break;
-	
+
     case socket_io_connect:
 	dico_log(L_ERR, errno,
 		 _("cannot connect to AUTH server %s"),
 		 inet_ntoa(s.sin_addr));
 	break;
-	    
+
     case socket_io_noreply:
 	dico_log(L_ERR, errno, _("no reply from AUTH server %s"),
 		 inet_ntoa(s.sin_addr));
 	break;
-	
+
     case socket_io_error:
 	dico_log(L_ERR, errno,
 		 _("I/O error while communicating with AUTH server %s"),

@@ -1,7 +1,7 @@
 /* This file is part of GNU Dico.
    Copyright (C) 2008, 2012 Wojciech Polak
    Copyright (C) 2019-2024 Sergey Poznyakoff
- 
+
    GNU Dico is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 3, or (at your option)
@@ -58,7 +58,7 @@ typedef struct {
     int key_alloc;
 } PySelectionKey;
 
-static void 
+static void
 _PySelectionKey_dealloc (PyObject *self)
 {
     PySelectionKey *py_key = (PySelectionKey *)self;
@@ -72,12 +72,12 @@ static PyMethodDef selection_key_methods[] = {
     /* None so far */
     { NULL, NULL, 0, NULL }
 };
-    
+
 static PyObject *
 _PySelectionKey_getattr (PyObject *self, char *name)
 {
     PySelectionKey *py_key = (PySelectionKey *)self;
-    
+
     if (strcmp (name, "word") == 0)
 	return PyUnicode_FromString (py_key->key->word);
     return find_method (selection_key_methods, self, name);
@@ -141,7 +141,7 @@ static PyMethodDef strategy_methods[] = {
     { NULL, NULL, 0, NULL }
 };
 
-static void 
+static void
 _PyStrategy_dealloc (PyObject *self)
 {
 }
@@ -189,7 +189,7 @@ static PyTypeObject PyStrategyType = {
     .tp_name = "DicoStrategy",
     .tp_basicsize = sizeof (PyStrategy),
     .tp_dealloc = _PyStrategy_dealloc,
-    .tp_getattr = _PyStrategy_getattr, 
+    .tp_getattr = _PyStrategy_getattr,
     .tp_repr = _PyStrategy_repr,
     .tp_str = _PyStrategy_str,
 };
@@ -318,7 +318,7 @@ _python_selector (int cmd, struct dico_key *key, const char *dict_word)
     PyObject *py_args, *py_res;
     PySelectionKey *py_key;
     void *closure = key->strat->closure;
-    
+
     py_args = PyTuple_New (3);
     PyTuple_SetItem (py_args, 0, PyLong_FromLong (cmd));
     py_key = PyObject_NEW (PySelectionKey, &PySelectionKeyType);
@@ -347,7 +347,7 @@ dico_register_strat (PyObject *self, PyObject *args)
     char *fnc = NULL;
 
     if (!PyArg_ParseTuple (args, "ss|s", &name, &descr, &fnc))
-        return NULL;
+	return NULL;
 
     strat.name = name;
     strat.descr = descr;
@@ -371,7 +371,7 @@ dico_register_markup (PyObject *self, PyObject *py_obj)
 
     if (!PyUnicode_Check (py_obj)) {
 	PyErr_SetString (PyExc_TypeError, _("This parameter must be a string"));
-        return NULL;
+	return NULL;
     }
 
     type = strdup (PyUnicode_AsUTF8 (py_obj));
@@ -505,7 +505,7 @@ mod_init_db (const char *dbname, int argc, char **argv)
 
     db = malloc (sizeof (*db));
     if (!db) {
-        DICO_LOG_ERRNO();
+	DICO_LOG_ERRNO();
 	return NULL;
     }
     db->dbname = dbname;
@@ -515,7 +515,7 @@ mod_init_db (const char *dbname, int argc, char **argv)
     py_ths = Py_NewInterpreter ();
     if (!py_ths) {
 	dico_log (L_ERR, 0,
-		  _("mod_init_db: cannot create new interpreter: %s"), 
+		  _("mod_init_db: cannot create new interpreter: %s"),
 		  init_script);
 	return NULL;
     }
@@ -524,7 +524,7 @@ mod_init_db (const char *dbname, int argc, char **argv)
     db->py_ths = py_ths;
 
     dico_module_init ();
-    
+
     PyRun_SimpleString ("import sys");
     if (load_path)
 	insert_load_path (load_path);
@@ -538,7 +538,7 @@ mod_init_db (const char *dbname, int argc, char **argv)
     Py_DECREF (py_name);
 
     if (!py_module) {
-	dico_log (L_ERR, 0, _("mod_init_db: cannot load init script: %s"), 
+	dico_log (L_ERR, 0, _("mod_init_db: cannot load init script: %s"),
 		  init_script);
 	if (PyErr_Occurred ())
 	    PyErr_Print ();
@@ -636,7 +636,7 @@ _mod_get_text (PyObject *py_instance, const char *method)
 	return NULL;
     else if (!PyObject_HasAttrString (py_instance, method))
 	return NULL;
-    
+
     py_fnc = PyObject_GetAttrString (py_instance, method);
     if (py_fnc && PyCallable_Check (py_fnc)) {
 	py_res = PyObject_CallObject (py_fnc, NULL);
@@ -676,7 +676,7 @@ _tuple_to_langlist (PyObject *py_obj)
 
     if (!py_obj)
 	return NULL;
-    
+
     if (PyUnicode_Check (py_obj)) {
 	char *text = strdup (PyUnicode_AsUTF8 (py_obj));
 	list = dico_list_create ();
@@ -684,7 +684,7 @@ _tuple_to_langlist (PyObject *py_obj)
     } else if (PyTuple_Check (py_obj) || PyList_Check (py_obj)) {
 	PyObject *py_item;
 	PyObject *py_iterator = PyObject_GetIter (py_obj);
-	
+
 	list = dico_list_create ();
 
 	if (py_iterator) {
@@ -732,7 +732,7 @@ mod_lang (dico_handle_t hp, dico_list_t list[2])
 		    list[0] = _tuple_to_langlist (PyTuple_GetItem (py_res, 0));
 		    list[1] = _tuple_to_langlist (PyTuple_GetItem (py_res, 1));
 		    break;
-		    
+
 		case 1:
 		    list[0] = _tuple_to_langlist (PyTuple_GetItem (py_res, 0));
 		    break;
@@ -750,7 +750,7 @@ mod_lang (dico_handle_t hp, dico_list_t list[2])
 		    list[0] = _tuple_to_langlist (PyList_GetItem (py_res, 0));
 		    list[1] = _tuple_to_langlist (PyList_GetItem (py_res, 1));
 		    break;
-		    
+
 		case 1:
 		    list[0] = _tuple_to_langlist (PyList_GetItem (py_res, 0));
 		    break;
@@ -820,11 +820,11 @@ do_match(struct _python_database *db, const dico_strategy_t strat,
 	return NULL;
     }
     py_key->key_alloc = 1;
-    
+
     py_strat = PyObject_NEW(PyStrategy, &PyStrategyType);
     if (py_strat) {
 	py_strat->strat = strat;
-	
+
 	py_args = PyTuple_New(2);
 	PyTuple_SetItem(py_args, 0, (PyObject *)py_strat);
 	PyTuple_SetItem(py_args, 1, (PyObject *)py_key);

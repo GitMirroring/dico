@@ -34,7 +34,7 @@ struct nprefix {
     size_t skip;            /* Skip this number of matches */
     size_t count;           /* Display at most this number of matches */
     size_t n;               /* Number of the current match */
-    char *last_match_str;   /* Last matched string */    
+    char *last_match_str;   /* Last matched string */
     size_t last_match_len;  /* Size of last_match_str */
 };
 
@@ -44,15 +44,15 @@ nprefix_sel(int cmd, dico_key_t key, const char *dict_word)
     char const *key_word = key->word;
     struct nprefix *np;
     size_t wordlen;
-    
+
     switch (cmd) {
     case DICO_SELECT_BEGIN: {
 	char *p;
 	size_t skip, count;
-	
+
 	np = calloc(1, sizeof(np[0]));
 	if (!np) {
-            DICO_LOG_MEMERR();
+	    DICO_LOG_MEMERR();
 	    return 1;
 	}
 	np->prefix = (char*)key_word;
@@ -71,7 +71,7 @@ nprefix_sel(int cmd, dico_key_t key, const char *dict_word)
 	key->call_data = np;
 	break;
     }
-	
+
     case DICO_SELECT_RUN:
 	np = key->call_data;
 	if (np->last_match_str &&
@@ -87,7 +87,7 @@ nprefix_sel(int cmd, dico_key_t key, const char *dict_word)
 		char *p = realloc(np->last_match_str, s);
 		if (!p)
 		    return 0;
-		
+
 		np->last_match_str = p;
 		np->last_match_len = s;
 	    }
@@ -125,5 +125,3 @@ struct dico_database_module DICO_EXPORT(nprefix, module) = {
     DICO_CAPA_NODB,
     nprefix_init,
 };
-
-	

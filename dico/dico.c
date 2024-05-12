@@ -1,4 +1,4 @@
-/* This file is part of GNU Dico. 
+/* This file is part of GNU Dico.
    Copyright (C) 1998-2024 Sergey Poznyakoff
 
    GNU Dico is free software; you can redistribute it and/or modify
@@ -79,39 +79,39 @@ main(int argc, char **argv)
 	    dico_log(L_WARN, 0,
 		     _("extra command line arguments ignored"));
     }
-    
+
     switch (mode) {
     case mode_define:
     case mode_match:
-	if (!argc) 
+	if (!argc)
 	    dico_die(1, L_ERR, 0,
 		     _("you should give a word to look for or an URL"));
-	while (argc--) 
+	while (argc--)
 	    rc |= dict_word((*argv)++) != 0;
 	break;
-	
+
     case mode_dbs:
 	rc = dict_single_command("SHOW DATABASES", NULL, "110");
 	break;
-	
+
     case mode_strats:
 	rc = dict_single_command("SHOW STRATEGIES", NULL, "111");
 	break;
-	
+
     case mode_help:
 	rc = dict_single_command("HELP", NULL, "113");
 	break;
-	
+
     case mode_info:
 	if (!dico_url.req.database)
 	    dico_die(1, L_ERR, 0, _("Database name not specified"));
 	rc = dict_single_command("SHOW INFO", dico_url.req.database, "112");
 	break;
-	
+
     case mode_server:
 	rc = dict_single_command("SHOW SERVER", NULL, "114");
 	break;
-    }	
-    
+    }
+
     return rc;
 }

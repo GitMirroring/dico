@@ -1,6 +1,6 @@
 /* This file is part of GNU Dico
    Copyright (C) 2007-2024 Sergey Poznyakoff
- 
+
    GNU Dico is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 3, or (at your option)
@@ -15,10 +15,10 @@
    along with GNU Dico.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include <config.h>
-#include <dico.h>    
+#include <dico.h>
 #include <ctype.h>
 
-static char soundextbl[] = 
+static char soundextbl[] =
 "A0"
 "B1"
 "C2"
@@ -51,7 +51,7 @@ static int
 soundex_code(int c)
 {
     char *p;
-    
+
     c = toupper(c);
     for (p = soundextbl; *p; p += 2)
 	if (*p == c)
@@ -63,7 +63,7 @@ int
 dico_soundex_ascii(const char *s, char codestr[DICO_SOUNDEX_SIZE])
 {
     int i, prev;
-    
+
     codestr[0] = toupper(*s);
     prev = soundex_code(codestr[0]);
     for (i = 1, s++; i < DICO_SOUNDEX_SIZE-1 && *s; s++) {

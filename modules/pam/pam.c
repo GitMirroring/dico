@@ -51,7 +51,7 @@ _dico_conv(int num_msg, const struct pam_message **msg,
     int i;
     struct pam_response *reply = NULL;
     struct pam_cred *cred = appdata_ptr;
-    
+
     reply = calloc(num_msg, sizeof(*reply));
     if (!reply)
 	return PAM_CONV_ERR;
@@ -78,12 +78,12 @@ _dico_conv(int num_msg, const struct pam_message **msg,
 	    reply[i].resp_retcode = PAM_SUCCESS;
 	    reply[i].resp = NULL;
 	    break;
-	  
+
 	default:
 	    status = PAM_CONV_ERR;
 	}
     }
-    
+
     if (status != PAM_SUCCESS) {
       for (i = 0; i < num_msg; i++)
 	  if (reply[i].resp) {
@@ -92,7 +92,7 @@ _dico_conv(int num_msg, const struct pam_message **msg,
 	      case PAM_PROMPT_ECHO_OFF:
 		  overwrite_and_free(reply[i].resp);
 		  break;
-		
+
 	      case PAM_ERROR_MSG:
 	      case PAM_TEXT_INFO:
 		  free(reply[i].resp);

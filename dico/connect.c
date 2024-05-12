@@ -1,4 +1,4 @@
-/* This file is part of GNU Dico. 
+/* This file is part of GNU Dico.
    Copyright (C) 1998-2024 Sergey Poznyakoff
 
    GNU Dico is free software; you can redistribute it and/or modify
@@ -28,14 +28,14 @@ parse_initial_reply(struct dict_connection *conn)
     char *p;
     size_t n = 0;
     size_t len;
-    
+
     if (!dict_status_p(conn, "220"))
 	return 1;
     p = strchr(conn->buf, '<');
     if (!p)
 	return 1;
     p++;
-    
+
     while ((len = strcspn(p, ".>"))) {
 	char *s;
 	if (conn->capac == n) {
@@ -63,7 +63,7 @@ parse_initial_reply(struct dict_connection *conn)
     conn->msgid = xmalloc(len + 1);
     memcpy(conn->msgid, p, len);
     conn->msgid[len] = 0;
-    
+
     return 0;
 }
 
@@ -104,7 +104,7 @@ dict_auth(struct dict_connection *conn, dico_url_t url)
     case AUTH_CONT:
 	if (dict_capa(conn, "auth")) {
 	    struct auth_cred cred;
-	    
+
 	    switch (auth_cred_get(url->host, &cred)) {
 	    case GETCRED_OK:
 		XDICO_DEBUG(1, _("Attempting APOP authentication\n"));
@@ -123,7 +123,7 @@ dict_auth(struct dict_connection *conn, dico_url_t url)
 	    }
 	}
 	return 0;
-	
+
     case AUTH_FAIL:
 	break;
     }
@@ -145,7 +145,7 @@ int
 ds_tilde_expand(const char *str, char **output)
 {
     char *dir;
-    
+
     if (str[0] != '~')
 	return 0;
     if (str[1] == '/') {
@@ -175,13 +175,13 @@ ds_tilde_expand(const char *str, char **output)
     *output = dico_full_file_name(dir, str);
     return 1;
 }
-    
+
 static void
 auth_cred_dup(struct auth_cred *dst, const struct auth_cred *src)
 {
     dst->user = src->user ? xstrdup(src->user) : NULL;
     dst->pass = src->pass ? xstrdup(src->pass) : NULL;
-}    
+}
 
 void
 auth_cred_free(struct auth_cred *cred)
@@ -205,7 +205,7 @@ auth_cred_get(char *host, struct auth_cred *cred)
 	return GETCRED_OK;
     } else {
 	int flags = 0;
-	
+
 	if (autologin_file) {
 	    if (access(autologin_file, F_OK))
 		dico_log(L_WARN, 0, _("File %s does not exist"),
@@ -213,7 +213,7 @@ auth_cred_get(char *host, struct auth_cred *cred)
 	    else
 		parse_autologin(autologin_file, host, cred, &flags);
 	}
-	
+
 	if (!flags && DEFAULT_AUTOLOGIN_FILE) {
 	    char *home = get_homedir();
 	    char *filename = dico_full_file_name(home,
@@ -246,7 +246,7 @@ dict_transcript(struct dict_connection *conn, int state)
 		     __LINE__);
 	    return;
 	}
-	
+
 	if (dico_stream_ioctl(conn->str, DICO_IOCTL_SET_TRANSPORT, NULL)) {
 	    dico_log(L_CRIT, errno,
 		     _("INTERNAL ERROR at %s:%d: cannot set stream transport"),
@@ -286,8 +286,8 @@ urlstr(dico_url_t url)
 	} else {
 	    asprintf(&url->string, "%s:///%s", url->proto, url->path);
 	}
-    }   
-    
+    }
+
     return url->string;
 }
 
@@ -299,7 +299,7 @@ dict_connect(struct dict_connection **pconn, dico_url_t url)
     dico_stream_t str;
     struct dict_connection *conn;
     char const *port = url->port ? url->port : DICO_DICT_PORT_STR;
-    
+
     XDICO_DEBUG_F1(1, _("Connecting to %s\n"), urlstr (url));
 
     if (source_addr) {
@@ -311,7 +311,7 @@ dict_connect(struct dict_connection **pconn, dico_url_t url)
 		     _("bad source address: %s"), gai_strerror(rc));
 	    return 1;
 	}
-    
+
 	for (rp = res; rp; rp = rp->ai_next) {
 	    fd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
 	    if (fd == -1)
@@ -320,7 +320,7 @@ dict_connect(struct dict_connection **pconn, dico_url_t url)
 		break;
 	    close(fd);
 	}
-	
+
 	if (!rp) {
 	    dico_log(L_ERR, 0,
 		     _("can't bind to the source address"));
@@ -347,10 +347,10 @@ dict_connect(struct dict_connection **pconn, dico_url_t url)
 	    dico_log(L_ERR, 0, _("%s: UNIX socket name too long"), url->path);
 	    return -1;
 	}
-	
+
 	hints.ai_family = AF_UNIX;
 	hints.ai_addrlen = sizeof(struct sockaddr_un);
-	
+
 	s = xcalloc(1, hints.ai_addrlen);
 	s->sun_family = AF_UNIX;
 	strcpy(s->sun_path, url->path);
@@ -359,7 +359,7 @@ dict_connect(struct dict_connection **pconn, dico_url_t url)
 
 	res = &hints;
     }
-    
+
     for (rp = res; rp; rp = rp->ai_next) {
 	if (fd != -1 && family != rp->ai_family) {
 	    close(fd);
@@ -378,7 +378,7 @@ dict_connect(struct dict_connection **pconn, dico_url_t url)
 	if (connect(fd, rp->ai_addr, rp->ai_addrlen) != -1)
 	    break;
     }
-    
+
     if (!rp) {
 	dico_log(L_ERR, 0, _("%s: cannot connect"), urlstr(url));
 	return 1;
@@ -388,7 +388,7 @@ dict_connect(struct dict_connection **pconn, dico_url_t url)
 	free(res->ai_addr);
     else
 	freeaddrinfo(res);
-    
+
     if ((str = dico_fd_io_stream_create(fd, fd)) == NULL) {
 	dico_log(L_ERR, errno,
 		 _("cannot create dict stream: %s"),
@@ -409,17 +409,17 @@ dict_connect(struct dict_connection **pconn, dico_url_t url)
 	dict_conn_close(conn);
 	return 1;
     }
-	       
+
     XDICO_DEBUG(1, _("Sending client information\n"));
     stream_printf(conn->str, "CLIENT \"%s\"\r\n", client);
     dict_read_reply(conn);
-    if (!dict_status_p(conn, "250")) 
+    if (!dict_status_p(conn, "250"))
 	dico_log(L_WARN, 0,
 		 _("Unexpected reply to CLIENT command: `%s'"),
 		 conn->buf);
 
     obstack_init(&conn->stk);
-    
+
     if (!noauth_option && dict_auth(conn, url)) {
 	dico_log(L_ERR, 0, _("Authentication failed"));
 	dict_conn_close(conn);
@@ -427,7 +427,7 @@ dict_connect(struct dict_connection **pconn, dico_url_t url)
     }
 
     *pconn = conn;
-    
+
     return 0;
 }
 
@@ -439,7 +439,7 @@ dict_read_reply(struct dict_connection *conn)
 	conn->buf[0] = 0;
     rc = dico_stream_getline(conn->str, &conn->buf, &conn->size,
 			     &conn->level);
-    if (rc == 0) 
+    if (rc == 0)
 	conn->level = dico_trim_nl(conn->buf);
     return rc;
 }
@@ -457,7 +457,7 @@ int
 dict_capa(struct dict_connection *conn, char *capa)
 {
     int i;
-    
+
     for (i = 0; i < conn->capac; i++)
 	if (strcmp(conn->capav[i], capa) == 0)
 	    return 1;
@@ -469,7 +469,7 @@ dict_multiline_reply(struct dict_connection *conn)
 {
     int rc;
     size_t nlines = 0;
-    
+
     while ((rc = dict_read_reply(conn)) == 0) {
 	char *ptr = conn->buf;
 	size_t len = conn->level;
@@ -503,7 +503,7 @@ dict_define(struct dict_connection *conn, char *database, char *word)
     if (dict_status_p(conn, "150")) {
 	unsigned long i, count;
 	char *p;
-	
+
 	count = strtoul (conn->buf + 3, &p, 10);
 	XDICO_DEBUG_F1(1, ngettext("Reading %lu definition\n",
 				   "Reading %lu definitions\n", count),
@@ -553,15 +553,15 @@ dict_match(struct dict_connection *conn, char *database, char *strategy,
 		  quotearg_n (1, strategy),
 		  quotearg_n (2, word));
     dict_read_reply(conn);
-    if (dict_status_p(conn, "152")) {	
+    if (dict_status_p(conn, "152")) {
 	unsigned long count;
 	char *p;
-	
+
 	count = strtoul (conn->buf + 3, &p, 10);
 	XDICO_DEBUG_F1(1, ngettext("Reading %lu match\n",
 				   "Reading %lu matches\n", count),
 		       count);
-    
+
 	dict_multiline_reply(conn);
 	dict_result_create(conn, dict_result_match, count,
 			   obstack_finish(&conn->stk));
@@ -592,7 +592,7 @@ _result_parse_def(struct dict_result *res)
     struct dico_tokbuf tb;
 
     dico_tokenize_begin(&tb);
-    
+
     res->set.def = def;
     p = res->base;
     for (i = 0; i < res->count; i++, def++) {
@@ -614,7 +614,7 @@ _result_free_def(struct dict_result *res)
 {
     size_t i;
     struct define_result *def = res->set.def;
-    
+
     for (i = 0; i < res->count; i++, def++) {
 	free(def->word);
 	free(def->database);
@@ -622,7 +622,7 @@ _result_free_def(struct dict_result *res)
     }
     free(res->set.def);
 }
-	
+
 static void
 _result_parse_mat(struct dict_result *res)
 {
@@ -640,7 +640,7 @@ _result_parse_mat(struct dict_result *res)
 	    res->count = i;
 	    break;
 	}
-	
+
 	mat->database = p;
 	len = strcspn(p, " \t");
 	p[len] = 0;
@@ -699,7 +699,7 @@ dict_result_free(struct dict_result *res)
 	res->conn->last_result = res->prev;
     } else {
 	struct dict_result *p;
-	
+
 	for (p = res->conn->last_result; p && p->prev != res; p = p->prev)
 	    ;
 	if (!p) {
@@ -743,4 +743,3 @@ dict_conn_close(struct dict_connection *conn)
     obstack_free(&conn->stk, NULL);
     free(conn);
 }
-

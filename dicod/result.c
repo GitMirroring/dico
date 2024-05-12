@@ -80,12 +80,12 @@ dicod_db_result_mime_header(dicod_db_result_t *dbr, size_t n)
     dico_assoc_list_t hdr = NULL;
     struct dico_database_module *mod = dicod_db_result_module(dbr);
     dicod_database_t *db = dicod_db_result_db(dbr, n, result_db_all);
-    
+
     if (db->mime_headers)
 	hdr = dico_assoc_dup(db->mime_headers);
     else
 	dico_header_parse(&hdr, NULL);
-    
+
     if (mod->dico_result_headers) {
 	dico_assoc_list_t tmp = dico_assoc_dup(hdr);
 	if (mod->dico_result_headers(dbr->res, tmp) == 0) {
@@ -111,7 +111,3 @@ dicod_db_result_db(dicod_db_result_t *dbr, size_t n, int flag)
     }
     return db ? db : dbr->db;
 }
-
-
-
-    

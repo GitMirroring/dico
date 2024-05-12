@@ -77,7 +77,7 @@ _linetrimstr_write(void *data, const char *buf, size_t size, size_t *pret)
     struct _linetrimstr *s = data;
     size_t len;
     int nl;
-    
+
     nl = _linetrimstr_find_end(s, buf, size, &len);
     dico_stream_write(s->transport, buf, len);
     if (nl)
@@ -86,10 +86,10 @@ _linetrimstr_write(void *data, const char *buf, size_t size, size_t *pret)
 
     return 0;
 }
-    
+
 static int
 _linetrimstr_destroy(void *data)
-{ 
+{
     struct _linetrimstr *s = data;
     if (!s->noclose)
 	dico_stream_destroy(&s->transport);
@@ -116,7 +116,7 @@ static int
 _linetrimstr_ioctl(void *data, int code, void *call_data)
 {
     struct _linetrimstr *s = data;
-    
+
     switch (code) {
     case DICO_IOCTL_GET_TRANSPORT:
 	*(dico_stream_t*)call_data = s->transport;
@@ -137,11 +137,11 @@ _linetrimstr_ioctl(void *data, int code, void *call_data)
     case DICO_IOCTL_SET_LINELEN:
 	s->maxlen = *(size_t*)call_data;
 	break;
-	
+
     case DICO_IOCTL_GET_LINELEN:
 	*(size_t*)call_data = s->maxlen;
 	break;
-	
+
     default:
 	errno = EINVAL;
 	return -1;

@@ -41,7 +41,7 @@ auth(const char *username, const char *authstr)
 {
     int rc = 1;
     char *password;
-    
+
     if (dico_udb_open(user_db)) {
 	dico_log(L_ERR, 0, _("failed to open user database"));
 	return 1;
@@ -56,7 +56,7 @@ auth(const char *username, const char *authstr)
 	    rc = 1;
 	} else {
 	    rc = verify_apop(password, authstr);
-	    if (rc) 
+	    if (rc)
 		dico_log(L_ERR, 0,
 			 _("authentication failed for `%s'"), username);
 	    else {
@@ -101,7 +101,7 @@ register_auth(void)
 	{ "AUTH", 3, 3, "user string", "provide authentication information",
 	  dicod_auth },
 	{ NULL }
-    };	
+    };
     dicod_capa_register("auth", cmd, auth_init, NULL);
 }
 
@@ -118,4 +118,3 @@ init_auth_data(void)
     dico_list_destroy(&user_groups);
     reset_db_visibility();
 }
-

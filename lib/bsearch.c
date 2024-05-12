@@ -43,7 +43,7 @@ dico_bsearch(void *key, const void *base, size_t nelem, size_t elsize,
     char const *r = l + nelem * elsize;
     char const *s;
     void *found = NULL;
-    
+
     while (l < r) {
 	s = l + (((r - l) / elsize) >> 1) * elsize;
 	int rc = comp(key, s, closure);

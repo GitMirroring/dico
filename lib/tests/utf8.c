@@ -282,7 +282,7 @@ int
 main(int argc, char **argv)
 {
     struct optab *op;
-    
+
     dico_set_program_name(argv[0]);
     argc--;
     argv++;

@@ -84,7 +84,7 @@ void stream_write_multiline(dico_stream_t str, const char *text);
 
 /* xtkn.c */
 void xdico_tokenize_string(struct dico_tokbuf *tb, char *str);
-    
+
 /* appi18n.c */
 void appi18n_init(void);
 
@@ -142,4 +142,3 @@ extern dico_stream_t debug_stream;
     } while (0)
 
 #endif
-    

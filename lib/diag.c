@@ -39,7 +39,7 @@ dico_set_program_name(char *name)
 	    progname++;
 	else
 	    progname = name;
-	
+
 	if (strlen(progname) > 3 && memcmp(progname, "lt-", 3) == 0)
 	    progname += 3;
     }
@@ -48,14 +48,14 @@ dico_set_program_name(char *name)
 }
 
 static char *prefix[] = {
-    "Debug", 
-    "Info",  
-    "Notice", 
+    "Debug",
+    "Info",
+    "Notice",
     "Warning",
-    "Error",  
-    "CRIT",   
-    "ALERT",       
-    "EMERG",       
+    "Error",
+    "CRIT",
+    "ALERT",
+    "EMERG",
 };
 
 int
@@ -99,7 +99,7 @@ void
 dico_log(int lvl, int errcode, const char *fmt, ...)
 {
     va_list ap;
-    
+
     va_start(ap, fmt);
     _log_printer(lvl, 0, errcode, fmt, ap);
     va_end(ap);
@@ -109,7 +109,7 @@ void
 dico_die(int exitcode, int lvl, int errcode, const char *fmt, ...)
 {
     va_list ap;
-    
+
     va_start(ap, fmt);
     _log_printer(lvl, exitcode, errcode, fmt, ap);
     va_end(ap);

@@ -6,4 +6,3 @@ AC_CHECK_HEADER(zlib.h,,
  [AC_MSG_ERROR([required header zlib.h not found])])
 AC_CHECK_LIB(z, inflate,,
  [AC_MSG_ERROR([required library libz not found])])
-

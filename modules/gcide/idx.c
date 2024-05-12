@@ -83,7 +83,7 @@ _open_index(struct gcide_idx_file *file)
 {
     off_t total;
     struct stat st;
-    
+
     if (_idx_full_read(file, &file->header, sizeof(file->header)))
 	return 1;
     if (memcmp(file->header.ihdr_magic, GCIDE_IDX_MAGIC,
@@ -92,12 +92,12 @@ _open_index(struct gcide_idx_file *file)
 		 file->name);
 	return 1;
     }
-    
+
     if (fstat(file->fd, &st)) {
 	dico_log(L_ERR, errno, "fstat `%s'", file->name);
 	return 1;
     }
-    
+
     total = (file->header.ihdr_num_pages + 1) * file->header.ihdr_pagesize;
     if (total != st.st_size) {
 	dico_log(L_ERR, 0, _("index file `%s' is corrupted"), file->name);
@@ -111,15 +111,15 @@ gcide_idx_file_open(const char *name, size_t cachesize)
 {
     int fd;
     struct gcide_idx_file *file;
-    
+
     file = calloc(1, sizeof(*file));
     if (!file) {
-        DICO_LOG_ERRNO();
+	DICO_LOG_ERRNO();
 	return NULL;
     }
     file->name = strdup(name);
     if (!file->name) {
-        DICO_LOG_ERRNO();
+	DICO_LOG_ERRNO();
 	free(file);
 	return NULL;
     }
@@ -162,11 +162,11 @@ static struct gcide_idx_cache *
 _cache_alloc(struct gcide_idx_file *file)
 {
     struct gcide_idx_cache *cp;
-    
+
     if (!file->cache) {
 	file->cache = calloc(file->cache_size, sizeof(file->cache[0]));
 	if (!file->cache) {
-            DICO_LOG_ERRNO();
+	    DICO_LOG_ERRNO();
 	    return NULL;
 	}
     }
@@ -176,12 +176,12 @@ _cache_alloc(struct gcide_idx_file *file)
 	    return file->cache[file->cache_used - 1];
 	cp = calloc(1, sizeof(*cp));
 	if (!cp) {
-            DICO_LOG_ERRNO();
+	    DICO_LOG_ERRNO();
 	    return NULL;
 	}
 	cp->page = malloc(file->header.ihdr_pagesize);
 	if (!cp->page) {
-            DICO_LOG_ERRNO();
+	    DICO_LOG_ERRNO();
 	    free(cp);
 	    return NULL;
 	}
@@ -216,7 +216,7 @@ static struct gcide_idx_cache *
 _cache_find_page(struct gcide_idx_file *file, size_t n)
 {
     size_t i;
-    
+
     for (i = 0; i < file->cache_used; i++) {
 	if (file->cache[i]->pageno == n) {
 	    struct gcide_idx_cache *cp = file->cache[i];
@@ -224,7 +224,7 @@ _cache_find_page(struct gcide_idx_file *file, size_t n)
 	    return cp;
 	}
     }
-    
+
     return NULL;
 }
 
@@ -235,11 +235,11 @@ _idx_get_page(struct gcide_idx_file *file, size_t n)
     struct gcide_idx_cache *cp;
     struct gcide_idx_page *page;
     size_t i;
-    
+
     cp = _cache_find_page(file, n);
     if (cp)
 	return cp->page;
-    
+
     off = (n + 1) * file->header.ihdr_pagesize;
     if (lseek(file->fd, off, SEEK_SET) != off) {
 	dico_log(L_ERR, errno,
@@ -300,7 +300,7 @@ _idx_ref_locate(struct gcide_idx_file *file,
 {
     size_t l, u, idx;
     int res;
-    
+
     l = 0;
     u = page->ipg_header.hdr.phdr_numentries;
     while (l < u) {
@@ -321,12 +321,12 @@ _idx_page_locate(struct gcide_idx_file *file, char *headword, size_t hwlen)
 {
     size_t l, u, idx;
     int res;
-    
+
     l = 0;
     u = file->header.ihdr_num_pages;
     while (l < u) {
 	struct gcide_idx_page *page;
-	    
+
 	idx = (l + u) / 2;
 	page = _idx_get_page(file, idx);
 	if (!page)
@@ -365,12 +365,12 @@ struct gcide_iterator {
 				    if not yet determined. */
     size_t curref;               /* Position in iterator */
 
-    char *prevbuf;               /* Previous match */ 
+    char *prevbuf;               /* Previous match */
     size_t prevsize;
-    
+
     int flags;                   /* User-defined flags. */
 };
-    
+
 gcide_iterator_t
 gcide_idx_locate(struct gcide_idx_file *file, char *headword, size_t hwlen)
 {
@@ -408,10 +408,10 @@ gcide_idx_locate(struct gcide_idx_file *file, char *headword, size_t hwlen)
 	pageno++;
 	refno = 0;
     }
-    
+
     itr = malloc(sizeof(*itr));
     if (!itr) {
-        DICO_LOG_ERRNO();
+	DICO_LOG_ERRNO();
 	return NULL;
     }
     if (hwlen) {
@@ -422,20 +422,20 @@ gcide_idx_locate(struct gcide_idx_file *file, char *headword, size_t hwlen)
 	itr->headword = strdup(headword);
 
     if (!itr->headword) {
-        DICO_LOG_ERRNO();
+	DICO_LOG_ERRNO();
 	free(itr);
 	return NULL;
     }
 
     itr->hwlen = hwlen;
-    
+
     itr->file = file;
-    itr->start_pageno = itr->cur_pageno = pageno;    
+    itr->start_pageno = itr->cur_pageno = pageno;
     itr->start_refno = itr->cur_refno = refno;
     itr->page_numrefs = page->ipg_header.hdr.phdr_numentries;
     itr->curref = itr->numrefs = 0;
     itr->compare_count = file->compare_count;
-    
+
     return itr;
 }
 
@@ -496,7 +496,7 @@ gcide_iterator_rewind(gcide_iterator_t itr)
 
     if (!itr)
 	return -1;
-    itr->cur_pageno = itr->start_pageno;    
+    itr->cur_pageno = itr->start_pageno;
     itr->cur_refno = itr->start_refno;
     itr->curref = 0;
     page = _idx_get_page(itr->file, itr->cur_pageno);
@@ -510,7 +510,7 @@ struct gcide_ref *
 gcide_iterator_ref(gcide_iterator_t itr)
 {
     struct gcide_idx_page *page;
-    
+
     if (!itr)
 	return NULL;
     page = _idx_get_page(itr->file, itr->cur_pageno);

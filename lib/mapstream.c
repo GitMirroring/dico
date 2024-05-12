@@ -71,14 +71,14 @@ _mapfile_open(void *data, int flags)
     struct _mapfile_stream *mfs = data;
     struct stat st;
     int mflags = 0, oflags = 0;
-    
+
     /* Close any previous file.  */
     _mapfile_close(data);
 
     /* Map the flags to the system equivalent */
-    if (flags & DICO_STREAM_READ) 
+    if (flags & DICO_STREAM_READ)
 	mflags |= PROT_READ;
-    if (flags & DICO_STREAM_WRITE) 
+    if (flags & DICO_STREAM_WRITE)
 	mflags |= PROT_WRITE;
 
     if ((flags & (DICO_STREAM_READ|DICO_STREAM_WRITE))
@@ -117,7 +117,7 @@ _mapfile_seek(void *data, off_t needle, int whence, off_t *presult)
 {
     struct _mapfile_stream *str = data;
     off_t offset;
-    
+
     switch (whence) {
     case DICO_SEEK_SET:
 	offset = needle;
@@ -135,7 +135,7 @@ _mapfile_seek(void *data, off_t needle, int whence, off_t *presult)
 	return EINVAL;
     }
 
-    if (offset < 0 || offset > str->size) 
+    if (offset < 0 || offset > str->size)
 	return EINVAL;
     str->offset = offset;
     *presult = offset;
@@ -146,7 +146,7 @@ static int
 _mapfile_size(void *data, off_t *presult)
 {
     struct _mapfile_stream *mfs = data;
-    
+
     if (mfs->start == NULL)
 	return EINVAL;
     *presult = mfs->size;
@@ -158,18 +158,18 @@ _mapfile_read(void *data, char *buf, size_t size, size_t *pret)
 {
     struct _mapfile_stream *mfs = data;
     size_t n;
-    
+
     if (mfs->start == NULL)
 	return EINVAL;
 
     n = (mfs->offset + size > mfs->size) ? mfs->size - mfs->offset : size;
     memcpy(buf, mfs->start + mfs->offset, n);
     mfs->offset += n;
-    
+
     *pret = n;
     return 0;
 }
-    
+
 dico_stream_t
 dico_mapfile_stream_create(const char *filename, int flags)
 {
@@ -180,9 +180,9 @@ dico_mapfile_stream_create(const char *filename, int flags)
     /* FIXME: Remove this when read-write mapped streams are implemented */
     if (flags & DICO_STREAM_WRITE) {
 	errno = EINVAL;
-	return NULL; 
+	return NULL;
     }
-    
+
     if (!s)
 	return NULL;
     memset(s, 0, sizeof(*s));
@@ -192,7 +192,7 @@ dico_mapfile_stream_create(const char *filename, int flags)
 	free(s);
 	return NULL;
     }
-    
+
     rc = dico_stream_create(&str, flags, s);
     if (rc) {
 	free(s->filename);
@@ -207,5 +207,3 @@ dico_mapfile_stream_create(const char *filename, int flags)
     dico_stream_set_destroy(str, _mapfile_destroy);
     return str;
 }
-
-

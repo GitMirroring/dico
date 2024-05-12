@@ -39,7 +39,7 @@ run_lint(void)
     n = grecs_include_path_count(GRECS_USR_INCLUDE);
     cmdopt.argc = 10 + 2 * n;
     cmdopt.argv = xcalloc(cmdopt.argc + 1, sizeof cmdopt.argv[0]);
-	
+
     cmdopt.argc = 0;
     cmdopt.argv[cmdopt.argc++] = dico_invocation_name;
     cmdopt.argv[cmdopt.argc++] = "--lint";
@@ -47,7 +47,7 @@ run_lint(void)
     cmdopt.argv[cmdopt.argc++] = grecs_preprocessor;
     if (log_to_stderr)
 	cmdopt.argv[cmdopt.argc++] = "--stderr";
-    else 
+    else
 	dicod_log_encode_envar();
     grecs_foreach_include_dir(GRECS_USR_INCLUDE, add_i_option, &cmdopt);
     cmdopt.argv[cmdopt.argc++] = "--config";
@@ -57,7 +57,6 @@ run_lint(void)
 	cmdopt.argv[cmdopt.argc++] = debug_level_str;
     }
     cmdopt.argv[cmdopt.argc] = NULL;
-    
+
     execv(cmdopt.argv[0], (char**) cmdopt.argv);
 }
-

@@ -53,7 +53,7 @@ _dico_conn_setup(struct _dico_ldap_handle *lp)
     int rc;
     LDAP *ld = NULL;
     int protocol = LDAP_VERSION3; /* FIXME: must be configurable */
-  
+
     if (lp->debug) {
 	if (ber_set_option(NULL, LBER_OPT_DEBUG_LEVEL, &lp->debug)
 	    != LBER_OPT_SUCCESS )
@@ -74,7 +74,7 @@ _dico_conn_setup(struct _dico_ldap_handle *lp)
 		 lp->url, rc, ldap_err2string(rc));
 	return 1;
     }
-  
+
     if (lp->tls) {
 	rc = ldap_start_tls_s(ld, NULL, NULL);
 	if (rc != LDAP_SUCCESS) {
@@ -107,7 +107,7 @@ _dico_ldap_bind(struct _dico_ldap_handle *lp)
     passwd.bv_len = passwd.bv_val ? strlen (passwd.bv_val) : 0;
 
     msgbuf[0] = 0;
-    
+
     rc = ldap_sasl_bind(lp->ldap, lp->binddn, LDAP_SASL_SIMPLE, &passwd,
 			NULL, NULL, &msgid);
     if (msgid == -1) {
@@ -140,22 +140,22 @@ _dico_ldap_bind(struct _dico_ldap_handle *lp)
 	dico_log(L_ERR, 0, "ldap_bind: %s (%d)%s",
 		 ldap_err2string(err), err, msgbuf);
 
-	if (matched && *matched) 
+	if (matched && *matched)
 	    dico_log(L_ERR, 0, "matched DN: %s", matched);
-	
+
 	if (info && *info)
 	    dico_log(L_ERR, 0, "additional info: %s", info);
-	
+
 	if (refs && *refs) {
 	    int i;
 	    dico_log(L_ERR, 0, "referrals:");
-	    for (i = 0; refs[i]; i++) 
+	    for (i = 0; refs[i]; i++)
 		dico_log(L_ERR, 0, "%s", refs[i]);
 	}
     }
 
     if (matched)
-        ber_memfree(matched);
+	ber_memfree(matched);
     if (info)
 	ber_memfree(info);
     if (refs)
@@ -179,7 +179,7 @@ db_open(void **phandle, dico_url_t url, const char *options)
     struct _dico_ldap_handle hstr, *handle;
     int rc;
     long debug = 0;
-    
+
     struct dico_option option[] = {
 	{ DICO_OPTSTR(base), dico_opt_string, &hstr.base },
 	{ DICO_OPTSTR(binddn), dico_opt_string, &hstr.binddn },
@@ -209,14 +209,14 @@ db_open(void **phandle, dico_url_t url, const char *options)
 	hstr.debug = debug;
     }
     hstr.url = url->string;
-    
+
     handle = malloc(sizeof(*handle));
     if (!handle) {
 	dico_log(L_ERR, errno, _("cannot allocate handle"));
 	return 1;
     }
     *handle = hstr;
-    
+
     rc = _dico_conn_setup(handle) ||
 	 _dico_ldap_bind(handle);
     if (rc) {
@@ -243,7 +243,7 @@ _dico_ldap_expand_user(const char *query, const char *user)
     struct wordsplit ws;
     const char *env[3];
     char *res;
-    
+
     env[0] = "user";
     env[1] = user;
     env[2] = NULL;
@@ -261,7 +261,7 @@ _dico_ldap_expand_user(const char *query, const char *user)
     ws.ws_wordv[0] = NULL;
     wordsplit_free(&ws);
     return res;
-}    
+}
 
 static LDAPMessage *
 _dico_ldap_search(struct _dico_ldap_handle *lp, const char *filter_pat,
@@ -279,7 +279,7 @@ _dico_ldap_search(struct _dico_ldap_handle *lp, const char *filter_pat,
     if (filter_pat) {
 	filter = _dico_ldap_expand_user(filter_pat, user);
 	if (!filter) {
-            DICO_LOG_MEMERR();
+	    DICO_LOG_MEMERR();
 	    return NULL;
 	}
     } else
@@ -311,7 +311,7 @@ db_get_pass(void *handle, const char *qpw, const char *key, char **ppass)
     LDAPMessage *res, *msg;
     int rc;
     struct berval **values;
-    
+
     res = _dico_ldap_search(lp, lp->user_filter, qpw, key);
     if (!res)
 	return 1;
@@ -324,7 +324,7 @@ db_get_pass(void *handle, const char *qpw, const char *key, char **ppass)
     }
 
     msg = ldap_first_entry(lp->ldap, res);
-    
+
     values = ldap_get_values_len(lp->ldap, msg, qpw);
     if (ldap_count_values_len(values) == 0) {
 	dico_log(L_ERR, 0, "not enough entires");
@@ -355,7 +355,7 @@ db_get_groups(void *handle, const char *qgr, const char *key,
     LDAPMessage *res, *msg;
     int rc;
     dico_list_t groups = NULL;
-    
+
     res = _dico_ldap_search(lp, lp->group_filter, qgr, key);
     if (!res)
 	return 1;
@@ -377,7 +377,7 @@ db_get_groups(void *handle, const char *qgr, const char *key,
 	 msg = ldap_next_entry(lp->ldap, msg)) {
 	struct berval **values;
 	size_t i, count;
-	
+
 	values = ldap_get_values_len(lp->ldap, msg, qgr);
 	count = ldap_count_values_len(values);
 	for (i = 0; i < count; i++) {

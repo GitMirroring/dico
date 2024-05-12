@@ -36,7 +36,7 @@ EXTRA_DIST = ChangeLog.2008 configure.boot bootstrap DISTFILES
 
 dist-hook:
 	tar -C $(srcdir) -c -f - --no-recursion --exclude-vcs \
-           -T $(abs_top_srcdir)/DISTFILES | \
+	   -T $(abs_top_srcdir)/DISTFILES | \
 	      tar -C $(distdir) -x -f -
 
 BUILT_SOURCES      =
@@ -67,5 +67,5 @@ ChangeLog:
 	$(AM_V_GEN)if test -d .git; then                                   \
 	  git log --pretty='format:%ct  %an  <%ae>%n%n%s%n%n%b%n' |        \
 	  awk -f $(top_srcdir)/@GRECS_SUBDIR@/build-aux/git2chg.awk        \
-             -vsince=$(gen_start_date) > ChangeLog;                        \
-        fi
+	     -vsince=$(gen_start_date) > ChangeLog;                        \
+	fi

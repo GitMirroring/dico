@@ -34,7 +34,7 @@ switch_to_privs (uid_t uid, gid_t gid, dico_list_t retain_groups)
     void *gp;
 
     _dico_libi18n_init();
-    
+
     if (uid == 0) {
 	dico_log(L_ERR, 0, _("Refusing to run as root"));
 	return 1;
@@ -48,10 +48,10 @@ switch_to_privs (uid_t uid, gid_t gid, dico_list_t retain_groups)
 
     itr = dico_list_iterator(retain_groups);
     for (gp = dico_iterator_first(itr); gp;
-	 gp = dico_iterator_next(itr)) 
+	 gp = dico_iterator_next(itr))
 	emptygidset[j++] = *(gid_t*) gp;
     dico_iterator_destroy(&itr);
-    
+
     /* Reset group permissions */
     if (geteuid() == 0 && setgroups(j, emptygidset)) {
 	dico_log(L_ERR, errno, _("setgroups(1, %lu) failed"),
@@ -59,7 +59,7 @@ switch_to_privs (uid_t uid, gid_t gid, dico_list_t retain_groups)
 	rc = 1;
     }
     free(emptygidset);
-	
+
     /* Switch to the user's gid. On some OSes the effective gid must
        be reset first */
 
@@ -80,7 +80,7 @@ switch_to_privs (uid_t uid, gid_t gid, dico_list_t retain_groups)
 #endif
 
     if (rc == 0 && gid != 0) {
-	if ((rc = setgid(gid)) < 0 && getegid() != gid) 
+	if ((rc = setgid(gid)) < 0 && getegid() != gid)
 	    dico_log(L_ERR, errno, _("setgid(%lu) failed"),
 		     (unsigned long) gid);
 	if (rc == 0 && getegid() != gid) {
@@ -93,15 +93,15 @@ switch_to_privs (uid_t uid, gid_t gid, dico_list_t retain_groups)
     /* Now reset uid */
     if (rc == 0 && uid != 0) {
 	uid_t euid;
-	
+
 	if (setuid(uid)
 	    || geteuid() != uid
 	    || (getuid() != uid
 		&& (geteuid() == 0 || getuid() == 0))) {
-			
+
 #if defined(HAVE_SETREUID)
 	    if (geteuid() != uid) {
-		if (setreuid(uid, -1) < 0) { 
+		if (setreuid(uid, -1) < 0) {
 		    dico_log(L_ERR, errno, _("setreuid(%lu,-1) failed"),
 			     (unsigned long) uid);
 		    rc = 1;
@@ -119,7 +119,7 @@ switch_to_privs (uid_t uid, gid_t gid, dico_list_t retain_groups)
 		    rc = 1;
 		}
 	}
-	
+
 	euid = geteuid();
 	if (uid != 0 && setuid(0) == 0) {
 	    dico_log(L_ERR, 0, _("seteuid(0) succeeded when it should not"));
@@ -128,10 +128,8 @@ switch_to_privs (uid_t uid, gid_t gid, dico_list_t retain_groups)
 	    dico_log(L_ERR, 0, _("Cannot drop non-root setuid privileges"));
 	    rc = 1;
 	}
-	
+
     }
 
     return rc;
 }
-
-

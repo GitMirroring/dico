@@ -1,6 +1,6 @@
 /* This file is part of GNU Dico
    Copyright (C) 2003-2024 Sergey Poznyakoff
-  
+
    GNU Dico is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 3, or (at your option)
@@ -55,12 +55,12 @@ print(struct itr_shell *shp)
 
     if (shp->count)
 	printf("# items: %lu\n", (unsigned long) shp->count(shp->object));
-    
+
     if (!itr) {
 	dico_log(L_ERR, 0, "get_iterator failed");
 	exit(1);
     }
-    
+
     for (elt = dico_iterator_first(itr); elt;
 	 elt = dico_iterator_next(itr)) {
 	shp->print_item(elt);
@@ -75,7 +75,7 @@ int
 iter(int *pnum, int argc, char **argv)
 {
     int n;
-  
+
     if (argc != 2) {
 	fprintf(stderr, "iter num?\n");
 	return 1;
@@ -95,8 +95,8 @@ help(struct itr_shell *shp)
 {
     struct itr_shell_command *cmd;
     static char format[] = "%-8.8s %-10.10s - %s\n";
-    
-    for (cmd = shp->cmdtab; cmd->name; cmd++) 
+
+    for (cmd = shp->cmdtab; cmd->name; cmd++)
 	printf(format,
 	       cmd->name,
 	       cmd->argstr ? cmd->argstr : "",
@@ -143,13 +143,13 @@ shell(struct itr_shell *shp)
     struct wordsplit ws;
     int wsflags = WRDSF_DEFFLAGS | WRDSF_SHOWERR;
     int interactive = isatty(0);
-    
+
     memset(&itr, 0, sizeof itr);
     num = 0;
     while (1) {
 	char buf[80];
 	void *elt;
-	
+
 	if (!itr[num])  {
 	    itr[num] = shp->get_iterator(shp->object);
 	    if (!itr[num]) {
@@ -158,7 +158,7 @@ shell(struct itr_shell *shp)
 	    }
 	    dico_iterator_first(itr[num]);
 	}
-      
+
 	elt = dico_iterator_current(itr[num]);
 
 	if (interactive) {
@@ -213,12 +213,12 @@ shell(struct itr_shell *shp)
 		help(shp);
 	    else {
 		struct itr_shell_command *cmd;
-		
-		for (cmd = shp->cmdtab; cmd->name; cmd++) 
+
+		for (cmd = shp->cmdtab; cmd->name; cmd++)
 		    if (strcmp(cmd->name, ws.ws_wordv[0]) == 0) {
-			if (ws.ws_wordc < cmd->minargc) 
+			if (ws.ws_wordc < cmd->minargc)
 			    fprintf(stderr, "too few arguments\n");
-			else if (cmd->maxargc && ws.ws_wordc > cmd->maxargc) 
+			else if (cmd->maxargc && ws.ws_wordc > cmd->maxargc)
 			    fprintf(stderr, "too many arguments\n");
 			else
 			    cmd->fun(shp->object, ws.ws_wordc, ws.ws_wordv);
@@ -237,4 +237,3 @@ shell(struct itr_shell *shp)
     if (wsflags & WRDSF_REUSE)
 	wordsplit_free(&ws);
 }
-

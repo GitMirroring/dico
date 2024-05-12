@@ -17,9 +17,9 @@
 ## module description: Perl-compatible regexs
 
 AC_ARG_WITH([pcre],
-            AS_HELP_STRING([--with-pcre],
-                           [compile Perl-compatible regular expressions support]),
-            [
+	    AS_HELP_STRING([--with-pcre],
+			   [compile Perl-compatible regular expressions support]),
+	    [
 case "${withval}" in
   yes) status_pcre=yes ;;
   no)  status_pcre=no ;;
@@ -30,7 +30,7 @@ if test $status_pcre = yes; then
   AC_CHECK_HEADER([pcre2.h], [], [status_pcre=no], [#define PCRE2_CODE_UNIT_WIDTH 8])
   if test $status_pcre = yes; then
     DICO_CHECK_LIB(pcre2-8, main, [],
-                   [:],
+		   [:],
 		   [status_pcre=no])
   fi
 fi

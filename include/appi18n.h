@@ -23,4 +23,3 @@
 #endif
 
 void appi18n_init(void);
-

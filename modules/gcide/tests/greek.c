@@ -26,7 +26,7 @@ print_greek(const char *arg)
     while (*arg) {
 	size_t rd;
 	const char *greek = gcide_grk_to_utf8(arg, &rd);
-	
+
 	if (greek) {
 	    printf("%s", greek);
 	    arg += rd;
@@ -38,7 +38,7 @@ print_greek(const char *arg)
 	}
     }
     putchar('\n');
-}    
+}
 
 int
 main(int argc, char **argv)
@@ -56,5 +56,3 @@ main(int argc, char **argv)
     }
     return 0;
 }
-	
-	

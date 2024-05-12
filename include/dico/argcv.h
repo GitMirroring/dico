@@ -35,7 +35,7 @@ enum dico_argcv_quoting_style {
 };
 
 extern enum dico_argcv_quoting_style dico_argcv_quoting_style;
-    
+
 extern int dico_argcv_get    (const char *command, const char *delim,
 			      const char *cmnt,
 			      int *argc, char ***argv);
@@ -46,7 +46,7 @@ extern int dico_argcv_get_np (const char *command, int len,
 			      const char *delim, const char *cmnt,
 			      int flags,
 			      int *pargc, char ***pargv, char **endp);
-  
+
 extern int dico_argcv_string (int argc, const char **argv, char **string);
 extern void dico_argcv_free   (int argc, char **argv);
 extern void dico_argv_free (char **argv);
@@ -58,7 +58,7 @@ extern void dico_argcv_unquote_copy (char *dst, const char *src, size_t n);
 extern void dico_argcv_quote_copy (char *dst, const char *src);
 extern void dico_argcv_remove (int *pargc, char ***pargv,
 			       int (*sel) (const char *, void *), void *);
-  
+
 #ifdef __cplusplus
 }
 #endif

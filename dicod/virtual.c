@@ -63,7 +63,7 @@ static int
 db_name_cmp(const void *item, const void *data, void *closure)
 {
     const dicod_database_t *db = item;
-    
+
     if (!db->name)
 	return 1;
     return strcmp(db->name, (const char*)data);
@@ -91,7 +91,7 @@ virtual_init_db_ext(const char *dbname, int argc, char **argv, void *extra)
     dico_list_t dblist = extra;
     size_t dbcount = dico_list_count(dblist);
     size_t i = 0;
-    
+
     vdb = xzalloc(sizeof(*vdb) + (dbcount - 1) * sizeof(vdb->vdb_memb[0]));
     vdb->name = xstrdup(dbname);
     vdb->vdb_count = dbcount;
@@ -133,7 +133,7 @@ virtual_open(dico_handle_t vdb)
 	size_t i, j;
 	size_t n = vdb->vdb_count;
 	int is_virtual = 1;
-	
+
 	for (i = j = 0; i < n; i++) {
 	    dicod_database_t *db = find_database_all(vdb->vdb_memb[i].name);
 	    if (db) {
@@ -155,7 +155,7 @@ virtual_open(dico_handle_t vdb)
 static int
 virtual_db_flags(dico_handle_t vdb)
 {
-    return vdb->is_virtual ? DICO_DBF_VIRTUAL : DICO_DBF_DEFAULT; 
+    return vdb->is_virtual ? DICO_DBF_VIRTUAL : DICO_DBF_DEFAULT;
 }
 
 static int
@@ -179,14 +179,14 @@ vdb_member_ok(struct vdb_member const *memb)
     }
     return res;
 }
-	
+
 static dico_result_t
 virtual_match(dico_handle_t vdb, const dico_strategy_t strat, const char *word)
 {
     size_t i;
     size_t n = vdb->vdb_count;
     struct dico_result_struct *result = virtual_result_new(vdb);
-    
+
     for (i = 0; i < n; i++) {
 	if (vdb_member_ok(&vdb->vdb_memb[i])) {
 	    result->vdres[i] = dicod_database_match(vdb->vdb_memb[i].db,
@@ -194,7 +194,7 @@ virtual_match(dico_handle_t vdb, const dico_strategy_t strat, const char *word)
 	} else {
 	    result->vdres[i] = NULL;
 	}
-    } 
+    }
     return result;
 }
 
@@ -204,14 +204,14 @@ virtual_define(dico_handle_t vdb, const char *word)
     size_t i;
     size_t n = vdb->vdb_count;
     struct dico_result_struct *result = virtual_result_new(vdb);
-    
+
     for (i = 0; i < n; i++) {
 	if (vdb_member_ok(&vdb->vdb_memb[i])) {
 	    result->vdres[i] = dicod_database_define(vdb->vdb_memb[i].db, word);
 	} else {
 	    result->vdres[i] = NULL;
 	}
-    } 
+    }
     return result;
 }
 
@@ -284,7 +284,7 @@ virtual_descr(dico_handle_t vdb)
     size_t i;
     size_t n = vdb->vdb_count;
     char *prev = NULL;
-    
+
     for (i = 0; i < n; i++) {
 	if (vdb_member_ok(&vdb->vdb_memb[i])) {
 	    char *p = dicod_database_get_descr(vdb->vdb_memb[i].db);
@@ -308,7 +308,7 @@ virtual_info(dico_handle_t vdb)
     size_t i;
     size_t n = vdb->vdb_count;
     char *prev = NULL;
-    
+
     for (i = 0; i < n; i++) {
 	if (vdb_member_ok(&vdb->vdb_memb[i])) {
 	    char *p = dicod_database_get_info(vdb->vdb_memb[i].db);

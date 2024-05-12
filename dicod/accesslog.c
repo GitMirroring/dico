@@ -40,14 +40,14 @@ access_log_status(const char *first, const char *last)
   %A          Local IP-address
   %B          Size of response in bytes.
   %b          Size of response in bytes in CLF format, i.e. a '-' rather
-              than a 0 when no bytes are sent.
+	      than a 0 when no bytes are sent.
   %C          *Remote client (from CLIENT command).
   %d          *Abbreviated request command verb ('d' or 'm').
   %D          The time taken to serve the request, in microseconds.
   %h          Remote host
   %H          *Request command verb (DEFINE or MATCH)
   %l          Remote logname (from identd, if supplied). This will return a
-              dash unless identity-check is set to true.
+	      dash unless identity-check is set to true.
   %m          *The search strategy
   %p          The canonical port of the server serving the request
   %P          The process ID of the child that serviced the request.
@@ -57,14 +57,14 @@ access_log_status(const char *first, const char *last)
   %s          Status. %>s is also accepted.
   %t          Time the request was received (standard english format)
   %{format}t  The time, in the form given by format, which should be in
-              strftime(3) format. (potentially localized)
+	      strftime(3) format. (potentially localized)
   %T          The time taken to serve the request, in seconds.
   %u          Remote user from AUTH.
   %v          The host name of the server serving the request.
   %V          *Actual host name of the server (in case it was overridden
-              in conffile).
+	      in conffile).
   %I          Bytes received, including request and headers. Cannot be zero.
-  %O          Bytes sent, including headers. Cannot be zero. 
+  %O          Bytes sent, including headers. Cannot be zero.
   %W          *The word from the request
 */
 char *access_log_format = "%h %l %u %t \"%r\" %>s %b";
@@ -105,7 +105,7 @@ add_instr(alog_printer_fn prt, const char *fmt, size_t fmtsize)
 	p->arg = NULL;
     xdico_list_append(access_log_prog, p);
 }
-    
+
 static void
 print_str(FILE *fp, const char *arg)
 {
@@ -115,7 +115,7 @@ print_str(FILE *fp, const char *arg)
 	len = 1;
     } else
 	len = strlen(arg);
-    fwrite(arg, len, 1, fp); 
+    fwrite(arg, len, 1, fp);
 }
 
 static void
@@ -137,17 +137,17 @@ sockaddr_to_hostname(struct sockaddr *sa, int resolve)
     case AF_INET:
 	if (getnameinfo(sa, sizeof(struct sockaddr_in),
 			hostbuf, sizeof(hostbuf),
-			NULL, 0, 
+			NULL, 0,
 			resolve ? 0 : NI_NUMERICHOST) == 0)
 	    ret = xstrdup(hostbuf);
 	else
 	    ret = xstrdup("unknown");
 	break;
-	
+
     case AF_UNIX:
 	ret = xstrdup("localhost");
 	break;
-		
+
     default:
 	ret = xstrdup("{unsupported family}");
     }
@@ -162,7 +162,7 @@ sockaddr_to_portname(struct sockaddr *sa, int salen)
     struct sockaddr_un *s_un;
     char buf[UINTMAX_STRSIZE_BOUND];
     char *ret;
-    
+
     switch (sa->sa_family) {
     case AF_UNIX:
 	s_un = (struct sockaddr_un*)sa;
@@ -182,14 +182,14 @@ sockaddr_to_portname(struct sockaddr *sa, int salen)
     }
     return ret;
 }
-	
+
 static void
 alog_remote_ip(FILE *fp, struct alog_instr *instr, int argc, char **argv)
 {
     if (!instr->cache) {
-	if (client_addrlen == 0) 
+	if (client_addrlen == 0)
 	    instr->cache = xstrdup("stdin");
-	else 
+	else
 	    instr->cache = sockaddr_to_hostname((struct sockaddr *)&client_addr, 0);
     }
     print_str(fp, instr->cache);
@@ -199,9 +199,9 @@ static void
 alog_local_ip(FILE *fp, struct alog_instr *instr, int argc, char **argv)
 {
     if (!instr->cache) {
-	if (server_addrlen == 0) 
+	if (server_addrlen == 0)
 	    instr->cache = xstrdup("stdin");
-	else 
+	else
 	    instr->cache = sockaddr_to_hostname(&server_addr, 0);
     }
     print_str(fp, instr->cache);
@@ -244,7 +244,7 @@ static void
 alog_remote_host(FILE *fp, struct alog_instr *instr, int argc, char **argv)
 {
     if (!instr->cache) {
-	if (client_addrlen == 0) 
+	if (client_addrlen == 0)
 	    instr->cache = xstrdup("stdin");
 	else
 	    instr->cache = sockaddr_to_hostname((struct sockaddr*) &client_addr, 1);
@@ -301,7 +301,7 @@ alog_pid(FILE *fp, struct alog_instr *instr, int argc, char **argv)
 static void
 alog_database(FILE *fp, struct alog_instr *instr, int argc, char **argv)
 {
-    print_str(fp, argv[1]);    
+    print_str(fp, argv[1]);
 }
 
 static void
@@ -341,7 +341,7 @@ alog_time(FILE *fp, struct alog_instr *instr, int argc, char **argv)
     time_t t = time(NULL);
     localtime_r(&t, &tm);
     fprintftime(fp, instr->arg ? instr->arg : "[%d/%b/%Y:%H:%M:%S %z]",
-		&tm, 0, 0);    
+		&tm, 0, 0);
 }
 
 static void
@@ -361,16 +361,16 @@ alog_remote_user(FILE *fp, struct alog_instr *instr, int argc, char **argv)
 static void
 alog_conf_hostname(FILE *fp, struct alog_instr *instr, int argc, char **argv)
 {
-    print_str(fp, hostname);    
+    print_str(fp, hostname);
 }
 
 static void
 alog_hostname(FILE *fp, struct alog_instr *instr, int argc, char **argv)
 {
     if (!instr->cache) {
-	if (server_addrlen == 0) 
+	if (server_addrlen == 0)
 	    instr->cache = xstrdup("stdin");
-	else 
+	else
 	    instr->cache = sockaddr_to_hostname(&server_addr, 0);
     }
     print_str(fp, instr->cache);
@@ -423,7 +423,7 @@ static struct alog_tab alog_tab[] = {
     { 's', alog_status, 1 },
     /* %t          Time the request was received (standard english format)
        %{format}t  The time, in the form given by format, which should be in
-                   strftime(3) format. (potentially localized) */
+		   strftime(3) format. (potentially localized) */
     { 't', alog_time, 1 },
     /* The time taken to serve the request, in seconds. */
     { 'T', alog_process_time },
@@ -460,14 +460,14 @@ compile_access_log(void)
     char *p;
     const char *fmt = access_log_format;
     size_t len;
-    
+
     access_log_prog = xdico_list_create();
-    
+
     while ((p = strchr(fmt, '%'))) {
 	char *arg = NULL;
 	size_t arglen;
 	struct alog_tab *tptr;
-	
+
 	len = p - fmt;
 	if (len)
 	    add_instr(alog_print, fmt, len);
@@ -478,16 +478,16 @@ compile_access_log(void)
 	    p++;
 	} else if (*p == '{') {
 	    char *q = strchr(p + 1, '}');
-	    
+
 	    if (!q) {
 		dico_log(L_ERR, 0,
 			 _("log format error (near char %td): "
-                           "missing terminating `}'"),
+			   "missing terminating `}'"),
 			 p - access_log_format);
 		add_instr(alog_print, p - 1, 2);
 		fmt = p + 1;
 		continue;
-	    } 
+	    }
 	    arglen = q - p - 1;
 	    arg = p + 1;
 	    p = q + 1;
@@ -532,7 +532,7 @@ format_access_log(FILE *fp, int argc, char **argv)
     struct alog_instr *p;
 
     for (p = dico_iterator_first(itr); p;
-	 p = dico_iterator_next(itr)) 
+	 p = dico_iterator_next(itr))
 	p->prt(fp, p, argc, argv);
     fputc('\n', fp);
     dico_iterator_destroy(&itr);

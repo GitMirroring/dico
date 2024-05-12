@@ -40,7 +40,7 @@ dicod_database_init(dicod_database_t *db)
 		     db->command, inst->ident);
 	    return 1;
 	}
-	
+
 	db->mod_handle = inst->module->dico_init_db(db->name,
 						    db->argc,
 						    db->argv);
@@ -86,10 +86,10 @@ int
 dicod_database_close(dicod_database_t *db)
 {
     int rc = 0;
-    
+
     if (db->mod_handle) {
 	dicod_module_instance_t *inst = db->instance;
-	if (inst->module->dico_close) 
+	if (inst->module->dico_close)
 	    rc = inst->module->dico_close(db->mod_handle);
     }
     return rc;
@@ -99,7 +99,7 @@ int
 dicod_database_deinit(dicod_database_t *db)
 {
     int rc = 0;
-    
+
     if (db->mod_handle) {
 	dicod_module_instance_t *inst = db->instance;
 	if (inst->module->dico_free_db) {
@@ -158,7 +158,7 @@ dicod_database_get_languages(dicod_database_t *db, dico_list_t dlist[])
 	if (inst->module->dico_db_lang) {
 	    /* FIXME: Return code? */
 	    inst->module->dico_db_lang(db->mod_handle, db->langlist);
-	    if (db->langlist[0] || db->langlist[1]) {		
+	    if (db->langlist[0] || db->langlist[1]) {
 		if (!db->langlist[0])
 		    db->langlist[0] = dicod_langlist_copy(db->langlist[1]);
 		else if (!db->langlist[1])
@@ -200,4 +200,3 @@ dicod_database_flags(dicod_database_t const *db)
 	return mod->dico_db_flags(db->mod_handle) & DICO_DBF_MASK;
     return DICO_DBF_DEFAULT;
 }
-    

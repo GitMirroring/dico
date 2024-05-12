@@ -33,11 +33,11 @@ print_headers(struct ostream *ostr)
 {
     int rc = 0;
     const char *enc;
-    
+
     if (ostr->headers) {
 	dico_iterator_t itr;
 	struct dico_assoc *p;
-	
+
 	itr = dico_assoc_iterator(ostr->headers);
 	for (p = dico_iterator_first(itr); p; p = dico_iterator_next(itr)) {
 	    dico_stream_write(ostr->transport, p->key, strlen(p->key));
@@ -47,12 +47,12 @@ print_headers(struct ostream *ostr)
 	}
 	dico_iterator_destroy(&itr);
     }
-    
+
     rc = dico_stream_write(ostr->transport, "\n", 1);
-    
+
     if (rc == 0) {
 	dico_stream_t str;
-	
+
 	if ((enc = dico_assoc_find(ostr->headers,
 				   CONTENT_TRANSFER_ENCODING_HEADER))
 	    && strcmp(enc, "8bit")) {
@@ -64,7 +64,7 @@ print_headers(struct ostream *ostr)
 	if (str) {
 	    ostr->transport = str;
 	    ostr->flags |= OSTREAM_DESTROY_TRANSPORT;
-	}    
+	}
     }
     return rc;
 }
@@ -74,7 +74,7 @@ static int
 ostream_write(void *data, const char *buf, size_t size, size_t *pret)
 {
     struct ostream *ostr = data;
-    
+
     if (!(ostr->flags & OSTREAM_INITIALIZED)) {
 	if (option_mime && print_headers(ostr))
 	    return dico_stream_last_error(ostr->transport);
@@ -119,9 +119,9 @@ ostream_ioctl(void *data, int code, void *call_data)
     case DICO_IOCTL_BYTES_OUT:
 	dico_stream_flush(ostr->transport);
 	*(off_t*)call_data = dico_stream_bytes_out(ostr->transport) -
-	                       ostr->nout;
+			       ostr->nout;
 	break;
-	
+
     default:
 	errno = EINVAL;
 	return -1;
@@ -134,7 +134,7 @@ dicod_ostream_create(dico_stream_t str, dico_assoc_list_t headers)
 {
     struct ostream *ostr = xmalloc(sizeof(*ostr));
     dico_stream_t stream;
-    
+
     if (dico_stream_create(&stream, DICO_STREAM_WRITE, ostr))
 	xalloc_die();
     ostr->transport = str;
@@ -148,5 +148,3 @@ dicod_ostream_create(dico_stream_t str, dico_assoc_list_t headers)
     dico_stream_set_buffer(stream, dico_buffer_line, 1024);
     return stream;
 }
-
-    

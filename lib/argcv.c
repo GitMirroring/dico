@@ -24,20 +24,20 @@
 #include <dico/argcv.h>
 
 /* Keep Dico namespace clean */
-#define argcv_get            dico_argcv_get 
-#define argcv_get_n          dico_argcv_get_n 
-#define argcv_get_np         dico_argcv_get_np 
+#define argcv_get            dico_argcv_get
+#define argcv_get_n          dico_argcv_get_n
+#define argcv_get_np         dico_argcv_get_np
 #define argcv_string         dico_argcv_string
 #define argcv_free           dico_argcv_free
-#define argv_free            dico_argv_free 
+#define argv_free            dico_argv_free
 #define argcv_unquote_char   dico_argcv_unquote_char
-#define argcv_quote_char     dico_argcv_quote_char  
+#define argcv_quote_char     dico_argcv_quote_char
 #define argcv_quoted_length  dico_argcv_quoted_length
-#define argcv_unquote_copy   dico_argcv_unquote_copy 
-#define argcv_quote_copy     dico_argcv_quote_copy     
+#define argcv_unquote_copy   dico_argcv_unquote_copy
+#define argcv_quote_copy     dico_argcv_quote_copy
 #define argcv_quoting_style  dico_argcv_quoting_style
 #define argcv_quoting_octal  dico_argcv_quoting_octal
-#define argcv_quoting_hex    dico_argcv_quoting_hex 
+#define argcv_quoting_hex    dico_argcv_quoting_hex
 
 enum argcv_quoting_style argcv_quoting_style;
 
@@ -59,7 +59,7 @@ struct argcv_info
   const char *delim;
   const char *comment;
   int flags;
-  
+
   int start;
   int end;
   int save;
@@ -87,7 +87,7 @@ argcv_scan (struct argcv_info *ap)
   const char *command = ap->command;
   const char *delim = ap->delim;
   const char *comment = ap->comment;
-  
+
   for (;;)
     {
       i = ap->save;
@@ -111,7 +111,7 @@ argcv_scan (struct argcv_info *ap)
 		  i++;
 		  continue;
 		}
-	      
+
 	      if (command[i] == '\'' || command[i] == '"')
 		{
 		  int j;
@@ -137,13 +137,13 @@ argcv_scan (struct argcv_info *ap)
 	  ap->save = i;
 	  continue;
 	}
-      
+
 
       ap->end = i;
       ap->save = ap->finish_pos = i + 1;
 
       /* If we have a token, and it starts with a comment character, skip
-         to the newline and restart the token search. */
+	 to the newline and restart the token search. */
       if (ap->save <= len)
 	{
 	  if (strchr (comment, command[ap->start]) != NULL)
@@ -181,7 +181,7 @@ int
 argcv_quote_char (int c)
 {
   char *p;
-  
+
   for (p = quote_transtab + sizeof(quote_transtab) - 2;
        p > quote_transtab; p -= 2)
     {
@@ -190,7 +190,7 @@ argcv_quote_char (int c)
     }
   return -1;
 }
-  
+
 #define to_num(c) \
   (isdigit(c) ? c - '0' : (isxdigit(c) ? toupper(c) - 'A' + 10 : 255 ))
 
@@ -198,7 +198,7 @@ static int
 xtonum (int *pval, const char *src, int base, int cnt)
 {
   int i, val;
-  
+
   for (i = 0, val = 0; i < cnt; i++, src++)
     {
       int n = *(unsigned char*)src;
@@ -259,8 +259,8 @@ argcv_unquote_copy (char *dst, const char *src, size_t n)
 {
   int i = 0;
   int c;
-  int expect_delim = 0; 
-    
+  int expect_delim = 0;
+
   while (i < n)
     {
       switch (src[i])
@@ -270,7 +270,7 @@ argcv_unquote_copy (char *dst, const char *src, size_t n)
 	  if (!expect_delim)
 	    {
 	      const char *p;
-	      
+
 	      for (p = src+i+1; *p && *p != src[i]; p++)
 		if (*p == '\\')
 		  p++;
@@ -284,7 +284,7 @@ argcv_unquote_copy (char *dst, const char *src, size_t n)
 	  else
 	    *dst++ = src[i++];
 	  break;
-	  
+
 	case '\\':
 	  ++i;
 	  if (src[i] == 'x' || src[i] == 'X')
@@ -294,7 +294,7 @@ argcv_unquote_copy (char *dst, const char *src, size_t n)
 		  *dst++ = '\\';
 		  *dst++ = src[i++];
 		}
-	      else 
+	      else
 		{
 		  int off = xtonum(&c, src + i + 1, 16, 2);
 		  if (off == 0)
@@ -334,7 +334,7 @@ argcv_unquote_copy (char *dst, const char *src, size_t n)
 	  else
 	    *dst++ = argcv_unquote_char (src[i++]);
 	  break;
-	  
+
 	default:
 	  *dst++ = src[i++];
 	}
@@ -353,7 +353,7 @@ argcv_quote_copy (char *dst, const char *src)
 	  *dst++ = *src;
 	}
       else if (*src != '\t' && *src != '\\' && isprint(*src))
-	*dst++ = *src;      
+	*dst++ = *src;
       else
 	{
 	  char tmp[4];
@@ -395,7 +395,7 @@ argcv_get_np (const char *command, int len,
   struct argcv_info info;
   int argc;
   char **argv;
-  
+
   if (!delim)
     delim = "";
   if (!cmnt)
@@ -411,14 +411,14 @@ argcv_get_np (const char *command, int len,
   argv = calloc ((argc + 1), sizeof (char *));
   if (argv == NULL)
     return ENOMEM;
-  
+
   i = 0;
   info.save = 0;
   for (i = 0; i < argc; i++)
     {
       int n;
       int unquote;
-      
+
       argcv_scan (&info);
 
       if ((command[info.start] == '"' || command[info.end] == '\'')
@@ -433,7 +433,7 @@ argcv_get_np (const char *command, int len,
 	}
       else
 	unquote = 1;
-      
+
       n = info.end - info.start + 1;
       argv[i] = calloc (n + 1,  sizeof (char));
       if (argv[i] == NULL)
@@ -519,14 +519,14 @@ argcv_string (int argc, const char **argv, char **pstring)
       int toklen;
 
       toklen = argcv_quoted_length (argv[i], &quote);
-      
+
       len += toklen + 2;
       if (quote)
 	len += 2;
-      
+
       buffer = realloc (buffer, len);
       if (buffer == NULL)
-        return ENOMEM;
+	return ENOMEM;
 
       if (i != 0)
 	buffer[j++] = ' ';
@@ -554,7 +554,7 @@ dico_argcv_remove (int *pargc, char ***pargv,
   int argc = *pargc;
   char **argv = *pargv;
   int cnt = 0;
-  
+
   for (i = j = 0; i < argc; i++)
     {
       if (sel (argv[i], data))
@@ -576,5 +576,3 @@ dico_argcv_remove (int *pargc, char ***pargv,
   *pargc = argc;
   *pargv = argv;
 }
-      
- 

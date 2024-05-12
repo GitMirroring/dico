@@ -15,9 +15,9 @@
 ## along with GNU Dico.  If not, see <http://www.gnu.org/licenses/>.
 
 AC_ARG_WITH([python],
-            AS_HELP_STRING([--without-python],
-                           [do not build Python interface]),
-              [
+	    AS_HELP_STRING([--without-python],
+			   [do not build Python interface]),
+	      [
 case "${withval}" in
   yes) status_python=yes ;;
   no)  status_python=no ;;
@@ -39,7 +39,7 @@ if test "$status_python" = yes; then
       CPPFLAGS=$($PYTHON_CONFIG --includes)
       AC_MSG_CHECKING([whether python-config ($PYTHON_CONFIG) is of same version as python])
       AC_EGREP_CPP([^\"$PYTHON_VERSION],
-        [#include <patchlevel.h>
+	[#include <patchlevel.h>
 PY_VERSION],
 	[AC_MSG_RESULT([yes])],
 	[AC_MSG_RESULT([no])
@@ -48,25 +48,25 @@ PY_VERSION],
     else
       status_python=no
     fi
-   
+
     if test "$status_python" = yes; then
       # See https://docs.python.org/dev/whatsnew/3.8.html#debug-build-uses-the-same-abi-as-release-build
       PYTHON_LIBS=`$PYTHON_CONFIG --libs --embed 2>/dev/null` || \
-         PYTHON_LIBS=`$PYTHON_CONFIG --libs`
+	 PYTHON_LIBS=`$PYTHON_CONFIG --libs`
       PYTHON_INCLUDES=`$PYTHON_CONFIG --includes`
-      
+
       AC_DEFINE(WITH_PYTHON,1,[Enable Python support])
       MU_LIB_PY='${top_builddir}/python/libmu_py/libmu_py.la'
       AC_SUBST([PYTHON_SITE_DIR])
       AC_SUBST([PYTHON_EXEC_DIR])
       AC_ARG_WITH([pythondir],
-           AS_HELP_STRING([--with-pythondir=DIR],
-                          [Specify the directory to install Python modules to]),
-           [case $withval in
-            /*)  PYTHON_SITE_DIR="${withval}/mailutils"
-	         PYTHON_EXEC_DIR="${withval}/mailutils";;
-            *)   AC_MSG_ERROR([Argument to --with-pythondir must be an absolute directory name]);;
-            esac],
+	   AS_HELP_STRING([--with-pythondir=DIR],
+			  [Specify the directory to install Python modules to]),
+	   [case $withval in
+	    /*)  PYTHON_SITE_DIR="${withval}/mailutils"
+		 PYTHON_EXEC_DIR="${withval}/mailutils";;
+	    *)   AC_MSG_ERROR([Argument to --with-pythondir must be an absolute directory name]);;
+	    esac],
 	   [PYTHON_SITE_DIR='$(pkgpythondir)'
 	    PYTHON_EXEC_DIR='$(pkgpyexecdir)'])
     fi

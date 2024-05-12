@@ -30,7 +30,7 @@ dicod_lang_check(dico_list_t list[2])
 {
     if (!list[0] && !list[1])
 	return 1;
-    
+
     if (dicod_lang_lazy_prefs) {
 	if (list[0] && dico_list_intersect_p(dicod_lang_lazy_prefs, list[0],
 					     cmp_string_ci, NULL))
@@ -39,7 +39,7 @@ dicod_lang_check(dico_list_t list[2])
 					     cmp_string_ci, NULL))
 	    return 1;
 	return 0;
-    } 
+    }
 
     if (dicod_lang_prefs[0] && list[0]
 	&& !dico_list_intersect_p(dicod_lang_prefs[0], list[0],
@@ -61,9 +61,9 @@ dicod_lang(dico_stream_t str, int argc, char **argv)
     if (argc > 2) {
 	int n = 0;
 	int i;
-	
+
 	for (i = 2; i < argc; i++) {
-	    if (n == 0 && strcmp(argv[i], ":") == 0) 
+	    if (n == 0 && strcmp(argv[i], ":") == 0)
 		n = 1;
 	    else {
 		if (!dicod_lang_prefs[n]) {
@@ -99,7 +99,7 @@ show_lang_lists(dico_stream_t str, dico_list_t list[2])
     dico_stream_write(str, " :", 2);
     dico_list_iterate(list[1], _display_pref, str);
     dico_stream_write(str, "\n", 1);
-}    
+}
 
 void
 dicod_show_lang_pref(dico_stream_t str, int argc, char **argv)
@@ -108,7 +108,7 @@ dicod_show_lang_pref(dico_stream_t str, int argc, char **argv)
     if (dicod_lang_lazy_prefs) {
 	dico_list_iterate(dicod_lang_lazy_prefs, _display_pref, str);
 	dico_stream_write(str, "\n", 1);
-    } else 
+    } else
 	show_lang_lists(str, dicod_lang_prefs);
 }
 
@@ -144,11 +144,11 @@ void
 dicod_show_lang_db(dico_stream_t str, int argc, char **argv)
 {
     size_t count = database_count();
-    if (count == 0) 
+    if (count == 0)
 	stream_printf(str, "554 No databases present\n");
     else {
 	dico_stream_t ostr;
-	
+
 	stream_printf(str, "110 %lu databases present\n",
 		      (unsigned long) count);
 	ostr = dicod_ostream_create(str, NULL);

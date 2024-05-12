@@ -414,7 +414,7 @@ dicod_database_print_definitions(char const *word,
 	stream_printf(stream, "151 \"%s\" %s \"%s\"\n",
 		      word, db->name, descr ? descr : "");
 	dicod_database_free_descr(db, descr);
-	
+
 	hdr = dicod_db_result_mime_header(res, i);
 	ostr = dicod_ostream_create(stream, hdr);
 	dicod_db_result_output(res, i, ostr);

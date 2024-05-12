@@ -1,6 +1,6 @@
 /* This file is part of GNU Dico
    Copyright (C) 2003-2024 Sergey Poznyakoff
-  
+
    GNU Dico is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 3, or (at your option)
@@ -57,7 +57,7 @@ void
 add(void *object, int argc, char **argv)
 {
     dico_list_t list = object;
-    
+
     while (--argc) {
 	if (dico_list_append(list, strdup(*++argv)))
 	    dico_log(L_ERR, errno, "dico_list_append");
@@ -68,9 +68,9 @@ void
 prep(void *object, int argc, char **argv)
 {
     dico_list_t list = object;
-    
+
     while (--argc) {
-	if (dico_list_prepend(list, strdup(*++argv))) 
+	if (dico_list_prepend(list, strdup(*++argv)))
 	    dico_log(L_ERR, errno, "dico_list_prepend");
     }
 }
@@ -81,7 +81,7 @@ find(void *object, int argc, char **argv)
     dico_iterator_t itr;
     char *arg = argv[1];
     char *text;
-    
+
     itr = shell_iterator();
     for (text = dico_iterator_first(itr);
 	 text;
@@ -114,7 +114,7 @@ pop(void *object, int argc, char **argv)
 	printf("%s\n", p);
     free(p);
 }
-    
+
 void
 number(void *object, int argc, char **argv)
 {
@@ -163,7 +163,7 @@ main(int argc, char **argv)
 {
     struct itr_shell sh;
     dico_list_t list;
-  
+
     dico_set_program_name(argv[0]);
 
     while (--argc) {
@@ -187,7 +187,7 @@ main(int argc, char **argv)
 	exit(1);
     }
     dico_list_set_comparator(list, string_comp, NULL);
-    
+
     while (argc--) {
 	if (dico_list_append(list, *argv++)) {
 	    perror("dico_list_append");
@@ -202,6 +202,6 @@ main(int argc, char **argv)
     sh.count = get_count;
     sh.cmdtab = cmdtab;
     shell(&sh);
-  
+
     return 0;
 }

@@ -58,7 +58,7 @@ static struct dico_strategy levstrat[] = {
 static void
 dicod_xlevdist(dico_stream_t str, int argc, char **argv)
 {
-    if (c_strcasecmp(argv[1], "tell") == 0) 
+    if (c_strcasecmp(argv[1], "tell") == 0)
 	stream_printf(str, "280 %d\n", levenshtein_distance);
     else if (isdigit(argv[1][0]) && argv[1][0] != '0' && argv[1][1] == 0) {
 	levenshtein_distance = atoi(argv[1]);
@@ -67,7 +67,7 @@ dicod_xlevdist(dico_stream_t str, int argc, char **argv)
     } else
 	stream_writez(str, "500 invalid argument\n");
 }
-	
+
 void
 register_lev(void)
 {
@@ -82,5 +82,3 @@ register_lev(void)
     dico_set_default_strategy("nlev");
     dicod_capa_register("xlev", cmd, NULL, NULL);
 }
-
-	  

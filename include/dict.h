@@ -55,7 +55,7 @@ typedef struct {
     Ushort bushu;        /* The radical number */
     Ushort numstrokes;   /* The number of strokes */
 } Bushu;
-    
+
 typedef struct {
     Ushort kanji;
     Ushort pos;
@@ -63,7 +63,7 @@ typedef struct {
 
 /* Dictionary entry structure.
  */
- 
+
 typedef struct translation {
     Bushu  bushu;
     Ushort Qindex;		/* for the "four corner" lookup method */
@@ -76,16 +76,16 @@ typedef struct translation {
     Ushort frequency;		/* frequency that kanji is used */
     Uchar grade_level;		/* akin to  school class level */
 
-    int refcnt;                 /* Number of references to this kanji */ 
-    
+    int refcnt;                 /* Number of references to this kanji */
+
     /* Offsets of the string values.  These point to the memory after
-       DictEntry structure (see DICT_.*_PTR macros, below).  
+       DictEntry structure (see DICT_.*_PTR macros, below).
        Offset 0 means there is no string.
-       All strings are zero-terminated (16-bit terminate with two 
+       All strings are zero-terminated (16-bit terminate with two
        zeroes. */
-    
+
     size_t english;		/* english translation string. */
-    size_t yomi;	        /* kana, actually */
+    size_t yomi;		/* kana, actually */
     size_t kanji;		/* can be pointer to pronunciation */
     size_t pinyin;              /* Pinyin pronunciation */
 } DictEntry;

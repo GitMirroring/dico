@@ -33,7 +33,7 @@ struct dico_stream {
 
     int flags;
     off_t bytes_in, bytes_out;
-    
+
     int last_err;
     int (*read) (void *, char *, size_t, size_t *);
     int (*write) (void *, const char *, size_t, size_t *);
@@ -46,7 +46,7 @@ struct dico_stream {
     int (*ctl) (void *, int, void *);
     const char *(*error_string) (void *, int);
     void *data;
-};    
+};
 
 static int
 _stream_seterror(dico_stream_t stream, int code, int perm)
@@ -74,7 +74,7 @@ int
 dico_stream_open(dico_stream_t stream)
 {
     int rc;
-    if (stream->open && (rc = stream->open(stream->data, stream->flags))) 
+    if (stream->open && (rc = stream->open(stream->data, stream->flags)))
 	return _stream_seterror(stream, rc, 1);
     stream->bytes_in = stream->bytes_out = 0;
     return 0;
@@ -108,7 +108,7 @@ dico_stream_set_read(dico_stream_t stream,
 }
 
 void
-dico_stream_set_write(dico_stream_t stream,    
+dico_stream_set_write(dico_stream_t stream,
 		      int (*writefn) (void *, const char *, size_t, size_t *))
 {
     stream->write = writefn;
@@ -185,7 +185,7 @@ dico_stream_seek(dico_stream_t stream, off_t offset, int whence)
     int rc;
     off_t res;
     size_t bpos;
-    
+
     if (stream->flags & _STR_ERR)
 	return -1;
     if (!stream->seek) {
@@ -204,7 +204,7 @@ dico_stream_seek(dico_stream_t stream, off_t offset, int whence)
     case DICO_SEEK_CUR:
 	break;
 
-    case DICO_SEEK_END: 
+    case DICO_SEEK_END:
 	bpos = _stream_buffer_offset(stream);
 	if (bpos + offset >= 0 && bpos + offset < _stream_orig_level(stream)) {
 	    if ((rc = stream->seek(stream->data, offset, whence, &res))) {
@@ -260,7 +260,7 @@ dico_stream_set_buffer(dico_stream_t stream, enum dico_buffer_type type,
     stream->bufsize = size;
     stream->cur = stream->buffer;
     stream->level = 0;
-    
+
     return 0;
 }
 
@@ -270,15 +270,15 @@ dico_stream_read_unbuffered(dico_stream_t stream, void *buf, size_t size,
 {
     int rc = 0;
 
-    if (!stream->read) 
+    if (!stream->read)
 	return _stream_seterror(stream, ENOSYS, 0);
 
-    if (!(stream->flags & DICO_STREAM_READ)) 
+    if (!(stream->flags & DICO_STREAM_READ))
 	return _stream_seterror(stream, EACCES, 1);
-    
+
     if (stream->flags & _STR_ERR)
 	return stream->last_err;
-    
+
     if ((stream->flags & _STR_EOF) || size == 0) {
        if (pread) {
 	   *pread = 0;
@@ -288,7 +288,7 @@ dico_stream_read_unbuffered(dico_stream_t stream, void *buf, size_t size,
 	   return EIO;
        }
     }
-    
+
     if (pread == NULL) {
 	size_t rdbytes;
 
@@ -324,11 +324,11 @@ dico_stream_write_unbuffered(dico_stream_t stream,
 			     size_t *pwrite)
 {
     int rc;
-    
-    if (!stream->write) 
+
+    if (!stream->write)
 	return _stream_seterror(stream, ENOSYS, 0);
 
-    if (!(stream->flags & DICO_STREAM_WRITE)) 
+    if (!(stream->flags & DICO_STREAM_WRITE))
 	return _stream_seterror(stream, EACCES, 1);
 
     if (stream->flags & _STR_ERR)
@@ -339,14 +339,14 @@ dico_stream_write_unbuffered(dico_stream_t stream,
 	    *pwrite = 0;
 	return 0;
     }
-    
+
     if (pwrite == NULL) {
 	size_t wrbytes;
 	const char *bufp = buf;
-	
+
 	while (size > 0
 	       && (rc = stream->write(stream->data, bufp, size, &wrbytes))
-	             == 0) {
+		     == 0) {
 	    if (wrbytes == 0) {
 		rc = EIO;
 		break;
@@ -370,18 +370,18 @@ _stream_fill_buffer(dico_stream_t stream)
     size_t n;
     int rc = 0;
     char c;
-    
+
     switch (stream->buftype) {
     case dico_buffer_none:
 	return 0;
-	
+
     case dico_buffer_full:
 	if (dico_stream_read_unbuffered(stream,
 					stream->buffer, stream->bufsize,
 					&stream->level))
 	    return 1;
 	break;
-	
+
     case dico_buffer_line:
 	for (n = 0;
 	     n < stream->bufsize
@@ -422,7 +422,7 @@ static int
 _stream_flush_buffer(dico_stream_t stream, int all)
 {
     char *end;
-		  
+
     if (stream->flags & _STR_DIRTY) {
 	if ((stream->flags & DICO_STREAM_SEEK)
 	    && dico_stream_seek(stream,
@@ -433,14 +433,14 @@ _stream_flush_buffer(dico_stream_t stream, int all)
 	switch (stream->buftype) {
 	case dico_buffer_none:
 	    abort(); /* should not happen */
-	    
+
 	case dico_buffer_full:
 	    if (dico_stream_write_unbuffered(stream, stream->cur,
 					     stream->level, NULL))
 		return 1;
 	    _stream_advance_buffer(stream, stream->level);
 	    break;
-	    
+
 	case dico_buffer_line:
 	    if (stream->level == 0)
 		break;
@@ -485,10 +485,10 @@ dico_stream_read(dico_stream_t stream, void *buf, size_t size, size_t *pread)
 
 	if (stream->flags & _STR_ERR)
 	    return stream->last_err;
-	
+
 	while (size) {
 	    size_t n;
-	    
+
 	    if (stream->level == 0) {
 		if (_stream_fill_buffer(stream)) {
 		    if (nbytes)
@@ -513,7 +513,7 @@ dico_stream_read(dico_stream_t stream, void *buf, size_t size, size_t *pread)
 
 	if (pread)
 	    *pread = nbytes;
-	else if (size) 
+	else if (size)
 	    return _stream_seterror(stream, EIO, 1);
     }
     return 0;
@@ -528,7 +528,7 @@ dico_stream_readln(dico_stream_t stream, char *buf, size_t size, size_t *pread)
 
     if (size == 0)
 	return EIO;
-    
+
     size--;
     for (n = 0; n < size && (rc = dico_stream_read(stream, &c, 1, NULL)) == 0;
 	 n++) {
@@ -550,27 +550,27 @@ dico_stream_getdelim(dico_stream_t stream, char **pbuf, size_t *psize,
     char *lineptr = *pbuf;
     size_t n = *psize;
     size_t cur_len = 0;
-    
+
     if (lineptr == NULL || n == 0) {
 	char *new_lineptr;
 	n = 120;
 	new_lineptr = realloc(lineptr, n);
-	if (new_lineptr == NULL) 
+	if (new_lineptr == NULL)
 	    return ENOMEM;
 	lineptr = new_lineptr;
     }
-    
+
     for (;;) {
 	char c;
 
 	rc = dico_stream_read(stream, &c, 1, NULL);
 	if (rc)
 	    break;
-	
+
 	/* Make enough space for len+1 (for final NUL) bytes.  */
 	if (cur_len + 1 >= n) {
 	    char *new_lineptr;
-	    
+
 	    if ((size_t) -1 / 3 * 2 <= n) {
 		rc = EOVERFLOW;
 		break;
@@ -591,7 +591,7 @@ dico_stream_getdelim(dico_stream_t stream, char **pbuf, size_t *psize,
 	    break;
     }
     lineptr[cur_len] = '\0';
-    
+
     *pbuf = lineptr;
     *psize = n;
 
@@ -615,10 +615,10 @@ dico_stream_write(dico_stream_t stream, const void *buf, size_t size)
     else {
 	size_t nbytes = 0;
 	const char *bufp = buf;
-	
+
 	if (stream->flags & _STR_ERR)
 	    return stream->last_err;
-	
+
 	while (1) {
 	    size_t n;
 
@@ -628,7 +628,7 @@ dico_stream_write(dico_stream_t stream, const void *buf, size_t size)
 
 	    if (size == 0)
 		break;
-	    
+
 	    n = stream->bufsize - stream->level;
 	    if (n > size)
 		n = size;
@@ -638,7 +638,7 @@ dico_stream_write(dico_stream_t stream, const void *buf, size_t size)
 	    bufp += n;
 	    size -= n;
 	    stream->flags |= _STR_DIRTY;
-	}	    
+	}
     }
     return 0;
 }
@@ -671,7 +671,7 @@ dico_stream_close(dico_stream_t stream)
 {
     int rc = 0;
     if (!stream)
-        return EINVAL;
+	return EINVAL;
     dico_stream_flush(stream);
     if (stream->close)
 	rc = stream->close(stream->data);
@@ -692,7 +692,7 @@ void
 dico_stream_destroy(dico_stream_t *stream)
 {
     if (!stream || !*stream)
-        return;
+	return;
     if ((*stream)->destroy)
 	(*stream)->destroy((*stream)->data);
     free(*stream);

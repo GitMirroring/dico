@@ -31,7 +31,7 @@ stream_printf(dico_stream_t str, const char *fmt, ...)
 {
     int len;
     char *buf;
-    
+
     va_list ap;
     va_start(ap, fmt);
     len = vasprintf(&buf, fmt, ap);
@@ -51,7 +51,7 @@ stream_write_multiline(dico_stream_t str, const char *text)
 {
     struct utf8_iterator itr;
     size_t len = 0;
-    
+
     for (utf8_iter_first(&itr, (char*)text);
 	 !utf8_iter_end_p(&itr);
 	 utf8_iter_next(&itr)) {
@@ -64,4 +64,3 @@ stream_write_multiline(dico_stream_t str, const char *text)
     if (len)
 	dico_stream_writeln(str, itr.curptr - len, len);
 }
-

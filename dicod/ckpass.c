@@ -47,7 +47,7 @@ chk_md5(const char *db_pass, const char *pass)
     size_t size = 0;
     unsigned char *buf = NULL;
     int rc;
-    
+
     md5_init_ctx(&md5context);
     md5_process_bytes(pass, strlen(pass), &md5context);
     md5_finish_ctx(&md5context, md5digest);
@@ -82,7 +82,7 @@ chk_smd5(const char *db_pass, const char *pass)
 	free(buf);
 	return -1;
     }
-  
+
     md5_init_ctx(&md5context);
     md5_process_bytes(pass, strlen(pass), &md5context);
     md5_process_bytes(buf + 16, size - 16, &md5context);
@@ -113,7 +113,7 @@ chk_sha(const char *db_pass, const char *pass)
 	free(buf);
 	return -1;
     }
-  
+
     rc = memcmp(sha1digest, buf, sizeof sha1digest);
     free(buf);
     return rc;
@@ -136,7 +136,7 @@ chk_ssha(const char *db_pass, const char *pass)
 	free(buf);
 	return -1;
     }
-  
+
     sha1_init_ctx(&sha1context);
     sha1_process_bytes(pass, strlen(pass), &sha1context);
     sha1_process_bytes(buf + 20, size - 20, &sha1context);
@@ -199,4 +199,3 @@ dicod_check_password(const char *db_pass, const char *pass)
 	return 0;
     return strcmp(pass, db_pass);
 }
-

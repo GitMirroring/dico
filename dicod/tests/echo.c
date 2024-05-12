@@ -46,7 +46,7 @@ echo_init_db(const char *dbname, int argc, char **argv)
     int null_mode = 0;
     dico_handle_t hp;
     char *prefix = NULL;
-    
+
     struct dico_option init_db_option[] = {
 	{ DICO_OPTSTR(null), dico_opt_bool, &null_mode },
 	{ DICO_OPTSTR(prefix), dico_opt_string, &prefix },

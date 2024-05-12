@@ -29,7 +29,7 @@ substr_sel(int cmd, struct dico_key *key, const char *dict_word)
     unsigned *sample;
     unsigned *tmp;
     int res;
-    
+
     switch (cmd) {
     case DICO_SELECT_BEGIN:
 	if (utf8_mbstr_to_wc(key->word, &sample, NULL))
@@ -37,7 +37,7 @@ substr_sel(int cmd, struct dico_key *key, const char *dict_word)
 	utf8_wc_strupper(sample);
 	key->call_data = sample;
 	break;
-	
+
     case DICO_SELECT_RUN:
 	sample = key->call_data;
 	if (utf8_mbstr_to_wc(dict_word, &tmp, NULL))
@@ -87,7 +87,7 @@ substr_run_test(int argc, char **argv)
 
     argc--;
     argv++;
-    
+
     if (argc != 2) {
 	dico_log(L_ERR, 0, "bad argument list for substr test");
 	return 1;

@@ -114,7 +114,7 @@ metaph_code_eq(struct metaph_code *a, struct metaph_code *b)
 
     if (a == NULL || b == NULL)
 	return 0;
-    
+
     if (a->length != b->length)
 	return 0;
     length = a->length;
@@ -122,7 +122,7 @@ metaph_code_eq(struct metaph_code *a, struct metaph_code *b)
     sb = b->segm_head;
     while (length) {
 	size_t segm_length = length < METAPH_SEGM_SIZE
-	                        ? length : METAPH_SEGM_SIZE;
+				? length : METAPH_SEGM_SIZE;
 	if (memcmp(sa->segm, sb->segm, segm_length))
 	    return 0;
 	length -= segm_length;
@@ -156,7 +156,7 @@ metaph_code_add(struct metaph_code *code, char const *str)
 	while (length) {
 	    char *p;
 	    size_t n;
-	    
+
 	    if (metaph_code_get_buffer(code, &p, &n))
 		return -1;
 	    if (n > length)
@@ -178,20 +178,20 @@ metaph_code_dump(struct metaph_code *code)
     else {
 	struct metaph_segment *s;
 	size_t length;
-	
+
 	printf("length = %zu\n", code->length);
 	printf("nsegm = %zu\n", code->nsegm);
 	length = code->length;
 	for (s = code->segm_head; s; s = s->next) {
 	    size_t i;
-	    
+
 	    putchar('\'');
 	    for (i = 0; length > 0 && i < METAPH_SEGM_SIZE; i++, length--)
 		putchar(s->segm[i]);
 	    printf("'\n");
 	}
     }
-}    
+}
 
 static void
 metaph_code_print(struct metaph_code *code)
@@ -201,15 +201,15 @@ metaph_code_print(struct metaph_code *code)
     else {
 	struct metaph_segment *s;
 	size_t length;
-	
+
 	length = code->length;
 	for (s = code->segm_head; s; s = s->next) {
 	    size_t i;
-            for (i = 0; length > 0 && i < METAPH_SEGM_SIZE; i++, length--)
+	    for (i = 0; length > 0 && i < METAPH_SEGM_SIZE; i++, length--)
 		putchar(s->segm[i]);
 	}
     }
-}    
+}
 
 typedef struct metaph_code *double_metaphone_code[2];
 
@@ -222,15 +222,15 @@ double_metaphone_add(double_metaphone_code code,
 	if (!code[1]) {
 	    code[1] = metaph_code_dup(code[0]);
 	    if (!code[1]) {
-                DICO_LOG_MEMERR();
+		DICO_LOG_MEMERR();
 		return -1;
 	    }
 	}
-        if (metaph_code_add(code[1], secondary))
+	if (metaph_code_add(code[1], secondary))
 	    return -1;
     } else if (code[1]) {
-        if (metaph_code_add(code[1], primary))
-            return -1;
+	if (metaph_code_add(code[1], primary))
+	    return -1;
     }
     metaph_code_add(code[0], primary);
     return 0;
@@ -287,7 +287,7 @@ is_slavo_germanic(unsigned const *str)
 	0
     };
     int i;
-    
+
     for (i = 0; pat[i]; i++) {
 	if (utf8_wc_strstr(str, pat))
 	    return 1;
@@ -309,18 +309,18 @@ double_metaphone_encode(double_metaphone_code code,
 	if (double_metaphone_add(c,a,b))	\
 	    goto err;				\
     } while (0)
-    int slavo_germanic = -1; 
+    int slavo_germanic = -1;
 #define IS_SLAVO_GERMANIC()						\
     ((slavo_germanic == -1)						\
      ? (slavo_germanic = is_slavo_germanic(buf)) : slavo_germanic)
-    
+
     if (utf8_mbstr_to_wc(str, &buf, NULL)) {
 	dico_log(L_ERR, errno, "%s: cannot convert \"%s\"", __func__, str);
 	return -1;
     }
     length = utf8_wc_strlen(buf);
     last = length - 1;
-    
+
     code[0] = metaph_code_create();
     if (!code[0]) {
 	dico_log(L_ERR, 0, _("%s: not enough memory"), __func__);
@@ -330,7 +330,7 @@ double_metaphone_encode(double_metaphone_code code,
     code[1] = NULL;
 
     utf8_wc_strupper(buf);
-    
+
     current = 0;
     if (looking_at(buf, current, 0, "GN|KN|PN|WR|PS"))
 	++current;
@@ -363,15 +363,15 @@ double_metaphone_encode(double_metaphone_code code,
 	    DMETAPH_ADD(code, "S", NULL);
 	    ++current;
 	    break;
-	    
+
 	case 'C':
 	    /* Various Germanic */
 	    if (current > 1
-		&& !ISVOWEL(buf, current, -2) 
-		&& looking_at(buf, current, -1, "ACH") 
+		&& !ISVOWEL(buf, current, -2)
+		&& looking_at(buf, current, -1, "ACH")
 		&& buf[current + 2] != 'I'
 		&& (buf[current + 2] != 'E'
-		    || looking_at(buf, current, -2, "BACHER|MACHER"))) {       
+		    || looking_at(buf, current, -2, "BACHER|MACHER"))) {
 		DMETAPH_ADD(code, "K", NULL);
 		current += 2;
 		break;
@@ -391,7 +391,7 @@ double_metaphone_encode(double_metaphone_code code,
 		break;
 	    }
 
-	    if (looking_at(buf, current, 0, "CH")) {       
+	    if (looking_at(buf, current, 0, "CH")) {
 		/* 'michael'? */
 		if (current > 0 && looking_at(buf, current, 0, "CHAE")) {
 		    DMETAPH_ADD(code, "K", "X");
@@ -402,7 +402,7 @@ double_metaphone_encode(double_metaphone_code code,
 		/* Greek roots e.g. 'chemistry', 'chorus' */
 		if (current == 0
 		    && (looking_at(buf, current, 1,
-				   "HARAC|HARIS|HOR|HYM|HIA|HEM")) 
+				   "HARAC|HARIS|HOR|HYM|HIA|HEM"))
 		    && !looking_at(buf, 0, 0, "CHORE")) {
 		    DMETAPH_ADD(code, "K", NULL);
 		    current += 2;
@@ -420,7 +420,7 @@ double_metaphone_encode(double_metaphone_code code,
 			&& looking_at(buf, current, +2,
 				      "L|R|N|M|B|H|F|V|W| "))) {
 		    DMETAPH_ADD(code, "K", NULL);
-		} else {  
+		} else {
 		    if (current > 0) {
 			if (looking_at(buf, 0, 0, "MC"))
 			    /* e.g., "McHugh" */
@@ -455,7 +455,7 @@ double_metaphone_encode(double_metaphone_code code,
 		if (looking_at(buf, current, +2, "I|E|H")
 		    && !looking_at(buf, current, +2, "HU")) {
 		    /* 'accident', 'accede' 'succeed' */
-		    if ((current == 1 && buf[current - 1] == 'A') 
+		    if ((current == 1 && buf[current - 1] == 'A')
 			|| looking_at(buf, current, -1, "UCCEE|UCCES"))
 			DMETAPH_ADD(code, "KS", NULL);
 		    /* 'bacci', 'bertucci', other italian */
@@ -470,7 +470,7 @@ double_metaphone_encode(double_metaphone_code code,
 		    break;
 		}
 	    }
-	    
+
 	    if (looking_at(buf, current, 0, "CK|CG|CQ")) {
 		DMETAPH_ADD(code, "K", NULL);
 		current += 2;
@@ -488,12 +488,12 @@ double_metaphone_encode(double_metaphone_code code,
 	    }
 
 	    DMETAPH_ADD(code, "K", NULL);
-                                
+
 	    /* Name sent in 'mac caffrey', 'mac gregor' */
 	    if (looking_at(buf, current, +1, " C| Q| G"))
 		current += 3;
 	    else
-		if (looking_at(buf, current, +1, "C|K|Q") 
+		if (looking_at(buf, current, +1, "C|K|Q")
 		    && !looking_at(buf, current, +1, "CE|CI"))
 		    current += 2;
 		else
@@ -514,7 +514,7 @@ double_metaphone_encode(double_metaphone_code code,
 		    break;
 		}
 	    }
-	    
+
 	    if (looking_at(buf, current, 0, "DT|DD")) {
 		DMETAPH_ADD(code, "T", NULL);
 		current += 2;
@@ -598,7 +598,7 @@ double_metaphone_encode(double_metaphone_code code,
 	    /* -ges-,-gep-,-gel-, -gie- at the beginning */
 	    if (current == 0
 		&& (buf[current + 1] == 'Y'
-		    || looking_at(buf, current, +1, 
+		    || looking_at(buf, current, +1,
 				  "ES|EP|EB|EL|EY|IB|IL|IN|IE|EI|ER"))) {
 		DMETAPH_ADD(code, "K", "J");
 		current += 2;
@@ -656,7 +656,7 @@ double_metaphone_encode(double_metaphone_code code,
 		    DMETAPH_ADD(code, "H", NULL);
 		else
 		    DMETAPH_ADD(code, "J", "H");
-	    
+
 		current++;
 		break;
 	    }
@@ -674,9 +674,9 @@ double_metaphone_encode(double_metaphone_code code,
 		else if (!looking_at(buf, current, +1, "L|T|K|S|N|M|B|Z")
 			 && !looking_at(buf, current, -1, "S|K|L"))
 		    DMETAPH_ADD(code, "J", NULL);
-	    
+
 	    ++current;
-	    if (buf[current] == 'J') 
+	    if (buf[current] == 'J')
 		++current;
 	    break;
 
@@ -723,13 +723,13 @@ double_metaphone_encode(double_metaphone_code code,
 		++current;
 	    DMETAPH_ADD(code, "N", NULL);
 	    break;
-	    
+
 	case L'Ń':
 	case L'Ñ':
 	    current++;
 	    DMETAPH_ADD(code, "N", NULL);
 	    break;
-	    
+
 	case 'P':
 	    if (buf[current + 1] == 'H') {
 		DMETAPH_ADD(code, "F", NULL);
@@ -743,14 +743,14 @@ double_metaphone_encode(double_metaphone_code code,
 		current++;
 	    DMETAPH_ADD(code, "P", NULL);
 	    break;
-	    
+
 	case 'Q':
 	    ++current;
 	    if (buf[current] == 'Q')
 		++current;
 	    DMETAPH_ADD(code, "K", NULL);
 	    break;
-	    
+
 	case 'R':
 	    /* french e.g. 'rogier', but exclude 'hochmeier' */
 	    if (current == last
@@ -760,12 +760,12 @@ double_metaphone_encode(double_metaphone_code code,
 		DMETAPH_ADD(code, NULL, "R");
 	    else
 		DMETAPH_ADD(code, "R", NULL);
-	    
+
 	    ++current;
 	    if (buf[current] == 'R')
 		++current;
 	    break;
-	    
+
 	case 'S':
 	    /* special cases 'island', 'isle', 'carlisle', 'carlysle' */
 	    if (looking_at(buf, current, -1, "ISL|YSL")) {
@@ -778,7 +778,7 @@ double_metaphone_encode(double_metaphone_code code,
 		current++;
 		break;
 	    }
-	    
+
 	    if (looking_at(buf, current, 0, "SH")) {
 		/* germanic */
 		if (looking_at(buf, current, +1, "HEIM|HOEK|HOLM|HOLZ"))
@@ -813,7 +813,7 @@ double_metaphone_encode(double_metaphone_code code,
 		    current++;
 		break;
 	    }
-	    
+
 	    if (looking_at(buf, current, 0, "SC")) {
 		/* Schlesinger's rule */
 		if (buf[current + 2] == 'H') {
@@ -835,7 +835,7 @@ double_metaphone_encode(double_metaphone_code code,
 			break;
 		    }
 		}
-		
+
 		if (looking_at(buf, current, +2, "I|E|Y")) {
 		    DMETAPH_ADD(code, "S", NULL);
 		    current += 3;
@@ -850,26 +850,26 @@ double_metaphone_encode(double_metaphone_code code,
 		DMETAPH_ADD(code, NULL, "S");
 	    else
 		DMETAPH_ADD(code, "S", NULL);
-	    
+
 	    if (looking_at(buf, current, +1, "S|Z"))
 		current += 2;
 	    else
 		current++;
 	    break;
-	    
+
 	case 'T':
 	    if (looking_at(buf, current, 0, "TION")) {
 		DMETAPH_ADD(code, "X", NULL);
 		current += 3;
 		break;
 	    }
-	    
+
 	    if (looking_at(buf, current, 0, "TIA|TCH")) {
 		DMETAPH_ADD(code, "X", NULL);
 		current += 3;
 		break;
 	    }
-	    
+
 	    if (looking_at(buf, current, 0, "TH|TTH")) {
 		/* special case 'thomas', 'thames' or germanic */
 		if (looking_at(buf, current, +2, "OM|AM")
@@ -881,14 +881,14 @@ double_metaphone_encode(double_metaphone_code code,
 		current += 2;
 		break;
 	    }
-	    
+
 	    if (looking_at(buf, current, +1, "T|D"))
 		current += 2;
 	    else
 		current++;
 	    DMETAPH_ADD(code, "T", NULL);
 	    break;
-	    
+
 	case 'V':
 	    if (buf[current + 1] == 'V')
 		current += 2;
@@ -896,7 +896,7 @@ double_metaphone_encode(double_metaphone_code code,
 		current++;
 	    DMETAPH_ADD(code, "F", NULL);
 	    break;
-	    
+
 	case 'W':
 	    /* can also be in middle of word */
 	    if (looking_at(buf, current, 0, "WR")) {
@@ -904,7 +904,7 @@ double_metaphone_encode(double_metaphone_code code,
 		current += 2;
 		break;
 	    }
-	    
+
 	    if (current == 0
 		&& (ISVOWEL(buf, current, +1)
 		    || looking_at(buf, current, 0, "WH"))) {
@@ -932,20 +932,20 @@ double_metaphone_encode(double_metaphone_code code,
 	    /* else skip it */
 	    current++;
 	    break;
-	    
+
 	case 'X':
 	    /* french e.g. breaux */
 	    if (!(current == last
 		  && (looking_at(buf, current, -3, "IAU|EAU")
 		      || looking_at(buf, current, -2, "AU|OU"))))
 		DMETAPH_ADD(code, "KS", NULL);
-	    
+
 	    if (looking_at(buf, current, +1, "C|X"))
 		current += 2;
 	    else
 		current++;
 	    break;
-	    
+
 	case 'Z':
 	    /* chinese pinyin e.g. 'zhao' */
 	    if (buf[current + 1] == 'H') {
@@ -958,12 +958,12 @@ double_metaphone_encode(double_metaphone_code code,
 		DMETAPH_ADD(code, "S", "TS");
 	    } else
 		DMETAPH_ADD(code, "S", NULL);
-	    
+
 	    ++current;
 	    if (buf[current] == 'Z')
 		++current;
 	    break;
-	    
+
 	default:
 	    ++current;
 	}
@@ -976,7 +976,7 @@ double_metaphone_encode(double_metaphone_code code,
 	metaph_code_trim(code[0], max_length);
 	metaph_code_trim(code[1], max_length);
     }
-    
+
     return 0;
 err:
     free(buf);
@@ -1000,7 +1000,7 @@ metaphone2_sel(int cmd, struct dico_key *key, const char *dict_word)
 {
     double_metaphone_code code;
     int res;
-    
+
     switch (cmd) {
     case DICO_SELECT_BEGIN:
 	if (double_metaphone_encode(code, key->word, double_metaphone_length))
@@ -1032,7 +1032,7 @@ static struct dico_strategy metaphone2_strat = {
     "Match Double Metaphone encodings",
     metaphone2_sel
 };
-    
+
 static int
 metaphone2_init(int argc, char **argv)
 {
@@ -1047,30 +1047,30 @@ metaphone2_init(int argc, char **argv)
 	return 1;
     if (size > 0)
 	double_metaphone_length = size;
-    
+
     dico_strategy_add(&metaphone2_strat);
     return 0;
 }
-    
+
 static int
 metaphone2_run_test(int argc, char **argv)
 {
     char *modname, *cmd;
-    
+
     argc--;
     modname = *argv++;
     dico_set_program_name(modname);
-    
+
     if (argc == 0) {
 	dico_log(L_ERR, 0, "bad argument list");
 	return 1;
     }
-    
+
     argc--;
     cmd = *argv++;
     if (strcmp(cmd, "build") == 0) {
 	struct metaph_code *code;
-	
+
 	code = metaph_code_create();
 	assert(code != NULL);
 	while (argc--) {
@@ -1082,7 +1082,7 @@ metaphone2_run_test(int argc, char **argv)
     } else if (strcmp(cmd, "compare") == 0) {
 	struct metaph_code *a, *b;
 	int res;
-	
+
 	a = metaph_code_create();
 	assert(a != NULL);
 	while (argc--) {
@@ -1099,7 +1099,7 @@ metaphone2_run_test(int argc, char **argv)
 	    dico_log(L_ERR, 0, "bad argument list");
 	    return 1;
 	}
-	
+
 	b = metaph_code_create();
 	assert(b != NULL);
 	while (argc--) {
@@ -1122,7 +1122,7 @@ metaphone2_run_test(int argc, char **argv)
 	while (argc--) {
 	    char *arg = *argv++;
 	    double_metaphone_code code;
-	    
+
 	    if (double_metaphone_encode(code, arg, len))
 		dico_log(L_ERR, errno, "can't encode");
 	    else {

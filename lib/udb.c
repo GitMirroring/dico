@@ -53,7 +53,7 @@ dico_udb_close(dico_udb_t db)
 
     if (!db->_db_close)
 	rc = 0;
-    else 
+    else
 	rc = db->_db_close(db->handle);
     db->handle = NULL;
     return rc;
@@ -112,7 +112,7 @@ dico_udb_create(dico_udb_t *pdb,
     int rc;
     struct dico_udb_def *def;
     struct dico_udb *uptr;
-    
+
     rc = dico_url_parse(&url, urlstr);
     if (rc) {
 	errno = EINVAL;
@@ -129,7 +129,7 @@ dico_udb_create(dico_udb_t *pdb,
     uptr = calloc(1, sizeof(*uptr));
     if (!uptr)
 	return 1;
-    
+
     uptr->url = url;
     uptr->qpw = qpw;
     uptr->qgrp = qgrp;
@@ -143,4 +143,3 @@ dico_udb_create(dico_udb_t *pdb,
     *pdb = uptr;
     return 0;
 }
-

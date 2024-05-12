@@ -26,7 +26,7 @@ dico_list_t sasl_anon_groups;
 #ifdef WITH_GSASL
 #include <gsaslstr.h>
 
-static Gsasl *ctx;   
+static Gsasl *ctx;
 
 static int
 cmp_names(const void *item, const void *data, void *closure)
@@ -46,14 +46,14 @@ disabled_mechanism_p(char *name)
 static void
 send_challenge(dico_stream_t str, char *data)
 {
-    if (data[0]) { 
+    if (data[0]) {
 	 stream_printf(str, "130 challenge follows\n");
 	 /* FIXME: use dicod_ostream_create */
 	 stream_writez(str, data);
 	 stream_writez(str, "\n.\n");
     }
     stream_printf(str, "330 send response\n");
-}    
+}
 
 #define SASLRESP "SASLRESP"
 
@@ -62,7 +62,7 @@ get_sasl_response(dico_stream_t str, char **pret, char **pbuf, size_t *psize)
 {
     char *p;
     size_t rdbytes;
-    
+
     if (get_input_line(str, pbuf, psize, &rdbytes))
 	return 1;
     p = *pbuf;
@@ -116,7 +116,7 @@ sasl_auth(dico_stream_t str, char *mechanism, char *initresp,
     size_t insize;
     struct sasl_data sdata = { NULL, 0 };
 
-    if (disabled_mechanism_p(mechanism)) 
+    if (disabled_mechanism_p(mechanism))
 	return RC_NOMECH;
     rc = gsasl_server_start (ctx, mechanism, &sess_ctx);
     if (rc != GSASL_OK) {
@@ -137,10 +137,10 @@ sasl_auth(dico_stream_t str, char *mechanism, char *initresp,
     input = inbuf;
     while ((rc = gsasl_step64(sess_ctx, input, &output)) == GSASL_NEEDS_MORE) {
 	send_challenge(str, output);
-	
+
 	free(output);
 	output = NULL;
-	if (get_sasl_response(str, &input, &inbuf, &insize)) 
+	if (get_sasl_response(str, &input, &inbuf, &insize))
 	    return RC_FAIL;
     }
 
@@ -153,12 +153,12 @@ sasl_auth(dico_stream_t str, char *mechanism, char *initresp,
     }
 
     /* Some SASL mechanisms output data when GSASL_OK is returned */
-    if (output[0]) 
+    if (output[0])
 	send_challenge(str, output);
 
     free(output);
     free(inbuf);
-    
+
     if (sdata.username == NULL) {
 	dico_log(L_ERR, 0, _("GSASL %s: cannot get username"), mechanism);
 	gsasl_finish(sess_ctx);
@@ -185,7 +185,7 @@ dicod_saslauth(dico_stream_t str, int argc, char **argv)
     int rc;
     char *resp;
     Gsasl_session *sess;
-    
+
     if (dico_udb_open(user_db)) {
 	dico_log(L_ERR, 0, _("failed to open user database"));
 	stream_writez(str,
@@ -235,7 +235,7 @@ cb_validate(Gsasl *ctx, Gsasl_session *sctx)
 
     rc = dico_udb_check_password(user_db, authid, pass);
     if (rc == ENOSYS) {
-        if (dico_udb_get_password(user_db, authid, &dbpass)) {
+	if (dico_udb_get_password(user_db, authid, &dbpass)) {
 	    dico_log(L_ERR, 0,
 		     _("failed to get password for `%s' from the database"),
 		     authid);
@@ -247,10 +247,10 @@ cb_validate(Gsasl *ctx, Gsasl_session *sctx)
     if (rc == 0) {
 	pdata->username = xstrdup(authid);
 	return GSASL_OK;
-    } 
+    }
     return GSASL_AUTHENTICATION_ERROR;
 }
-    
+
 static int
 callback(Gsasl *ctx, Gsasl_session *sctx, Gsasl_property prop)
 {
@@ -276,7 +276,7 @@ callback(Gsasl *ctx, Gsasl_session *sctx, Gsasl_property prop)
 		     _("failed to get password for `%s' from the database"),
 		     user);
 	    return GSASL_NO_PASSWORD;
-	} 
+	}
 	gsasl_property_set(sctx, prop, string);
 	free(string);
 	break;
@@ -315,7 +315,7 @@ callback(Gsasl *ctx, Gsasl_session *sctx, Gsasl_property prop)
 	user = gsasl_property_get(sctx, GSASL_AUTHZID);
 	pdata->username = user;
 	break;
-	
+
     default:
 	rc = GSASL_NO_CALLBACK;
 	/*dico_log(L_NOTICE, 0, _("Unsupported callback property %d"), prop);*/
@@ -362,7 +362,7 @@ register_sasl(void)
   int rc;
   char *listmech;
   struct wordsplit ws;
-  
+
   if (!sasl_enable || init_sasl_0())
       return;
   rc =  gsasl_server_mechlist(ctx, &listmech);

@@ -40,7 +40,7 @@ dbtext_open(void **handle, dico_url_t url, const char *unused)
 	free(dirname);
 	return 1;
     }
-    
+
     free(dirname);
     *handle = url;
     return 0;
@@ -64,7 +64,7 @@ find_key(FILE *fp, const char *key, char **pbuf, size_t *psize)
 {
     ssize_t size;
     size_t keylen = strlen(key);
-    
+
     while ((size = getline(pbuf, psize, fp)) > 0) {
 	char *p = *pbuf;
 
@@ -95,7 +95,7 @@ dbtext_get_password(void *handle, const char *qpw, const char *key,
     char *full_name;
     FILE *fp = open_file(dir, qpw, &full_name);
     int rc;
-	
+
     if (fp) {
 	char *buf = NULL;
 	size_t size = 0;
@@ -131,7 +131,7 @@ dbtext_get_groups(void *handle, const char *qgr, const char *key,
     FILE *fp = open_file(dir, qgr, &full_name);
     int rc;
     dico_list_t groups = NULL;
-    
+
     if (fp) {
 	char *buf = NULL;
 	size_t size = 0;
@@ -162,4 +162,3 @@ struct dico_udb_def text_udb_def = {
     dbtext_get_password,
     dbtext_get_groups
 };
-

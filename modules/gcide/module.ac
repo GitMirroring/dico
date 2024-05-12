@@ -1,13 +1,13 @@
 AC_CHECK_HEADERS([sys/inotify.h])
 AC_CHECK_FUNCS([inotify_init])
 AC_ARG_WITH(inotify,
-        AS_HELP_STRING([--with-inotify],[compile with inotify(7) support (Linux-
+	AS_HELP_STRING([--with-inotify],[compile with inotify(7) support (Linux-
 specific)]),
-        [status_inotify=${withval}],
-        [status_inotify=probe])
+	[status_inotify=${withval}],
+	[status_inotify=probe])
 if test $status_inotify != no; then
   if test "$ac_cv_header_sys_inotify_h" = yes &&
-             test "$ac_cv_func_inotify_init" = yes; then
+	     test "$ac_cv_func_inotify_init" = yes; then
     status_inotify=yes
   elif test $status_inotify = probe; then
     status_inotify=no

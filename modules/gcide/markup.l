@@ -18,50 +18,50 @@
 #include <config.h>
 #include <dico.h>
 #include <unistd.h>
-#include <getopt.h>    
+#include <getopt.h>
 #include <stdio.h>
-#include <stdlib.h>    
+#include <stdlib.h>
 #include <errno.h>
 #include <sysexits.h>
-#include <setjmp.h>    
+#include <setjmp.h>
 #include <appi18n.h>
 #include "gcide.h"
 #include "wordsplit.h"
 
-#define yy_create_buffer      gcide_markup_yy_create_buffer       
-#define yy_delete_buffer      gcide_markup_yy_delete_buffer       
-#define yy_flex_debug	      gcide_markup_yy_flex_debug          
-#define yy_init_buffer	      gcide_markup_yy_init_buffer         
-#define yy_flush_buffer	      gcide_markup_yy_flush_buffer        
-#define yy_load_buffer_state  gcide_markup_yy_load_buffer_state   
-#define yy_switch_to_buffer   gcide_markup_yy_switch_to_buffer    
-#define yyin		      gcide_markup_yyin                   
-#define yyleng		      gcide_markup_yyleng                 
-#define yylex		      gcide_markup_yylex                  
-#define yylineno	      gcide_markup_yylineno               
-#define yyout		      gcide_markup_yyout                  
-#define yyrestart	      gcide_markup_yyrestart              
-#define yytext		      gcide_markup_yytext                 
-#define yywrap		      gcide_markup_yywrap                 
-#define yyalloc		      gcide_markup_yyalloc                
-#define yyrealloc	      gcide_markup_yyrealloc              
+#define yy_create_buffer      gcide_markup_yy_create_buffer
+#define yy_delete_buffer      gcide_markup_yy_delete_buffer
+#define yy_flex_debug	      gcide_markup_yy_flex_debug
+#define yy_init_buffer	      gcide_markup_yy_init_buffer
+#define yy_flush_buffer	      gcide_markup_yy_flush_buffer
+#define yy_load_buffer_state  gcide_markup_yy_load_buffer_state
+#define yy_switch_to_buffer   gcide_markup_yy_switch_to_buffer
+#define yyin		      gcide_markup_yyin
+#define yyleng		      gcide_markup_yyleng
+#define yylex		      gcide_markup_yylex
+#define yylineno	      gcide_markup_yylineno
+#define yyout		      gcide_markup_yyout
+#define yyrestart	      gcide_markup_yyrestart
+#define yytext		      gcide_markup_yytext
+#define yywrap		      gcide_markup_yywrap
+#define yyalloc		      gcide_markup_yyalloc
+#define yyrealloc	      gcide_markup_yyrealloc
 #define yyfree                gcide_markup_yyfree
 #define yyunput               gcide_markup_yyunput
 
-#define yylex_destroy         gcide_markup_yylex_destroy  
-#define yyget_debug	      gcide_markup_yyget_debug    
-#define yyset_debug	      gcide_markup_yyset_debug    
-#define yyget_extra	      gcide_markup_yyget_extra    
-#define yyset_extra	      gcide_markup_yyset_extra    
-#define yyget_in	      gcide_markup_yyget_in       
-#define yyset_in	      gcide_markup_yyset_in       
-#define yyget_out	      gcide_markup_yyget_out      
-#define yyset_out	      gcide_markup_yyset_out      
-#define yyget_leng	      gcide_markup_yyget_leng     
-#define yyget_text	      gcide_markup_yyget_text     
-#define yyget_lineno	      gcide_markup_yyget_lineno   
-#define yyset_lineno	      gcide_markup_yyset_lineno   
-    
+#define yylex_destroy         gcide_markup_yylex_destroy
+#define yyget_debug	      gcide_markup_yyget_debug
+#define yyset_debug	      gcide_markup_yyset_debug
+#define yyget_extra	      gcide_markup_yyget_extra
+#define yyset_extra	      gcide_markup_yyset_extra
+#define yyget_in	      gcide_markup_yyget_in
+#define yyset_in	      gcide_markup_yyset_in
+#define yyget_out	      gcide_markup_yyget_out
+#define yyset_out	      gcide_markup_yyset_out
+#define yyget_leng	      gcide_markup_yyget_leng
+#define yyget_text	      gcide_markup_yyget_text
+#define yyget_lineno	      gcide_markup_yyget_lineno
+#define yyset_lineno	      gcide_markup_yyset_lineno
+
 }
 %{
 
@@ -122,9 +122,9 @@ text_add_str(char const *s, size_t l)
     while (textsize - textpos < l) {
 	size_t nsize;
 	char *newp;
-	
+
 	if (SIZE_MAX / 2 < textsize)
-	    memerr("text_add_str");    
+	    memerr("text_add_str");
 	nsize = 2 * textsize;
 	newp = realloc(textspace, nsize);
 	if (!newp)
@@ -151,7 +151,7 @@ text_add_chr(int ch)
 
 #define text_segment_length() (textpos - textstart)
 
-static size_t 
+static size_t
 text_segment_finish()
 {
     size_t ret = textstart;
@@ -175,11 +175,11 @@ alloc_tag(enum gcide_content_type type)
     case gcide_content_taglist:
 	    list = dico_list_create();
 	    if (!list) {
-	        free(tag);
-	        memerr("alloc_tag");
+		free(tag);
+		memerr("alloc_tag");
 	    }
 	    dico_list_set_free_item(list, free_tag, NULL);
-            tag->v.tag.taglist = list;
+	    tag->v.tag.taglist = list;
 	    break;
     case gcide_content_text:
 	    break;
@@ -229,7 +229,7 @@ static void
 append_tag(struct gcide_tag *tag)
 {
     dico_list_t list;
-	
+
     switch (current_tag->tag_type) {
     case gcide_content_text: {
 	struct gcide_tag *subtag = alloc_tag(gcide_content_text);
@@ -252,7 +252,7 @@ append_tag(struct gcide_tag *tag)
     case gcide_content_taglist:
 	break;
     }
-    
+
     dico_list_append(current_tag->v.tag.taglist, tag);
 }
 
@@ -311,7 +311,7 @@ WS [ \t]
   }
   "\\'"{XD}{XD} {
       char const *s = gcide_escape_to_utf8(yytext+2);
-		 
+
       if (s)
 	  text_add_str(s, strlen(s));
       else {
@@ -344,7 +344,7 @@ WS [ \t]
 <COMMENT>{
   [^>]+">" {
       if (yyleng >= endtaglen &&
-          memcmp(yytext + yyleng - endtaglen, endtag, endtaglen) == 0)
+	  memcmp(yytext + yyleng - endtaglen, endtag, endtaglen) == 0)
 	  BEGIN(retstate);
   }
   .|\n         ;
@@ -389,14 +389,14 @@ pop_tag(const char *tagstr, size_t taglen)
     if (len == 2 && (memcmp(tagstr, "pr", len) == 0 ||
 		     memcmp(tagstr, "hw", len) == 0))
 	BEGIN(INITIAL);
-    
+
     if (current_tag->tag_type == gcide_content_taglist &&
 	strlen(current_tag->tag_name) == len &&
 	memcmp(current_tag->tag_name, tagstr, len) == 0)
 	current_tag = dico_list_pop(tagstk);
     else {
 	size_t i, count;
-	
+
 	/* Try to find matching entry */
 	count = dico_list_count(tagstk);
 	for (i = count; i > 0; i--) {
@@ -405,7 +405,7 @@ pop_tag(const char *tagstr, size_t taglen)
 		    strlen(p->tag_name) == len &&
 		    memcmp(p->tag_name, tagstr, len) == 0) {
 		    do {
-		        if (current_tag->tag_type == gcide_content_taglist)
+			if (current_tag->tag_type == gcide_content_taglist)
 			    dico_log(L_WARN, 0, "%s:%zu: unclosed %s tag",
 				     LOCUS_FILE, LOCUS_OFF(current_tag->offset),
 				     current_tag->tag_name);
@@ -423,7 +423,7 @@ struct walk_closure {
     int (*fun)(int, struct gcide_tag *, void *);
     void *data;
 };
-    
+
 static int
 inorder_helper(void *item, void *data)
 {
@@ -494,7 +494,7 @@ early_fixup(void *item, void *data)
 {
     struct gcide_tag *tag = item;
     int translate = data ? *(int*)data : 0;
-    
+
     switch (tag->tag_type) {
     case gcide_content_text:
 	if (translate)
@@ -516,12 +516,12 @@ gcide_markup_parse(char const *text, size_t len, int dbg, struct gcide_locus *lo
 {
     struct gcide_parse_tree *tp;
     struct gcide_tag *p;
-    
+
     input_buf = text;
     input_len = len;
     token_beg = token_end = 0;
     base_locus = loc;
-    
+
     if (setjmp(errbuf)) {
 	free(textspace);
 	dico_list_destroy(&tagstk);
@@ -529,7 +529,7 @@ gcide_markup_parse(char const *text, size_t len, int dbg, struct gcide_locus *lo
     }
 
     if (SIZE_MAX / 2 < len)
-	memerr("gcide_markup_parse");    
+	memerr("gcide_markup_parse");
     textsize = 2 * len;
     textspace = malloc(textsize);
     if (!textspace)
@@ -545,7 +545,7 @@ gcide_markup_parse(char const *text, size_t len, int dbg, struct gcide_locus *lo
     yy_flex_debug = dbg;
     BEGIN(INITIAL);
     while (yylex())
-        ;
+	;
 
     /* Append trailing text segment, if any */
     flush_text_segment();
@@ -561,25 +561,25 @@ gcide_markup_parse(char const *text, size_t len, int dbg, struct gcide_locus *lo
     }
 
     dico_list_destroy(&tagstk);
-    
+
     if (!current_tag) {
 	free(textspace);
 	return NULL;
     }
-    
+
     early_fixup(current_tag, NULL);
-    
+
     tp = malloc(sizeof(*tp));
     if (!tp)
 	memerr("gcide_markup_parse");
 
     tp->textspace = textspace;
     tp->textsize = textsize;
-    
+
     tp->root = current_tag;
-    
+
     tag_fixup(tp->root, textspace);
-    
+
     return tp;
 }
 
@@ -590,4 +590,3 @@ gcide_parse_tree_free(struct gcide_parse_tree *tp)
     free_tag(tp->root, NULL);
     free(tp);
 }
-

@@ -18,9 +18,9 @@
 
 status_pam=maybe
 AC_ARG_ENABLE([pam],
-              AS_HELP_STRING([--enable-pam],
-                             [enable PAM]),
-              [
+	      AS_HELP_STRING([--enable-pam],
+			     [enable PAM]),
+	      [
 case "${enableval}" in
   yes) status_pam=yes ;;
   no)  status_pam=no ;;
@@ -34,8 +34,8 @@ if test "$status_pam" != "no"; then
   if test "$ac_cv_header_security_pam_appl_h" = "yes"; then
     AC_CHECK_LIB(dl, dlopen, [PAM_LIBS=-ldl])
     AC_CHECK_LIB(pam, pam_start,
-	         [status_pam=yes],
-	         [status_pam=no], $PAM_LIBS)
+		 [status_pam=yes],
+		 [status_pam=no], $PAM_LIBS)
   else
     status_pam=no
   fi

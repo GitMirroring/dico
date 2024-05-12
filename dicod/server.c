@@ -49,7 +49,7 @@ address_family_to_domain (int family)
 
     case AF_INET6:
 	return PF_INET6;
-	
+
     default:
 	abort();
     }
@@ -64,7 +64,7 @@ open_sockets(void)
     struct stat st;
     int t;
     char *p;
-    
+
     srvcount = dico_list_count(listen_addr);
     if (srvcount == 0) {
 	/* Provide defaults */
@@ -73,7 +73,7 @@ open_sockets(void)
 	sp = xmalloc(sizeof(*sp));
 	sp->sa = (struct sockaddr*) s_in;
 	sp->len = sizeof(*s_in);
-	
+
 	if (!listen_addr)
 	    listen_addr = xdico_list_create();
 	s_in->sin_family = AF_INET;
@@ -120,10 +120,10 @@ open_sockets(void)
 	    }
 	    break;
 	}
-	    
+
 	case AF_INET:
 	case AF_INET6:
-	    t = 1;	 
+	    t = 1;
 	    setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &t, sizeof(t));
 	    break;
 
@@ -168,7 +168,7 @@ close_sockets(void)
 {
     size_t i;
 
-    for (i = 0; i < srvcount; i++) 
+    for (i = 0; i < srvcount; i++)
 	close(srvtab[i].fd);
     free(srvtab);
     srvtab = NULL;
@@ -182,7 +182,7 @@ find_pid(pid_t pid)
 {
     unsigned long i;
     for (i = 0; i < max_children; i++)
-	if (childtab[i] == pid) 
+	if (childtab[i] == pid)
 	    return i;
     return (unsigned long)-1;
 }
@@ -219,7 +219,7 @@ print_status(pid_t pid, int status, int expect_term)
 	}
     } else if (WIFSIGNALED(status)) {
 	int prio;
-	
+
 	if (expect_term && WTERMSIG(status) == SIGTERM)
 	    prio = L_DEBUG;
 	else
@@ -256,7 +256,7 @@ cleanup_children(int term)
 	childtab[i] = 0;
 	--num_children;
     }
-	    
+
 
 }
 
@@ -319,7 +319,7 @@ check_pidfile(char *name)
 	}
     }
     fclose(fp);
-    if (unlink(name)) 
+    if (unlink(name))
 	dico_die(EX_OSERR, L_ERR, errno,
 		 _("Cannot unlink pidfile `%s'"), name);
 }
@@ -329,7 +329,7 @@ create_pidfile(char *name)
 {
     FILE *fp = fopen(name, "w");
 
-    if (!fp) 
+    if (!fp)
 	dico_die(EX_CANTCREAT, L_ERR, errno,
 		 _("Cannot create pidfile `%s'"), name);
     fprintf(fp, "%lu", (unsigned long)getpid());
@@ -339,7 +339,7 @@ create_pidfile(char *name)
 void
 remove_pidfile(char *name)
 {
-    if (unlink(name)) 
+    if (unlink(name))
 	dico_log(L_ERR, errno, _("Cannot unlink pidfile `%s'"), name);
 }
 
@@ -382,7 +382,7 @@ handle_connection(int n)
 
     server_addr = *srvtab[n].addr;
     server_addrlen = srvtab[n].addrlen;
-    
+
     client_addrlen = sizeof(client_addr);
     connfd = accept(listenfd, (struct sockaddr*) &client_addr,
 		    &client_addrlen);
@@ -423,15 +423,15 @@ handle_connection(int n)
 	} else if (pid == 0) {
 	    /* Child.  */
 	    dico_stream_t str;
-	    
+
 	    close(listenfd);
-	    
+
 	    signal(SIGTERM, SIG_DFL);
 	    signal(SIGQUIT, SIG_DFL);
 	    signal(SIGINT, SIG_DFL);
 	    signal(SIGCHLD, SIG_DFL);
 	    signal(SIGHUP, SIG_DFL);
-        
+
 	    str = dicod_iostream(connfd, connfd);
 	    if (!str)
 		exit(EX_UNAVAILABLE);
@@ -509,7 +509,7 @@ pre_restart_lint(void)
 {
     int rc;
     void (*sf)(int);
-    
+
     sf = signal(SIGCHLD, SIG_DFL);
     rc = pre_restart_lint_internal();
     signal(SIGCHLD, sf);
@@ -525,7 +525,7 @@ server_loop(void)
     FD_ZERO(&fdset);
     for (i = 0; i < srvcount; i++)
 	FD_SET(srvtab[i].fd, &fdset);
-    
+
     for (;;) {
 	int rc;
 	fd_set rdset;
@@ -581,7 +581,7 @@ void
 dicod_server(int argc, char **argv)
 {
     int rc;
-    
+
     dico_log(L_INFO, 0, _("%s started"), program_version);
 
     if (user_id) {
@@ -591,7 +591,7 @@ dicod_server(int argc, char **argv)
 	else if (switch_to_privs(user_id, group_id, group_list))
 	    dico_die(EX_NOUSER, L_CRIT, 0, "exiting");
     }
-    
+
     if (!foreground)
 	check_pidfile(pidfile_name);
 
@@ -607,20 +607,20 @@ dicod_server(int argc, char **argv)
 	dico_log(L_WARN, 0, _("configuration file is not given with a full file name"));
 	dico_log(L_WARN, 0, _("restart (SIGHUP) will not work"));
 	signal(SIGHUP, sig_stop);
-    } else	
+    } else
 	signal(SIGHUP, sig_restart);
 
     if (!foreground) {
-	if (daemon(0, 0) == -1) 
+	if (daemon(0, 0) == -1)
 	    dico_die(EX_OSERR, L_CRIT, errno, _("Cannot become a daemon"));
 
 	create_pidfile(pidfile_name);
     }
 
     open_sockets();
-    if (!single_process) 
+    if (!single_process)
 	childtab = xcalloc(max_children, sizeof(childtab[0]));
-			   
+
     rc = server_loop();
 
     stop_children();
@@ -628,7 +628,7 @@ dicod_server(int argc, char **argv)
     dicod_server_cleanup();
     close_sockets();
 
-    if (rc) 
+    if (rc)
 	dico_log(L_NOTICE, errno, _("Exit code = %d, last error status"), rc);
 
     if (!foreground)
@@ -636,22 +636,13 @@ dicod_server(int argc, char **argv)
 
     if (restart) {
 	int i;
-		
+
 	dico_log(L_INFO, 0, _("%s restarting"), program_version);
 	for (i = getmaxfd(); i > 2; i--)
 	    close(i);
 	execv(argv[0], argv);
 	dico_die(EX_UNAVAILABLE, L_ERR|L_CONS, errno, _("Cannot restart"));
-    } else 
+    } else
 	dico_log(L_INFO, 0, _("%s terminating"), program_version);
     exit(rc);
 }
-    
-
-
-    
-
-	
-    
-	
-	

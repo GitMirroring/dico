@@ -44,7 +44,7 @@ print_transcript(struct transcript_stream *str, int flag,
     while (size) {
 	const char *p;
 	size_t len;
-	
+
 	if (str->flags & flag) {
 	    dico_stream_write(str->logstr,
 			      str->prefix[FLAG_TO_PFX(flag)],
@@ -115,7 +115,7 @@ transcript_close(void *data)
     dico_stream_close(p->transport);
     return 0;
 }
-    
+
 
 static int
 transcript_destroy(void *data)
@@ -156,7 +156,7 @@ transcript_ioctl(void *data, int code, void *call_data)
     case DICO_IOCTL_BYTES_OUT:
 	*(off_t*)call_data = dico_stream_bytes_out(p->transport);
 	break;
-	
+
     default:
 	errno = EINVAL;
 	return -1;
@@ -188,7 +188,7 @@ xdico_transcript_stream_create(dico_stream_t transport, dico_stream_t logstr,
     }
     p->transport = transport;
     p->logstr = logstr;
-    
+
     dico_stream_set_read(stream, transcript_read);
     dico_stream_set_write(stream, transcript_write);
     dico_stream_set_flush(stream, transcript_flush);
@@ -200,4 +200,3 @@ xdico_transcript_stream_create(dico_stream_t transport, dico_stream_t logstr,
 
     return stream;
 }
-

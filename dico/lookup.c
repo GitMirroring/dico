@@ -1,4 +1,4 @@
-/* This file is part of GNU Dico. 
+/* This file is part of GNU Dico.
    Copyright (C) 1998-2024 Sergey Poznyakoff
 
    GNU Dico is free software; you can redistribute it and/or modify
@@ -42,7 +42,7 @@ size_t
 result_count_lines(struct dict_result *res)
 {
     size_t i, count = 0;
-    
+
     switch (res->type) {
     case dict_result_define:
 	for (i = 0; i < res->count; i++)
@@ -79,7 +79,7 @@ print_result(struct dict_result *res)
 {
     unsigned long i;
     dico_stream_t str;
-    
+
     str = create_pager_stream(result_count_lines(res));
     switch (res->type) {
     case dict_result_define:
@@ -113,7 +113,7 @@ alloc_display(struct dict_result *res, size_t from, size_t to)
 {
     struct result_display *disp = xmalloc(sizeof(*disp));
     size_t i;
-    
+
     disp->next = NULL;
     disp->database = res->set.mat[from].database;
     disp->count = to - from;
@@ -128,7 +128,7 @@ find_descr(struct dict_connection *conn, const char *name)
 {
     if (conn->db_result) {
 	size_t i;
-	
+
 	for (i = 0; i < conn->db_result->count; i++) {
 	    if (strcmp(conn->db_result->set.mat[i].database, name) == 0)
 		return conn->db_result->set.mat[i].word;
@@ -147,12 +147,12 @@ print_match_result(struct dict_result *res)
     size_t ndb = 0;
     dico_stream_t str;
     struct result_display *p;
-    
-#define ALLOC_DISPLAY() do { 					\
+
+#define ALLOC_DISPLAY() do {					\
 	struct result_display *p = alloc_display(res, j, i);    \
 	if (!tail)                                              \
 	    head = p;                                           \
-	else               					\
+	else							\
 	    tail->next = p;					\
 	tail = p;						\
 	ndb++;							\
@@ -171,7 +171,7 @@ print_match_result(struct dict_result *res)
     j = 0;
     for (p = head; p; ) {
 	struct result_display *next = p->next;
-	
+
 	stream_printf(str, _("From %s, %s:\n"), p->database,
 		      find_descr(conn, p->database));
 	for (i = 0; i < p->count; i++, j++)
@@ -196,14 +196,14 @@ dict_lookup(struct dict_connection *conn, dico_url_t url)
 			 quotearg_n (0, url->req.database),
 			 quotearg_n (1, url->req.word));
 	break;
-	
+
     case DICO_REQUEST_MATCH:
 	rc = dict_match(conn,
 			quotearg_n (0, url->req.database),
 			quotearg_n (1, url->req.strategy),
 			quotearg_n (2, url->req.word));
 	break;
-	
+
     default:
 	dico_log(L_CRIT, 0,
 		 _("%s:%d: INTERNAL ERROR: unexpected request type"),
@@ -216,7 +216,7 @@ dict_lookup(struct dict_connection *conn, dico_url_t url)
 	dict_result_free(res);
     } else
 	print_reply(conn);
-    
+
     return 0;
 }
 
@@ -224,7 +224,7 @@ int
 dict_lookup_url(dico_url_t url)
 {
     struct dict_connection *conn;
-    
+
     if (!url->host) {
 	dico_log(L_ERR, 0, _("Server name or IP not specified"));
 	return 1;
@@ -258,7 +258,7 @@ dict_word(char *word)
 	dico_url.req.word = word;
 	rc = dict_lookup_url(&dico_url);
     }
-	
+
     return rc;
 }
 
@@ -270,13 +270,13 @@ dict_run_single_command(struct dict_connection *conn,
 	stream_printf(conn->str, "%s \"%s\"\r\n", cmd, arg);
     else
 	stream_printf(conn->str, "%s\r\n", cmd);
-    
+
     dict_read_reply(conn);
     if (!dict_status_p(conn, code))
 	print_reply(conn);
     else {
 	struct dict_result *res;
-	
+
 	dict_multiline_reply(conn);
 	dict_read_reply(conn);
 	dict_result_create(conn, dict_result_text, 1,
@@ -291,7 +291,7 @@ int
 dict_single_command(char *cmd, char *arg, char *code)
 {
     struct dict_connection *conn;
-    
+
     if (!dico_url.host) {
 	dico_log(L_ERR, 0, _("Server name or IP not specified"));
 	return 1;
@@ -301,6 +301,6 @@ dict_single_command(char *cmd, char *arg, char *code)
 	return 1;
 
     dict_run_single_command(conn, cmd, arg, code);
-    dict_conn_close(conn);    
+    dict_conn_close(conn);
     return 0;
 }

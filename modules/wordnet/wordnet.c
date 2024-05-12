@@ -59,7 +59,7 @@ wn_init(int argc, char **argv)
 {
     char *wnsearchdir = NULL;
     char *wnhome = NULL;
-    
+
     struct dico_option init_option[] = {
 	{ DICO_OPTSTR(wnsearchdir), dico_opt_string, &wnsearchdir },
 	{ DICO_OPTSTR(wnhome), dico_opt_string, &wnhome },
@@ -139,7 +139,7 @@ static struct wn_option wn_optlist[] = {
 #if 0
     /* These are some thoughts only */
     { "similar",   SIMPTR,    POS_MASK(ADJ), "Similarity" },
-    { "synonym",   SYNS,      POS_MASK(ADV), "Synonyms" }, 
+    { "synonym",   SYNS,      POS_MASK(ADV), "Synonyms" },
     { "antonym",   ANTPTR,    PM_ALL, "Antonyms" },
     { "pertainym", PERTPTR,   POS_MASK(ADV)|POS_MASK(ADV), "Pertainyms" },
     { "attribute", ATTRIBUTE, POS_MASK(NOUN)|POS_MASK(ADJ), "Attributes" },
@@ -200,8 +200,8 @@ wn_init_db(const char *dbname, int argc, char **argv)
 	{ "overview", OVERVIEW, PM_ALL, "Overview", NULL, _wn_print_overview },
 	{ "overview", OVERVIEW, PM_ALL, "Overview", NULL, _wn_print_definition }
     };
-	
-    
+
+
     struct dico_option init_db_option[] = {
 	{ DICO_OPTSTR(pos), dico_opt_enum, &pos, { .enumstr = pos_choice } },
 	{ DICO_OPTSTR(merge-defs), dico_opt_bool, &flags,
@@ -219,15 +219,15 @@ wn_init_db(const char *dbname, int argc, char **argv)
     optc = argc + 1;
     optv = calloc(optc, sizeof(optv[0]));
     if (!optv) {
-        DICO_LOG_ERRNO();
+	DICO_LOG_ERRNO();
 	return NULL;
     }
 
     optv[0] = overview + ((flags & WNDB_MERGE_DEFS) ? 1 : 0);
-    
+
     for (i = 0, j = 1; i < argc; i++) {
 	struct wn_option *p;
-	
+
 	if ((p = find_option(argv[i])) == NULL) {
 	    dico_log(L_ERR, 0, _("wordnet: unknown option %s"), argv[i]);
 	    free(optv);
@@ -242,16 +242,16 @@ wn_init_db(const char *dbname, int argc, char **argv)
 	}
 	optv[j] = p;
     }
-    
+
     wndb = calloc(1, sizeof(*wndb));
     if (!wndb) {
-        DICO_LOG_ERRNO();
+	DICO_LOG_ERRNO();
 	free(optv);
 	return NULL;
     }
     wndb->dbname = strdup(dbname);
     if (!wndb->dbname) {
-        DICO_LOG_ERRNO();
+	DICO_LOG_ERRNO();
 	free(wndb);
 	return NULL;
     }
@@ -262,7 +262,7 @@ wn_init_db(const char *dbname, int argc, char **argv)
 
     return (dico_handle_t)wndb;
 }
-    
+
 static char *
 wn_descr(dico_handle_t hp)
 {
@@ -305,7 +305,7 @@ wordbuf_expand(struct wordbuf *wb, size_t len)
 	size_t size = ((len + WORDBUFINC - 1) /  WORDBUFINC ) * WORDBUFINC;
 	char *newword = realloc(wb->word, size);
 	if (!newword) {
-            DICO_LOG_ERRNO();
+	    DICO_LOG_ERRNO();
 	    return 1;
 	}
 	wb->word = newword;
@@ -405,14 +405,14 @@ wn_create_match_result(struct wndb *wndb)
 
     res = calloc(1, sizeof(*res));
     if (!res) {
-        DICO_LOG_ERRNO();
+	DICO_LOG_ERRNO();
 	return NULL;
     }
     res->type = result_match;
     res->wndb = wndb;
     res->list = dico_list_create();
     if (!res) {
-        DICO_LOG_ERRNO();
+	DICO_LOG_ERRNO();
 	free(res);
 	return NULL;
     }
@@ -429,14 +429,14 @@ wn_create_define_result(struct wndb *wndb, const char *searchword)
 
     res = calloc(1, sizeof(*res));
     if (!res) {
-        DICO_LOG_ERRNO();
+	DICO_LOG_ERRNO();
 	return NULL;
     }
     res->type = result_define;
     res->wndb = wndb;
     res->list = dico_list_create();
     if (!res) {
-        DICO_LOG_ERRNO();
+	DICO_LOG_ERRNO();
 	free(res);
 	return NULL;
     }
@@ -444,17 +444,17 @@ wn_create_define_result(struct wndb *wndb, const char *searchword)
 
     res->searchword = strdup(searchword);
     if (!res->searchword) {
-        DICO_LOG_ERRNO();
+	DICO_LOG_ERRNO();
 	wn_free_result((dico_result_t) res);
     }
 
     res->rootlist = dico_list_create();
     if (!res->rootlist) {
-        DICO_LOG_ERRNO();
+	DICO_LOG_ERRNO();
 	wn_free_result((dico_result_t) res);
     }
     dico_list_set_free_item(res->rootlist, free_root_synset, NULL);
-    
+
     return res;
 }
 
@@ -465,14 +465,14 @@ wn_match_result_add(struct result *res, const char *hw)
     char *s = strdup(hw);
 
     if (!s) {
-        DICO_LOG_ERRNO();
+	DICO_LOG_ERRNO();
 	return -1;
     }
     rc = dico_list_insert_sorted(res->list, s);
     if (rc) {
 	free(s);
 	if (rc != EEXIST) {
-            DICO_LOG_MEMERR();
+	    DICO_LOG_MEMERR();
 	    return -1;
 	}
     }
@@ -524,7 +524,7 @@ static int
 lineback(FILE *fp, struct wordbuf *wb)
 {
     int c, i;
-    
+
     wordbuf_start(wb);
     while (fseek(fp, -2, SEEK_CUR) == 0) {
 	if ((c = getc(fp)) == '\n')
@@ -549,7 +549,7 @@ wn_is_defined(struct wndb *wndb, char *searchword)
 {
     int i, j;
     unsigned int search;
-    
+
     for (i = 1; i <= NUMPARTS; i++) {
 	if ((search = is_defined(searchword, i)) != 0) {
 	    for (j = 0; j < wndb->optc; j++) {
@@ -577,7 +577,7 @@ wn_foreach_db(struct wndb *wndb, int dbn, char *searchword,
     struct wordbuf wb = INIT_WORDBUF;
     dico_iterator_t itr;
     char *word;
-    
+
     fseek(fp, 0, SEEK_SET);
     for (skipheader(fp); getword(fp, &wb) == 0; skipeol(fp)) {
 	res->compare_count++;
@@ -608,18 +608,18 @@ wn_foreach(struct wndb *wndb, const dico_strategy_t strat, const char *word)
     strtolower(strsubst(searchword, ' ', '_'));
 
     if (!searchword) {
-        DICO_LOG_MEMERR();
+	DICO_LOG_MEMERR();
 	wn_free_result((dico_result_t) res);
 	return NULL;
     }
-	       
+
     if (dico_key_init(&key, strat, word)) {
 	dico_log(L_ERR, 0, _("%s: key initialization failed"), __func__);
 	wn_free_result((dico_result_t) res);
 	free(searchword);
 	return NULL;
     }
-	       
+
     if (wndb->pos == ALL_POS) {
 	int i;
 
@@ -627,10 +627,10 @@ wn_foreach(struct wndb *wndb, const dico_strategy_t strat, const char *word)
 	    wn_foreach_db(wndb, i, searchword, &key, res);
     } else
 	wn_foreach_db(wndb, wndb->pos, searchword, &key, res);
-    
+
     dico_key_deinit(&key);
     free(searchword);
-    
+
     if (dico_list_count(res->list) == 0) {
 	wn_free_result((dico_result_t) res);
 	return NULL;
@@ -644,7 +644,7 @@ wn_bsearch(FILE *fp, void *key, int (*cmp)(const char *a, void *b))
     long top, mid, bot, diff;
     struct wordbuf wb = INIT_WORDBUF;
     off_t last_match = -1;
-    
+
     fseek(fp, 0L, SEEK_END);
     top = 0;
     bot = ftell(fp);
@@ -708,7 +708,7 @@ wn_prefix_match(struct wndb *db, const char *hw)
     int i;
     struct prefix pfx;
     struct wordbuf wb = INIT_WORDBUF;
-    
+
     res = wn_create_match_result(db);
     if (!res)
 	return NULL;
@@ -753,7 +753,7 @@ static wn_matcher_t
 wn_find_matcher(const char *strat)
 {
     int i;
-    for (i = 0; i < DICO_ARRAY_SIZE(stratdef); i++) 
+    for (i = 0; i < DICO_ARRAY_SIZE(stratdef); i++)
 	if (strcmp(strat, stratdef[i].strat.name) == 0)
 	    return stratdef[i].matcher;
     return NULL;
@@ -763,7 +763,7 @@ static void
 wn_register_strategies(void)
 {
     int i;
-    for (i = 0; i < DICO_ARRAY_SIZE(stratdef); i++) 
+    for (i = 0; i < DICO_ARRAY_SIZE(stratdef); i++)
 	dico_strategy_add(&stratdef[i].strat);
 }
 
@@ -778,7 +778,7 @@ nornmalize_search_word(const char *word)
 
     copy = malloc(strlen(word) + 1);
     if (!copy) {
-        DICO_LOG_ERRNO();
+	DICO_LOG_ERRNO();
 	return NULL;
     }
     for (p = copy, q = word; *q; ) {
@@ -813,12 +813,12 @@ create_defn(struct wndb *wndb, int pos)
 {
     struct defn *p = malloc(sizeof(*p));
     if (!p) {
-        DICO_LOG_ERRNO();
+	DICO_LOG_ERRNO();
 	return NULL;
     }
     p->synset = calloc(wndb->optc, sizeof(p->synset[0]));
     if (!p->synset) {
-        DICO_LOG_ERRNO();
+	DICO_LOG_ERRNO();
 	free(p);
 	return NULL;
     }
@@ -834,7 +834,7 @@ search_defns(struct wndb *wndb, int pos, struct result *res,
     int i;
     struct defn *dp;
     int sense = 0;
-    
+
     sp = findtheinfo_ds((char*)searchword, pos, OVERVIEW, ALLSENSES);
 
     if (!sp)
@@ -871,9 +871,9 @@ wn_define(dico_handle_t hp, const char *word)
     int i;
     int found = 0;
     char *copy;
-    
+
     res = wn_create_define_result(wndb, word);
-    
+
     copy = nornmalize_search_word(word);
     if (!copy) {
 	wn_free_result((dico_result_t) res);
@@ -894,7 +894,7 @@ wn_define(dico_handle_t hp, const char *word)
 	return NULL;
     }
     free(copy);
-    
+
     return (dico_result_t)res;
 }
 
@@ -958,7 +958,7 @@ _wn_print_definition(struct wn_option *opt, SynsetPtr sp, struct result *res,
     if (sp->wcount > 1) {
 	int i, j;
 	static char const *sym = "Synonyms: ";
-	
+
 	dico_stream_write(str, sym, strlen(sym));
 	for (i = j = 0; i < sp->wcount; i++) {
 	    if (strcmp(sp->words[i], res->searchword) == 0)
@@ -972,7 +972,7 @@ _wn_print_definition(struct wn_option *opt, SynsetPtr sp, struct result *res,
 	}
 	dico_stream_write(str, "\n", 1);
     }
-    
+
 }
 
 static void
@@ -981,7 +981,7 @@ _wn_print_hypernym(struct wn_option *opt, SynsetPtr ptr, struct result *res,
 {
     int i;
     SynsetPtr sp;
-    
+
     dico_stream_write(str, opt->label, strlen(opt->label));
     dico_stream_write(str, ":\n\n", 3);
 
@@ -1040,7 +1040,7 @@ format_all_defns(struct result *res, dico_stream_t str)
 	    dico_stream_write(str, defn->synset[0]->pos,
 			      strlen(defn->synset[0]->pos));
 	    dico_stream_write(str, ". ", 2);
-	} 
+	}
 
 	print_num(str, num);
 	format_defn(defn, res, str);
@@ -1053,7 +1053,7 @@ wn_output_result(dico_result_t rp, size_t n, dico_stream_t str)
 {
     struct result *res = (struct result *) rp;
     void *item;
-    
+
     if (!res->itr) {
 	res->itr = dico_list_iterator(res->list);
 	if (!res->itr)
@@ -1071,7 +1071,7 @@ wn_output_result(dico_result_t rp, size_t n, dico_stream_t str)
 	else
 	    format_defn(item, res, str);
 	break;
-	    
+
     default:
 	return 1;
     }
@@ -1098,7 +1098,7 @@ static void
 wn_free_result(dico_result_t rp)
 {
     struct result *res = (struct result *) rp;
-    
+
     dico_list_destroy(&res->list);
     dico_iterator_destroy(&res->itr);
     dico_list_destroy(&res->rootlist);
@@ -1125,5 +1125,3 @@ struct dico_database_module DICO_EXPORT(wordnet, module) = {
     wn_compare_count,
     wn_free_result
 };
-
-

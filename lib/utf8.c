@@ -1550,7 +1550,7 @@ utf8_iter0(struct utf8_iterator *itr)
 	itr->err = 1;
 	return 1;
     }
-    
+
     itr->curwidth = n;
     return 0;
 }
@@ -1619,7 +1619,7 @@ utf8_wctomb(char *r, unsigned int wc)
 	errno = EILSEQ;
 	return -1;
     }
-    
+
     switch (count) {
 	/* Note: code falls through cases! */
     case 6:
@@ -1787,11 +1787,11 @@ utf8_compare(char const *a, char const *b,
 	    return 0;
 	if (*a == 0)
 	    break;
-	
+
 	alen = utf8_char_width(a);
 	if (alen == 0)
 	    return -1;
-	
+
 	utf8_mbtowc(&wa, a, alen);
 	a += alen;
 	an++;
@@ -1808,7 +1808,7 @@ utf8_compare(char const *a, char const *b,
 		utf8_mbtowc(&wb, b, blen);
 		b += blen;
 		bn++;
-		
+
 		if (!wcsel || wcsel(wb)) {
 		    if (ci == case_insensitive) {
 			wa = utf8_wc_toupper(wa);
@@ -1833,7 +1833,7 @@ utf8_compare(char const *a, char const *b,
 	if (!wcsel || wcsel(wb))
 	    return -1;
     }
-    
+
     return 0;
 }
 
@@ -2055,11 +2055,11 @@ kmp_next(const unsigned *text, size_t text_len,
 	errno = ERANGE;
 	return NULL;
     }
-    
+
     nextab = calloc(pattern_len + 1, sizeof nextab[0]);
     if (!nextab)
 	return NULL;
-    
+
     i = 0;
     j = INIT;
     nextab[0] = j;
@@ -2080,11 +2080,11 @@ kmp_next(const unsigned *text, size_t text_len,
 /* Find the first occurrence of PATTERN in TEXT.
    Return value:
      strpat_found     - Pattern was found.  Unless RETURN_OFFSET is NULL, the
-                        offset of the pattern is stored in the memory location
-		        it points to.
+			offset of the pattern is stored in the memory location
+			it points to.
      strpat_not_found - Pattern was not found.
      strpat_error     - An error occurred.  The errno variable is set to
-                        ERANGE if pattern is too long, or to ENOMEM if unable
+			ERANGE if pattern is too long, or to ENOMEM if unable
 			to allocate memory.
 
    This implementation uses Knuth-Morris-Pratt algorithm.  If low on memory,
@@ -2152,7 +2152,7 @@ utf8_wc_strstr(const unsigned *text, const unsigned *pattern)
 
     return result;
 }
-    
+
 unsigned *
 utf8_wc_quote(const unsigned *s)
 {
@@ -2222,7 +2222,7 @@ utf8_wc_strupper(unsigned *str)
     for (; *str; str++)
 	*str = utf8_wc_toupper(*str);
 }
-    
+
 void
 utf8_wc_strlower(unsigned *str)
 {
@@ -2333,8 +2333,8 @@ utf8_table_check(unsigned wc,
 	    r = s;
 	}
     }
-    
+
     --l;
-    
+
     return (wc < l[0] + count[l - start]);
 }

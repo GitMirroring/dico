@@ -1,6 +1,6 @@
 /* This file is part of GNU Dico
    Copyright (C) 1999-2019 Free Software Foundation, Inc.
-  
+
    GNU Dico is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 3, or (at your option)
@@ -28,7 +28,7 @@ dico_qp_decode(const char *iptr, size_t isize, char *optr, size_t osize,
     size_t consumed = 0;
     size_t wscount = 0;
     size_t nbytes = 0;
-    
+
     while (consumed < isize && nbytes < osize) {
 	c = *iptr++;
 
@@ -43,11 +43,11 @@ dico_qp_decode(const char *iptr, size_t isize, char *optr, size_t osize,
 	       of an encoded line.  Any TAB (HT) or SPACE characters
 	       on an encoded line MUST thus be followed on that line
 	       by a printable character. */
-	  
+
 	    if (wscount) {
 		if (c != '\r' && c != '\n') {
 		    size_t sz;
-		  
+
 		    if (consumed >= isize)
 			break;
 
@@ -67,7 +67,7 @@ dico_qp_decode(const char *iptr, size_t isize, char *optr, size_t osize,
 		if (nbytes == osize)
 		    break;
 	    }
-		
+
 	    if (c == '=') {
 		/* There must be 2 more characters before I consume this.  */
 		if (consumed + 2 >= isize)
@@ -107,7 +107,7 @@ dico_qp_decode(const char *iptr, size_t isize, char *optr, size_t osize,
 		nbytes++;
 		consumed++;
 	    }
-	}	  
+	}
     }
     *pnbytes = nbytes;
     return consumed - wscount;
@@ -131,28 +131,28 @@ dico_qp_encode(const char *iptr, size_t isize, char *optr, size_t osize,
 
     while (consumed < isize) {
 	int simple_char;
-      
+
 	/* candidate byte to convert */
 	c = *(unsigned char*) iptr;
 	simple_char = (c >= 32 && c <= 60)
-	               || (c >= 62 && c <= 126)
-	               || c == '\t'
-	               || c == '\n';
+		       || (c >= 62 && c <= 126)
+		       || c == '\t'
+		       || c == '\n';
 
 	if (simple_char) {
 	    /* a non-quoted character uses up one byte */
-	    if (nbytes + 1 > osize) 
+	    if (nbytes + 1 > osize)
 		break;
 
 	    *optr++ = c;
 	    nbytes++;
-	    
+
 	    iptr++;
 	    consumed++;
 
 	} else {
 	    /* a quoted character uses up three bytes */
-	    if (nbytes + 3 > osize) 
+	    if (nbytes + 3 > osize)
 		break;
 
 	    *optr++ = '=';

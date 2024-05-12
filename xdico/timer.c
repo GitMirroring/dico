@@ -1,6 +1,6 @@
 /* This file is part of GNU Dico
    Copyright (C) 2008-2024 Sergey Poznyakoff
- 
+
    GNU Dico is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 3, or (at your option)
@@ -43,7 +43,7 @@ hash_string_ci (const char *string, size_t n_buckets)
 {
     size_t value = 0;
     unsigned char ch;
-    
+
     for (; (ch = *string); string++)
 	value = (value * 31 + tolower(ch)) % n_buckets;
     return value;
@@ -86,13 +86,13 @@ timer_get(const char *name)
     tp = timer_alloc(name);
 
     if (! ((timer_table
-	    || (timer_table = hash_initialize(0, 0, 
+	    || (timer_table = hash_initialize(0, 0,
 					      timer_hasher,
 					      timer_compare, 0)))
 	   && (ret = hash_insert(timer_table, tp))))
 	xalloc_die ();
 
-    if (ret != tp) 
+    if (ret != tp)
 	free(tp);
     return ret;
 }
@@ -123,7 +123,7 @@ _timer_compute(xdico_timer_t t)
     getrusage(RUSAGE_SELF, &rusage);
     t->self_user   = DIFFTIME(rusage.ru_utime, t->self_mark.ru_utime);
     t->self_system = DIFFTIME(rusage.ru_stime, t->self_mark.ru_stime);
-   
+
     getrusage(RUSAGE_CHILDREN, &rusage);
     t->children_user = DIFFTIME(rusage.ru_utime, t->children_mark.ru_utime);
     t->children_system = DIFFTIME(rusage.ru_stime, t->children_mark.ru_stime);
@@ -172,7 +172,7 @@ timer_format_time(dico_stream_t stream, double t)
 {
     static char buf[128];
 
-    if (t < 600) 
+    if (t < 600)
 	snprintf(buf, sizeof(buf), "%0.3f", t );
     else {
 	long int    s, m, h, d;
@@ -194,5 +194,3 @@ timer_format_time(dico_stream_t stream, double t)
     }
     dico_stream_write(stream, buf, strlen(buf));
 }
-    
-    

@@ -23,7 +23,7 @@ static int
     /* FIXME */
     return 1;
 }
-    
+
 static dico_handle_t
 <MODNAME>_init_db(const char *dbname, int argc, char **argv)
 {
@@ -116,7 +116,7 @@ static void
 
 static int
 <MODNAME>_result_headers(dico_result_t rp, dico_assoc_list_t hdr)
-{  
+{
     /* FIXME */
     return 0;
 }

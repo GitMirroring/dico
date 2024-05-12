@@ -24,7 +24,7 @@ find_opt(struct dico_option *opt, const char *str, const char **value)
 {
     size_t len = strlen(str);
     int isbool;
-	
+
     if (len > 2 && memcmp(str, "no", 2) == 0) {
 	*value = NULL;
 	str += 2;
@@ -33,13 +33,13 @@ find_opt(struct dico_option *opt, const char *str, const char **value)
 	isbool = 0;
 	*value = str;
     }
-	
+
     for (; opt->name; opt++) {
 	if (len >= opt->len
 	    && memcmp(opt->name, str, opt->len) == 0
 	    && (!isbool || opt->type == dico_opt_bool)) {
 	    int eq = str[opt->len] == '=';
-	    
+
 	    switch (opt->type) {
 	    case dico_opt_long:
 	    case dico_opt_string:
@@ -55,8 +55,8 @@ find_opt(struct dico_option *opt, const char *str, const char **value)
 		    *value = str + opt->len + 1;
 		else
 		    *value = NULL;
-		break;					
-				
+		break;
+
 	    default:
 		if (eq)
 		    continue;
@@ -94,16 +94,16 @@ dico_parseopt(struct dico_option *opt, int argc, char **argv, int flags,
 	 i < argc; i++) {
 	const char *value;
 	struct dico_option *p = find_opt(opt, argv[i], &value);
-	
+
 	if (!p) {
 	    if (pindex) {
 		if (flags & DICO_PARSEOPT_PERMUTE) {
 		    int j;
 
-		    for (j = i + 1; j < argc; j++) 
+		    for (j = i + 1; j < argc; j++)
 			if ((p = find_opt(opt, argv[j], &value)))
 			    break;
-		    
+
 		    if (p) {
 			char *tmp = argv[j];
 			argv[j] = argv[i];
@@ -119,7 +119,7 @@ dico_parseopt(struct dico_option *opt, int argc, char **argv, int flags,
 		continue;
 	    }
 	}
-				
+
 	switch (p->type) {
 	case dico_opt_long:
 	    n = strtol(value, &s, 0);
@@ -131,19 +131,19 @@ dico_parseopt(struct dico_option *opt, int argc, char **argv, int flags,
 	    }
 	    *(long*)p->data = n;
 	    break;
-	    
+
 	case dico_opt_const:
 	    *(long*)p->data = p->v.value;
 	    break;
-	    
+
 	case dico_opt_const_string:
 	    *(const char**)p->data = value;
 	    break;
-	    
+
 	case dico_opt_string:
 	    *(const char**)p->data = strdup(value);
 	    break;
-	    
+
 	case dico_opt_bool:
 	    if (p->v.value) {
 		if (value)
@@ -153,15 +153,15 @@ dico_parseopt(struct dico_option *opt, int argc, char **argv, int flags,
 	    } else
 		*(int*)p->data = value != NULL;
 	    break;
-	    
+
 	case dico_opt_bitmask:
 	    *(int*)p->data |= p->v.value;
 	    break;
-				
+
 	case dico_opt_bitmask_rev:
 	    *(int*)p->data &= ~p->v.value;
 	    break;
-	    
+
 	case dico_opt_enum:
 	    n = find_value(p->v.enumstr, value);
 	    if (n == -1) {

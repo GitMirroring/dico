@@ -19,7 +19,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <stdio.h>
-#include <stdlib.h>    
+#include <stdlib.h>
 #include <errno.h>
 #include <sysexits.h>
 #include <string.h>
@@ -29,7 +29,7 @@ static void
 usage(FILE *fp)
 {
     fprintf(fp, "usage: %s [-debug] [-struct] [-nopr] [-help] FILE [OFF SIZE]\n", dico_program_name);
-}    
+}
 
 struct output_closure {
     FILE *stream;
@@ -98,7 +98,7 @@ print_text(int end, struct gcide_tag *tag, void *data)
 	    break;
 	if (clos->flags & GOF_AS) {
 	    char *s = tag->v.text;
-	    
+
 	    if (strncmp(s, "as", 2) == 0 &&
 		(isspace(s[3]) || ispunct(s[3]))) {
 		fwrite(s, 3, 1, clos->stream);
@@ -155,7 +155,7 @@ main(int argc, char **argv)
     int check_only = 0;
     int dbglex = 0;
     struct gcide_locus locus;
-    
+
     dico_set_program_name(argv[0]);
     clos.flags = 0;
     clos.stream = stdout;
@@ -206,16 +206,16 @@ main(int argc, char **argv)
 	if (st.st_size < offset) {
 	    dico_log(L_ERR, 0, "invalid offset");
 	    exit(EX_UNAVAILABLE);
-	}   
+	}
 	size = st.st_size - offset;
     }
-    
+
     textbuf = malloc(size);
     if (!textbuf) {
 	DICO_LOG_ERRNO();
 	exit(EX_UNAVAILABLE);
     }
-    
+
     fp = fopen(file, "r");
     if (!fp) {
 	dico_log(L_ERR, errno, "cannot open file %s", file);
@@ -243,7 +243,7 @@ main(int argc, char **argv)
 	gcide_parse_tree_inorder(tree, show_struct ? print_tag : print_text,
 				 &clos);
     }
-    
+
     gcide_parse_tree_free(tree);
     exit(0);
 }

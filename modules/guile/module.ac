@@ -19,4 +19,3 @@ GINT_INIT([gint],[2.2.0 with-guile nodoc],
 	  [status_guile=yes],
 	  [status_guile=no])
 AM_CONDITIONAL([GUILE_COND],[test $status_guile = yes])
-

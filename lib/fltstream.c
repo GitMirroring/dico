@@ -1,6 +1,6 @@
 /* This file is part of GNU Dico
    Copyright (C) 2003-2024 Sergey Poznyakoff
-  
+
    GNU Dico is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 3, or (at your option)
@@ -48,7 +48,7 @@ filter_read(void *data, char *buf, size_t size, size_t *pret)
 	    return rc;
 	fs->level = rdsize;
     }
-    
+
     if (fs->level) {
 	rc = fs->xcode(fs->buf, fs->level, buf, size, &rdsize);
 	/* FIXME */
@@ -85,7 +85,7 @@ filter_flush(struct filter_stream *fs)
 
 	    if (rest > level)
 		rest = level;
-	    
+
 	    if (p) {
 		len = p - buf;
 		if (len > rest)
@@ -122,7 +122,7 @@ filter_write0(struct filter_stream *fs, const char *buf, size_t size,
 {
     size_t wrsize;
     int rc;
-    
+
     if (fs->level >= sizeof(fs->buf) - fs->min_level) {
 	rc = filter_flush(fs);
 	if (rc)
@@ -153,7 +153,7 @@ filter_write(void *data, const char *buf, size_t size, size_t *pret)
     size_t ret = 0;
     size_t wrs;
     int rc = 0;
-    
+
     if (size < fs->min_level
 	|| (fs->inlevel && fs->inlevel < fs->min_level)) {
 	size_t rest = fs->min_level - fs->inlevel;
@@ -178,7 +178,7 @@ filter_write(void *data, const char *buf, size_t size, size_t *pret)
 	fs->inlevel = 0;
 	ret = rest;
     }
-    if (size) 
+    if (size)
 	rc = filter_write0(fs, buf, size, &wrs);
     else {
 	rc = 0;
@@ -190,17 +190,17 @@ filter_write(void *data, const char *buf, size_t size, size_t *pret)
     }
     return rc;
 }
-	
+
 
 static int
 filter_wr_flush(void *data)
 {
     struct filter_stream *fs = data;
     int rc = 0;
-    
+
     if (fs->level) {
 	int nl = fs->buf[fs->level-1] == '\n';
-	
+
 	rc = filter_flush(fs);
 	if (rc == 0) {
 	    if (fs->inlevel) {
@@ -237,7 +237,7 @@ filter_ioctl(void *data, int code, void *call_data)
     case DICO_IOCTL_BYTES_OUT:
 	*(off_t*)call_data = dico_stream_bytes_out(fs->transport);
 	break;
-	
+
     default:
 	errno = EINVAL;
 	return -1;
@@ -256,19 +256,19 @@ filter_stream_create(dico_stream_t str,
     struct filter_stream *fs = malloc(sizeof(*fs));
     dico_stream_t stream;
     int rc;
-    
+
     if (!fs)
 	return NULL;
 
     rc = dico_stream_create(&stream,
 			    mode == FILTER_ENCODE ?
-			        DICO_STREAM_WRITE : DICO_STREAM_READ,
+				DICO_STREAM_WRITE : DICO_STREAM_READ,
 			    fs);
     if (rc) {
 	free(fs);
 	return NULL;
     }
-    
+
     if (mode == FILTER_ENCODE) {
 	fs->inbuf = malloc(min_level);
 	if (!fs->inbuf) {
@@ -283,7 +283,7 @@ filter_stream_create(dico_stream_t str,
 	dico_stream_set_read(stream, filter_read);
     }
     dico_stream_set_ioctl(stream, filter_ioctl);
-    
+
     fs->transport = str;
     fs->level = 0;
     fs->min_level = min_level;
@@ -299,9 +299,9 @@ dico_codec_stream_create(const char *encoding, int mode,
 			 dico_stream_t transport)
 {
     dico_stream_t str = NULL;
-    if (strcmp(encoding, "base64") == 0) 
+    if (strcmp(encoding, "base64") == 0)
 	str = dico_base64_stream_create(transport, mode);
-    else if (strcmp(encoding, "quoted-printable") == 0) 
+    else if (strcmp(encoding, "quoted-printable") == 0)
 	str = dico_qp_stream_create(transport, mode);
     return str;
 }

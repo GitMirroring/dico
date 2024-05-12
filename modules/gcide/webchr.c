@@ -203,7 +203,7 @@ char gcide_webchr[256][4] = {
 /* b4 */ "↑",
 /* b5 */ "☞",   /* pointing hand (printer's "fist") */
 /* b6 */ "˝",   /* bold accent */
-/* b7 */ "´",   /* light accent */ 
+/* b7 */ "´",   /* light accent */
 /* b8 */ "”",
 /* b9 */ "",
 /* ba */ "‖",
@@ -245,13 +245,13 @@ char gcide_webchr[256][4] = {
 /* de */ "˘",   /* FIXME: crescent: 1F319? */
 /* df */ "ȳ",
 /* e0 */ "a",   /* FIXME: a "semilong" (has a macron above with a short */
-                /* vertical bar on top the center of the macron) */
-/* e1 */ "e",   /* FIXME: e "semilong" */ 
+		/* vertical bar on top the center of the macron) */
+/* e1 */ "e",   /* FIXME: e "semilong" */
 /* e2 */ "i",   /* FIXME: i "semilong" */
 /* e3 */ "o",   /* FIXME: o "semilong" */
 /* e4 */ "u",   /* FIXME: u "semilong" */
 /* e5 */ "ȧ",   /* a with dot above */
-/* e6 */ "μ",   
+/* e6 */ "μ",
 /* e7 */ "h",   /* second part of th ligature */
 /* e8 */ "",
 /* e9 */ "",

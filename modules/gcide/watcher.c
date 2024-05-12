@@ -30,7 +30,7 @@ watcher_setup(char const *dbdir)
 {
     WATCHER w;
     int wfd;
-    
+
     w = calloc(1, sizeof(*w));
     if (!w) {
 	DICO_LOG_MEMERR();
@@ -38,7 +38,7 @@ watcher_setup(char const *dbdir)
     }
 
     if ((w->fd = inotify_init()) == -1) {
-        DICO_LOG_ERRNO();
+	DICO_LOG_ERRNO();
 	free(w);
 	return NULL;
     }
@@ -76,7 +76,7 @@ watcher_is_modified(WATCHER w)
 
     if (!w)
 	return 1;
-    
+
     while ((rc = poll(w, 1, 0)) != 0) {
 	if (rc == -1) {
 	    if (errno != EINTR)
@@ -98,7 +98,7 @@ watcher_is_modified(WATCHER w)
 		struct inotify_event *ep = (struct inotify_event *) buffer;
 		while (n) {
 		    int size;
-		    
+
 		    if (ep->wd >= 0) {
 			if (ep->mask & IN_IGNORED)
 			    /* nothing */ ;

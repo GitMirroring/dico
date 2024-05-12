@@ -62,5 +62,3 @@ report_current_timing(dico_stream_t stream, const char *name)
 	clear_stats();
     }
 }
-
-    

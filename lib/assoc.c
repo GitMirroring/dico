@@ -1,6 +1,6 @@
 /* This file is part of GNU Dico
    Copyright (C) 2003-2024 Sergey Poznyakoff
-  
+
    GNU Dico is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 3, or (at your option)
@@ -27,7 +27,7 @@ struct dico_assoc_list {
 struct find_closure {
     size_t count;
 };
-    
+
 static int
 assoc_key_cmp(const void *item, const void *data, void *closure)
 {
@@ -93,7 +93,7 @@ dico_assoc_dup(dico_assoc_list_t src)
     dst = dico_assoc_create(src->flags);
     if (dst == NULL)
 	return NULL;
-	
+
     itr = dico_assoc_iterator(src);
     if (!itr) {
 	int ec = errno;
@@ -101,7 +101,7 @@ dico_assoc_dup(dico_assoc_list_t src)
 	errno = ec;
 	return NULL;
     }
-    
+
     for (p = dico_iterator_first(itr); p; p = dico_iterator_next(itr)) {
 	if (dico_assoc_append(dst, p->key, p->value)) {
 	    int ec = errno;
@@ -114,13 +114,13 @@ dico_assoc_dup(dico_assoc_list_t src)
     return dst;
 }
 
-    
+
 struct dico_assoc *
 _dico_assoc_find_n(dico_assoc_list_t assoc, const char *key, size_t n)
 {
     struct find_closure clos;
     struct dico_assoc *res;
-    
+
     if (!assoc || n == 0)
 	return NULL;
     clos.count = n;
@@ -172,7 +172,7 @@ dico_assoc_add(dico_assoc_list_t assoc, const char *key, const char *value,
 	dico_assoc_remove_n(assoc, key, count);
 	return 0;
     }
-    
+
     if (!(assoc->flags & DICO_ASSOC_MULT)) {
 	a = _dico_assoc_find_n(assoc, key, count);
 	if (a) {
@@ -188,7 +188,7 @@ dico_assoc_add(dico_assoc_list_t assoc, const char *key, const char *value,
 	    return 1;
 	}
     }
-    
+
     size = sizeof(*a) + strlen(key) + 1;
     a = malloc(size);
     if (!a)

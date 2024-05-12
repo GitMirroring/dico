@@ -1,4 +1,4 @@
-/* This file is part of GNU Dico. 
+/* This file is part of GNU Dico.
    Copyright (C) 1998-2024 Sergey Poznyakoff
 
    GNU Dico is free software; you can redistribute it and/or modify
@@ -39,7 +39,7 @@ ds_pager(int argc, char **argv)
 	    printf("%s\n", p);
 	    if (!pager)
 		printf("%s\n", _("(Pager set from environment)"));
-	} 
+	}
     } else
 	xdico_assign_string(&pager, argv[1]);
 }
@@ -99,7 +99,7 @@ create_pfile_stream(FILE *fp)
     dico_stream_set_close(str, fp_close);
     return str;
 }
-    
+
 dico_stream_t
 create_pager_stream(size_t nlines)
 {

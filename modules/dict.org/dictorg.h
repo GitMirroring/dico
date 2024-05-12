@@ -101,7 +101,7 @@
 #define GZ_ID1           0	/* GZ_MAGIC1                               */
 #define GZ_ID2           1	/* GZ_MAGIC2                               */
 #define GZ_CM            2	/* Compression Method (Z_DEFALTED)         */
-#define GZ_FLG	         3	/* FLaGs (see above)                       */
+#define GZ_FLG		 3	/* FLaGs (see above)                       */
 #define GZ_MTIME         4	/* Modification TIME                       */
 #define GZ_XFL           8	/* eXtra FLags (GZ_MAX or GZ_FAST)         */
 #define GZ_OS            9	/* Operating System                        */
@@ -125,10 +125,10 @@ struct index_entry {
 };
 
 struct rev_entry {
-    char *word;       
+    char *word;
     struct index_entry *ptr;
 };
-    
+
 struct dictdb {
     const char *dbname;
     char *basename;
@@ -137,7 +137,7 @@ struct dictdb {
     unsigned flag_casesensitive:1;
     unsigned flag_utf8:1;
     unsigned flag_8bit:1;
-    
+
     size_t numwords;
     struct index_entry *index;
     struct rev_entry *suf_index;

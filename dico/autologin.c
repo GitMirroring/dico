@@ -1,4 +1,4 @@
-/* This file is part of GNU Dico. 
+/* This file is part of GNU Dico.
    Copyright (C) 1998-2024 Sergey Poznyakoff
 
    GNU Dico is free software; you can redistribute it and/or modify
@@ -74,7 +74,7 @@ enum kw_tok {
     kw_service,
     kw_host
 };
-    
+
 struct keyword {
     char *name;
     int arg;
@@ -164,7 +164,7 @@ parse_autologin(const char *filename, char *host, struct auth_cred *pcred,
     struct wordsplit ws;
     int wsflags = 0;
     int beg_line = 0;
-    
+
     fp = fopen (filename, "r");
     if (!fp) {
 	if (errno != ENOENT) {
@@ -222,9 +222,9 @@ parse_autologin(const char *filename, char *host, struct auth_cred *pcred,
     fclose(fp);
     free(buf);
 
-    if (matches.host_argv) 
+    if (matches.host_argv)
 	p_argv = matches.host_argv + 2;
-    else if (matches.def_argv) 
+    else if (matches.def_argv)
 	p_argv = matches.def_argv + 1;
     else {
 	XDICO_DEBUG(1, _("No matching line found\n"));
@@ -242,7 +242,7 @@ parse_autologin(const char *filename, char *host, struct auth_cred *pcred,
 	    } else {
 		struct keyword *kw = findkw(*p_argv);
 		char *arg;
-		
+
 		if (!kw) {
 		    dico_log(L_ERR, 0,
 			     _("%s:%d: unknown keyword"), filename, line);
@@ -261,7 +261,7 @@ parse_autologin(const char *filename, char *host, struct auth_cred *pcred,
 		    p_argv += 2;
 		} else
 		    p_argv++;
-		
+
 		switch (kw->tok) {
 		case kw_login:
 		    pcred->user = xstrdup(arg);
@@ -284,11 +284,11 @@ parse_autologin(const char *filename, char *host, struct auth_cred *pcred,
 		case kw_host:
 		    pcred->hostname = xstrdup(arg);
 		    break;
-		    
+
 		case kw_noauth:
 		    flags |= AUTOLOGIN_NOAUTH;
 		    break;
-		    
+
 		case kw_nosasl:
 		    pcred->sasl = 0;
 		    break;
@@ -296,11 +296,11 @@ parse_autologin(const char *filename, char *host, struct auth_cred *pcred,
 		case kw_sasl:
 		    pcred->sasl = 1;
 		    break;
-		    
+
 		case kw_mechanism: {
 		    int i;
 		    struct wordsplit mechws;
-		    
+
 		    if (!(flags & AUTOLOGIN_MECH)) {
 			pcred->mech = xdico_list_create();
 			dico_list_set_free_item(pcred->mech, _cred_free, NULL);
@@ -315,10 +315,10 @@ parse_autologin(const char *filename, char *host, struct auth_cred *pcred,
 				 filename, line, wordsplit_strerror (&mechws));
 			exit(1);
 		    }
-		    
-		    for (i = 0; i < mechws.ws_wordc; i++) 
+
+		    for (i = 0; i < mechws.ws_wordc; i++)
 			xdico_list_append(pcred->mech, mechws.ws_wordv[i]);
-		    
+
 		    mechws.ws_wordc = 0;
 		    wordsplit_free(&mechws);
 		    break;

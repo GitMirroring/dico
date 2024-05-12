@@ -48,7 +48,7 @@ dico_markup_register(const char *name)
 {
     if (!dico_markup_valid_name_p(name))
 	return EINVAL;
-    
+
     if (!dico_markup_list) {
 	dico_markup_list = dico_list_create();
 	if (!dico_markup_list)
@@ -64,4 +64,3 @@ dico_markup_register(const char *name)
     }
     return 0;
 }
-

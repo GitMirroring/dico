@@ -77,7 +77,7 @@ fd_size (void *data, off_t *psize)
     *psize = size;
     return 0;
 }
-    
+
 int
 fd_destroy(void *data)
 {
@@ -109,5 +109,3 @@ dico_fd_stream_create(int fd, int flags, int noclose)
     dico_stream_set_destroy(str, fd_destroy);
     return str;
 }
-
-    

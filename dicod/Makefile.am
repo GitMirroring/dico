@@ -69,7 +69,7 @@ LDADD=\
  @LIBINTL@ @LIBICONV@\
  @LIBDICOSASL@\
  @GSASL_LIBS@\
- @LIBLTDL@  
+ @LIBLTDL@
 
 # dicod_DEPENDENCIES=@LTDLDEPS@
 
@@ -78,7 +78,7 @@ SUFFIXES=.opt .c
 .opt.c:
 	$(AM_V_GEN)m4 -s $(top_srcdir)/@GRECS_SUBDIR@/build-aux/getopt.m4 $< > $@
 
-BUILT_SOURCES=cmdline.c 
+BUILT_SOURCES=cmdline.c
 EXTRA_DIST=cmdline.opt pp-setup
 
 incdir=$(pkgdatadir)/$(VERSION)/include

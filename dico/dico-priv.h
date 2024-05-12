@@ -86,18 +86,18 @@ struct dict_result {
     struct dict_result *prev;          /* Previous result */
     struct dict_connection *conn;      /* Associated connection */
     enum dict_result_type  type;       /* Result type */
-    size_t count;                      /* Number of elements in the set */ 
+    size_t count;                      /* Number of elements in the set */
     char *base;                        /* Base data pointer */
-    union {                             
+    union {
 	struct define_result *def;
 	struct match_result *mat;
-    } set;                             /* Result set */ 
+    } set;                             /* Result set */
 };
 
 struct dict_connection {
     int fd;
     dico_stream_t str;    /* Communication stream */
-    int transcript;       /* True if transcript is enabled */ 
+    int transcript;       /* True if transcript is enabled */
     int capac;            /* Number of reported server capabilities */
     char **capav;         /* Array of capabilities */
     char *msgid;          /* msg-id */
@@ -129,10 +129,10 @@ struct funtab {
     char *argdoc;      /* Argument docstring */
     char *docstring;   /* Documentation string */
     void (*fun) (int argc, char **argv); /* Handler */
-    char **(*compl) (int argc, char **argv, int ws); 
+    char **(*compl) (int argc, char **argv, int ws);
 };
 
-#define DICO_CLIENT_ID PACKAGE_STRING 
+#define DICO_CLIENT_ID PACKAGE_STRING
 
 extern struct dico_url dico_url;
 extern struct auth_cred default_cred;

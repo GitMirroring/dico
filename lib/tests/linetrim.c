@@ -28,7 +28,7 @@ main(int argc, char **argv)
     char *filename = NULL;
     dico_stream_t in, out, s;
     char buf[512];
-    
+
     dico_set_program_name(argv[0]);
 
     while (--argc) {
@@ -64,7 +64,7 @@ main(int argc, char **argv)
 	    return 1;
 	}
     }
-	
+
     rc = dico_stream_open(in);
     if (rc) {
 	dico_log(L_ERR, 0,

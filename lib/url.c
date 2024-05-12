@@ -1,6 +1,6 @@
 /* This file is part of GNU Dico
    Copyright (C) 2003-2024 Sergey Poznyakoff
-  
+
    GNU Dico is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 3, or (at your option)
@@ -20,7 +20,7 @@
 #include <errno.h>
 #include <limits.h>
 
-/* proto://[user[:password]@][host[:port]/]path[;arg=str[;arg=str...] 
+/* proto://[user[:password]@][host[:port]/]path[;arg=str[;arg=str...]
    dict://[user[:password]@]host[:port]/{d|m}:[word]:[database]:[strat]:[n]
 */
 
@@ -57,7 +57,7 @@ url_parse_arg(dico_url_t url, char *p, char *q)
 {
     char *s;
     char *key, *value = NULL;
-    
+
     for (s = p; s < q && *s != '='; s++)
 	;
 
@@ -102,7 +102,7 @@ static int
 url_get_path(dico_url_t url, char **str)
 {
     char *p;
-    
+
     p = strchr(*str, ';');
     if (!p)
 	p = *str + strlen(*str);
@@ -144,7 +144,7 @@ url_get_user(dico_url_t url, char **str)
 {
     size_t len = strcspn(*str, ":;@/");
     char *p = *str + len;
-    
+
     switch (*p) {
     case ';':
 	if (strcmp(url->proto, "dict"))
@@ -160,7 +160,7 @@ url_get_user(dico_url_t url, char **str)
 	    *str = p + len + 2;
 	}
 	break;
-	
+
     case '@':
 	if (alloc_string(&url->user, *str, p))
 	    return 1;
@@ -174,18 +174,18 @@ static int
 url_get_proto(dico_url_t url, const char *str)
 {
     char *p;
-    
+
     if (!str) {
 	errno = EINVAL;
 	return 1;
     }
-    
+
     p = strchr (str, ':');
     if (!p) {
 	errno = EINVAL;
 	return 1;
     }
-    
+
     alloc_string(&url->proto, str, p);
 
     /* Skip slashes */
@@ -198,7 +198,7 @@ static int
 url_parse_dico_request(dico_url_t url)
 {
     char *p, *q;
-    
+
     if (!url->path)
 	return 0;
     p = url->path;
@@ -221,9 +221,9 @@ url_parse_dico_request(dico_url_t url)
     q = strchr(p, ':');
     if (alloc_string(&url->req.word, p, q))
 	return 1;
-    if (!q) 
+    if (!q)
 	return alloc_string_len(&url->req.database, "!", 1)
-	        || alloc_string_len(&url->req.strategy, ".", 1);
+		|| alloc_string_len(&url->req.strategy, ".", 1);
 
     p = q + 1;
     q = strchr(p, ':');
@@ -233,20 +233,20 @@ url_parse_dico_request(dico_url_t url)
     if (url->req.type == DICO_REQUEST_MATCH) {
 	if (!q)
 	    return alloc_string_len(&url->req.strategy, ".", 1);
-    
+
 	p = q + 1;
 	q = strchr(p, ':');
 	if (alloc_string_def(&url->req.strategy, p, q, "."))
 	    return 1;
     }
-    
+
     if (q) {
 	p = q + 1;
 	url->req.n = strtoul(p, &q, 10);
 	if (*q)
 	    return 1;
     }
-    
+
     return 0;
 }
 
@@ -275,7 +275,7 @@ dico_url_parse(dico_url_t *purl, const char *str)
 {
     int rc;
     dico_url_t url;
-    
+
     url = malloc(sizeof (*url));
     if (!url)
 	return 1;
@@ -291,7 +291,7 @@ dico_url_parse(dico_url_t *purl, const char *str)
 	    dico_url_destroy(&url);
 	    return 1;
 	}
-	
+
 	*purl = url;
     }
     return rc;

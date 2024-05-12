@@ -1,4 +1,4 @@
-/* This file is part of GNU Dico. 
+/* This file is part of GNU Dico.
    Copyright (C) 1998-2024 Sergey Poznyakoff
 
    GNU Dico is free software; you can redistribute it and/or modify
@@ -45,7 +45,7 @@ ds_silent_close(void)
 	dict_conn_close(conn);
 	conn = NULL;
     }
-}    
+}
 
 static int
 get_list(struct dict_result **pres, char *cmd, char *code)
@@ -56,7 +56,7 @@ get_list(struct dict_result **pres, char *cmd, char *code)
 	if (dict_status_p(conn, code)) {
 	    unsigned long count;
 	    char *p;
-	
+
 	    count = strtoul (conn->buf + 3, &p, 10);
 	    dict_multiline_reply(conn);
 	    dict_result_create(conn, dict_result_match, count,
@@ -77,7 +77,7 @@ check_disconnect(void)
     if (conn) {
 	int rc;
 	fd_set rd, wr, ex;
-	
+
 	FD_ZERO(&rd);
 	FD_SET(conn->fd, &rd);
 	FD_ZERO(&wr);
@@ -85,7 +85,7 @@ check_disconnect(void)
 	FD_ZERO(&ex);
 	FD_SET(conn->fd, &ex);
 
-	do 
+	do
 	    rc = select(conn->fd + 1, &rd, &wr, &ex, NULL);
 	while (rc == -1 && errno == EINTR);
 	if (rc < 0 || FD_ISSET(conn->fd, &rd)) {
@@ -104,8 +104,8 @@ ensure_connection(void)
 	    script_error(_("Please specify server name or IP address"));
 	    return 1;
 	}
-	
-	if (dict_connect(&conn, &dico_url)) { 
+
+	if (dict_connect(&conn, &dico_url)) {
 	    script_error(_("Cannot connect to the server"));
 	    return 1;
 	}
@@ -138,7 +138,7 @@ ds_open(int argc, char **argv)
 	script_error(_("Please specify server name or IP address"));
 	return;
     }
-    
+
     ds_silent_close();
     ensure_connection();
 }
@@ -146,9 +146,9 @@ ds_open(int argc, char **argv)
 void
 ds_close(int argc, char **argv)
 {
-    if (!conn) 
+    if (!conn)
 	script_error(_("Nothing to close"));
-    else 
+    else
 	ds_silent_close();
 }
 
@@ -196,11 +196,11 @@ static char *
 result_generator(struct dict_result *res, const char *text, int state)
 {
     static int i, len;
-    
-    if (!state) { 
+
+    if (!state) {
 	i = 0;
 	len = strlen(text);
-    } 
+    }
     while (i < res->count) {
 	char *s = res->set.mat[i].database;
 	i++;
@@ -264,7 +264,7 @@ ds_verbose(int argc, char **argv)
 void
 ds_transcript(int argc, char **argv)
 {
-    if (argc == 1) 
+    if (argc == 1)
 	printf(_("transcript is %s\n"), transcript ? _("on") : _("off"));
     else {
 	set_bool(&transcript, argv[1]);
@@ -287,7 +287,7 @@ void
 ds_match(int argc, char **argv)
 {
     int rc;
-    
+
     if (ensure_connection())
 	return;
     if (argc == 2 && argv[1][0]) {
@@ -346,7 +346,7 @@ ds_distance(int argc, char **argv)
 	    }
 	    stream_printf(conn->str, "XLEV TELL\r\n");
 	    dict_read_reply(conn);
-	    if (dict_status_p(conn, "280")) 
+	    if (dict_status_p(conn, "280"))
 		printf(_("Reported Levenshtein distance:%s\n"), conn->buf+3);
 	    else {
 		printf("%s\n",
@@ -354,7 +354,7 @@ ds_distance(int argc, char **argv)
 		printf("%s\n", conn->buf);
 	    }
 	}
-	if (levenshtein_threshold == 0) 
+	if (levenshtein_threshold == 0)
 	    printf(_("No distance configured\n"));
 	else
 	    printf(_("Configured Levenshtein distance: %u\n"),
@@ -387,7 +387,7 @@ void
 ds_show_info(int argc, char **argv)
 {
     const char *dbname;
-    if (argc == 1) 
+    if (argc == 1)
 	dbname = dico_url.req.database ? dico_url.req.database : "!";
     else
 	dbname = argv[1];
@@ -408,4 +408,3 @@ ds_version(int argc, char **argv)
 {
     printf("%s\n", PACKAGE_STRING);
 }
-

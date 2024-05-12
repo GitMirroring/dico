@@ -27,11 +27,11 @@ main(int argc, char **argv)
 	fprintf(stderr, "Usage: %s word [word...]\n", dico_program_name);
 	return 2;
     }
-    
+
     while (--argc) {
 	char code[DICO_SOUNDEX_SIZE];
 	char *arg = *++argv;
-	    
+
 	dico_soundex(arg, code);
 	printf("%s: %s\n", arg, code);
     }

@@ -1,6 +1,6 @@
 /* This file is part of GNU Dico
    Copyright (C) 2008-2024 Sergey Poznyakoff
-  
+
    GNU Dico is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 3, or (at your option)
@@ -37,7 +37,7 @@ hdr_buf_append(struct hdr_buf *buf, const char *str, size_t len)
 {
     if (len == 0)
 	return 0;
-    
+
     if (buf->size == 0) {
 	size_t size = HDR_BUF_SIZE * ((len + HDR_BUF_SIZE - 1) / HDR_BUF_SIZE);
 	buf->base = malloc(size);
@@ -81,13 +81,13 @@ collect_line(const char **ptext, dico_assoc_list_t asc, struct hdr_buf *hbuf)
 	    text--;
 	}
 	n = strcspn(text, "\n");
-	
+
 	if (n == 0) {
 	    text += strlen(text);
 	    break;
 	}
-	    
-	if (hdr_buf_append(hbuf, text, n)) 
+
+	if (hdr_buf_append(hbuf, text, n))
 	    return 1;
 
 	text += n;
@@ -95,7 +95,7 @@ collect_line(const char **ptext, dico_assoc_list_t asc, struct hdr_buf *hbuf)
 	    break;
 	text++;
     } while (ISWS(*text));
-    
+
     c = 0;
     if (hdr_buf_append(hbuf, &c, 1))
 	return 1;
@@ -111,7 +111,7 @@ collect_line(const char **ptext, dico_assoc_list_t asc, struct hdr_buf *hbuf)
 	return 1;
     *ptext = text;
     return 0;
-}    
+}
 
 int
 dico_header_parse(dico_assoc_list_t *pasc, const char *text)
@@ -119,7 +119,7 @@ dico_header_parse(dico_assoc_list_t *pasc, const char *text)
     int rc = 0;
     struct hdr_buf hbuf = HDR_BUF_INIT;
     dico_assoc_list_t asc = dico_assoc_create(DICO_ASSOC_CI|DICO_ASSOC_MULT);
-    
+
     if (!asc)
 	return 1;
 
@@ -138,4 +138,3 @@ dico_header_parse(dico_assoc_list_t *pasc, const char *text)
 	*pasc = asc;
     return rc;
 }
-	    

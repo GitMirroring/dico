@@ -73,7 +73,7 @@ dico_strategy_dup(const dico_strategy_t strat)
 dico_strategy_t
 dico_strategy_find(const char *name)
 {
-    if (DEFSTRATNAME(name)) 
+    if (DEFSTRATNAME(name))
 	return default_strategy;
     return dico_list_locate(strategy_list, (void*)name);
 }
@@ -97,7 +97,7 @@ dico_strategy_add(const dico_strategy_t strat)
     return 0;
 }
 
-dico_iterator_t 
+dico_iterator_t
 dico_strategy_iterator(void)
 {
     return dico_list_iterator(strategy_list);
@@ -136,5 +136,3 @@ dico_get_default_strategy(void)
 {
     return default_strategy;
 }
-
-    

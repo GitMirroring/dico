@@ -26,7 +26,7 @@
 #include <errno.h>
 #include "md5.h"
 
-dico_stream_t iostr;    
+dico_stream_t iostr;
 char *in_buffer;
 size_t in_bufsize;
 size_t in_level;
@@ -134,7 +134,7 @@ run_command(int argc, char **argv, pid_t *ppid)
     close(oup[0]);
     close(inp[1]);
     *ppid = pid;
-    
+
     return dico_fd_io_stream_create(inp[0], oup[1]);
 }
 
@@ -158,7 +158,7 @@ writer(FILE *fp)
     if (pid == 0) {
 	char buf[512];
 	size_t n;
-    
+
 	while ((n = fread(buf, 1, sizeof(buf), fp)) > 0)
 	    dico_stream_write(iostr, buf, n);
 	exit(0);
@@ -172,12 +172,12 @@ main(int argc, char **argv)
     char *user, *pass;
     pid_t pid;
     char *script = NULL;
-    
+
     dico_set_program_name(argv[0]);
 
     while (--argc) {
 	char *arg = *++argv;
-	if (strncmp(arg, "-script=", 8) == 0) 
+	if (strncmp(arg, "-script=", 8) == 0)
 	    script = arg + 8;
 	else if (strcmp(arg, "--") == 0) {
 	    --argc;
@@ -189,7 +189,7 @@ main(int argc, char **argv)
 	} else
 	    break;
     }
-    
+
     if (argc < 3) {
 	dico_log(L_ERR, 0, "usage: %s user pass command [args...]",
 		 dico_program_name);
@@ -204,10 +204,10 @@ main(int argc, char **argv)
     iostr = run_command(argc, argv, &pid);
 
     if (!iostr)
-        return 1;
+	return 1;
     dico_stream_set_buffer(iostr, dico_buffer_line, DICO_MAX_BUFFER);
 
-    dict_read_reply(); 
+    dict_read_reply();
     assert_status("220");
     get_msgid();
     apop_auth(user, pass);

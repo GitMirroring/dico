@@ -1,6 +1,6 @@
 /* This file is part of GNU Dico
    Copyright (C) 2003-2024 Sergey Poznyakoff
-  
+
    GNU Dico is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 3, or (at your option)
@@ -76,11 +76,11 @@ dico_list_clear(struct dico_list *list)
 	errno = EINVAL;
 	return 1;
     }
-    
+
     p = list->head;
     list->head = list->tail = NULL;
     list->count = 0;
-    
+
     while (p) {
 	struct list_entry *next = p->next;
 	if (list->free_item)
@@ -95,7 +95,7 @@ void
 dico_list_destroy(struct dico_list **plist)
 {
     struct dico_list *list;
-    
+
     if (!plist || !*plist)
 	return;
 
@@ -137,20 +137,20 @@ dico_iterator_attach(dico_iterator_t itr, dico_list_t list)
     itr->next = list->itr;
     itr->advanced = 0;
     itr->pos = 0;
-    list->itr = itr;	
+    list->itr = itr;
 }
 
-static dico_iterator_t 
+static dico_iterator_t
 dico_iterator_detach(dico_iterator_t iter)
 {
     dico_iterator_t cur, prev;
-    
+
     for (cur = iter->list->itr, prev = NULL;
 	 cur;
 	 prev = cur, cur = cur->next)
 	if (cur == iter)
 	    break;
-    
+
     if (cur) {
 	if (prev)
 	    prev->next = cur->next;
@@ -164,14 +164,14 @@ dico_iterator_t
 dico_list_iterator(dico_list_t list)
 {
     dico_iterator_t itr;
-    
+
     if (!list) {
-        errno = EINVAL;    
+	errno = EINVAL;
 	return NULL;
     }
     itr = malloc(sizeof(*itr));
-    if (itr) 
-        dico_iterator_attach(itr, list);
+    if (itr)
+	dico_iterator_attach(itr, list);
     return itr;
 }
 
@@ -179,7 +179,7 @@ void
 dico_iterator_destroy(dico_iterator_t *ip)
 {
     dico_iterator_t itr;
-    
+
     if (!ip || !*ip)
 	return;
     itr = dico_iterator_detach(*ip);
@@ -187,7 +187,7 @@ dico_iterator_destroy(dico_iterator_t *ip)
 	free(itr);
     *ip = NULL;
 }
-		
+
 static void
 _iterator_increase_pos(dico_iterator_t ip, size_t after)
 {
@@ -230,7 +230,7 @@ dico_iterator_next(dico_iterator_t ip)
     }
     ip->advanced = 0;
     return dico_iterator_current(ip);
-}	
+}
 
 void *
 dico_iterator_prev(dico_iterator_t ip)
@@ -242,7 +242,7 @@ dico_iterator_prev(dico_iterator_t ip)
 	ip->pos--;
     ip->advanced = 0;
     return dico_iterator_current(ip);
-}	
+}
 
 void *
 dico_iterator_item(dico_iterator_t ip, size_t n)
@@ -253,7 +253,7 @@ dico_iterator_item(dico_iterator_t ip, size_t n)
 	    ip->pos++;
 	}
 	ip->advanced = 0;
-	
+
 	while (ip->cur && ip->pos < n) {
 	    ip->cur = ip->cur->next;
 	    ip->pos++;
@@ -353,7 +353,7 @@ dico_list_set_comparator_data(dico_list_t list, void *data)
     }
     list->comp_data = data;
     return 0;
-}    
+}
 
 int
 dico_list_set_flags(struct dico_list *list, int flags)
@@ -468,9 +468,9 @@ _dico_list_remove_item(struct dico_list *list, struct list_entry *p,
 		       void **pptr)
 {
     struct list_entry *prev;
-    
+
     _iterator_advance(list->itr, p);
-    
+
     prev = p->prev;
     if (prev)
 	prev->next = p->next;
@@ -481,7 +481,7 @@ _dico_list_remove_item(struct dico_list *list, struct list_entry *p,
 	p->next->prev = prev;
     else
 	list->tail = prev;
-    
+
     list->count--;
 
     if (pptr)
@@ -509,7 +509,7 @@ _dico_list_remove(struct dico_list *list, void *data,
     for (p = list->head; p; p = p->next)
 	if (cmp(p->data, data, cmpdata) == 0)
 	    break;
-    
+
     if (!p) {
 	errno = ENOENT;
 	return 1;
@@ -548,7 +548,7 @@ dico_list_iterate(struct dico_list *list, dico_list_iterator_t func,
 {
     struct iterator itr;
     void *p;
-	
+
     if (!list)
 	return;
     dico_iterator_attach(&itr, list);
@@ -589,7 +589,7 @@ _dico_list_insert_sorted(struct dico_list *list, void *data,
     int rc;
     struct list_entry *cur;
     size_t i;
-    
+
     if (!list) {
 	errno = EINVAL;
 	return 1;
@@ -600,7 +600,7 @@ _dico_list_insert_sorted(struct dico_list *list, void *data,
 
     if (!list->head)
 	return _dico_list_append(list, data);
-    
+
     for (cur = list->head, i = 0; cur; cur = cur->next, i++) {
 	int res = cmp(cur->data, data, cmpdata);
 	if (res > 0)
@@ -608,7 +608,7 @@ _dico_list_insert_sorted(struct dico_list *list, void *data,
 	else if (res == 0 && list->flags)
 	    return EEXIST;
     }
-    
+
     if (cur && !cur->prev) {
 	rc = _dico_list_prepend(list, data);
     } else if (!cur) {
@@ -617,18 +617,18 @@ _dico_list_insert_sorted(struct dico_list *list, void *data,
 	struct list_entry *ep = malloc(sizeof(*ep));
 	if (ep) {
 	    struct list_entry *prev = cur->prev;
-	    
+
 	    rc = 0;
 	    ep->data = data;
 
 	    ep->next = cur;
 	    cur->prev = ep;
-	    
+
 	    ep->prev = prev;
 	    prev->next = ep;
 
 	    _iterator_increase_pos(list->itr, i - 1);
-	    
+
 	    list->count++;
 	} else
 	    rc = 1;
@@ -651,14 +651,14 @@ dico_list_insert_sorted(struct dico_list *list, void *data)
    contains elements from the list A that are also encountered
    in the list B. Elements are compared using function CMP.
    The resulting list preserves the ordering of A. */
-dico_list_t 
+dico_list_t
 dico_list_intersect(dico_list_t a, dico_list_t b,
 		    dico_list_comp_t cmp, void *cmpdata)
 {
     dico_list_t res;
     dico_iterator_t itr = dico_list_iterator(a);
     void *p;
-    
+
     if (!itr)
 	return NULL;
     res = dico_list_create();
@@ -680,7 +680,7 @@ dico_list_intersect_p(dico_list_t a, dico_list_t b,
     dico_iterator_t itr = dico_list_iterator(a);
     void *p;
     int rc = 0;
-    
+
     for (p = dico_iterator_first(itr); p; p = dico_iterator_next(itr)) {
 	if (_dico_list_locate(b, p, cmp, cmpdata)) {
 	    rc = 1;

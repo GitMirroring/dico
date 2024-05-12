@@ -28,7 +28,7 @@ struct dicod_sockaddr {
     unsigned netmask;
     int salen;
     struct sockaddr sa;
-};    
+};
 
 union acl_value {
     int family;
@@ -90,7 +90,7 @@ dicod_acl_create(const char *name, grecs_locus_t *locus)
 }
 
 /* allow|deny [all|authenticated|group <grp: list>]
-              [acl <name: string>] [from <addr: list>] */
+	      [acl <name: string>] [from <addr: list>] */
 
 static int
 _parse_token (struct acl_entry *entry, grecs_value_t *value)
@@ -101,7 +101,7 @@ _parse_token (struct acl_entry *entry, grecs_value_t *value)
     else if (strcmp(value->v.string, "auth") == 0
 	     || strcmp(value->v.string, "authenticated") == 0)
 	entry->authenticated = 1;
-    else 
+    else
 	return 1;
     return 0;
 }
@@ -111,7 +111,7 @@ _parse_acl_value(struct acl_entry *entry, grecs_value_t *value)
 {
     union acl_value *val;
     const char *string;
-    
+
     if (value->type != GRECS_TYPE_STRING) {
 	grecs_error(&entry->locus, 0, _("expected string but found list"));
 	return 1;
@@ -122,7 +122,7 @@ _parse_acl_value(struct acl_entry *entry, grecs_value_t *value)
     if (string[0] == '/') {
 	size_t len;
 	struct sockaddr_un *s_un;
-	
+
 	len = strlen (string);
 	if (len >= sizeof(s_un->sun_path)) {
 	    grecs_error(&entry->locus, 0,
@@ -138,7 +138,7 @@ _parse_acl_value(struct acl_entry *entry, grecs_value_t *value)
 	val->s.s_len = offsetof(struct sockaddr_un,sun_path) + len;
     } else {
 	struct grecs_cidr cidr;
-	
+
 	if (grecs_str_to_cidr(&cidr, string, &value->locus))
 	    return -1;
 	val = grecs_malloc(sizeof(*val));
@@ -181,7 +181,7 @@ _parse_from(struct acl_entry *entry, size_t argc, grecs_value_t **argv)
 	} else {
 	    int rc = 0;
 	    struct grecs_list_entry *ep;
-	    
+
 	    for (ep = argv[0]->v.list->head; ep; ep = ep->next) {
 		grecs_value_t *p = ep->data;
 		rc += _parse_acl_value(entry, p);
@@ -190,7 +190,7 @@ _parse_from(struct acl_entry *entry, size_t argc, grecs_value_t **argv)
 		return rc;
 	}
     }
-    
+
     if (argc - 1) {
 	grecs_warning(&entry->locus, 0, _("junk after `from' list"));
 	return 1;
@@ -230,7 +230,7 @@ _parse_sub_acl(struct acl_entry *entry, size_t argc, grecs_value_t **argv)
     }
     return _parse_from(entry, argc, argv);
 }
-    
+
 static int
 _parse_group(struct acl_entry *entry, size_t argc, grecs_value_t **argv)
 {
@@ -254,13 +254,13 @@ _parse_group(struct acl_entry *entry, size_t argc, grecs_value_t **argv)
 	    grecs_error(&argv[0]->locus, 0,
 			_("expected group list, but found array"));
 	    return 1;
-	}	    
+	}
 	argc--;
 	argv++;
-    }  
+    }
     return _parse_sub_acl(entry, argc, argv);
 }
-	
+
 static int
 _parse_acl(struct acl_entry *entry, size_t argc, grecs_value_t **argv)
 {
@@ -292,12 +292,12 @@ parse_acl_line(grecs_locus_t *locus, int allow, dicod_acl_t acl,
 	    return 1;
 	}
 	break;
-	
+
     case GRECS_TYPE_ARRAY:
 	if (_parse_acl(entry, value->v.arg.c, value->v.arg.v))
 	    return 1;
 	break;
-	
+
     case GRECS_TYPE_LIST:
 	grecs_error(locus, 0, _("unexpected list"));
 	return 1;
@@ -323,10 +323,10 @@ _check_value(void *item, void *data)
 {
     union acl_value *vptr = item;
     int *pres = data;
-    
+
     if (vptr->family != client_addr.ss_family)
 	return 0;
-    
+
     switch (vptr->family) {
     case AF_INET:
     case AF_INET6:
@@ -336,12 +336,12 @@ _check_value(void *item, void *data)
 	    return 1;
 	}
 	break;
-	
+
     case AF_UNIX:
-        {
+	{
 	    struct sockaddr_un *sun_clt = (struct sockaddr_un *)&client_addr;
 	    struct sockaddr_un *sun_item = &vptr->s.s_un;
-	    
+
 	    if (S_UN_NAME(sun_clt, client_addrlen)[0]
 		&& S_UN_NAME(sun_item, vptr->s.s_len)[0]
 		&& strcmp (sun_clt->sun_path, sun_item->sun_path) == 0) {
@@ -369,7 +369,7 @@ _acl_check(struct acl_entry *ent)
 				       cmp_group_name, NULL);
 	if (!result)
 	    return 0;
-    }	
+    }
 
     result = dicod_acl_check(ent->acl, 1);
     if (!result)
@@ -381,7 +381,7 @@ _acl_check(struct acl_entry *ent)
 	result = 0;
 	dico_list_iterate(ent->values, _check_value, &result);
     }
-    
+
     return result;
 }
 
@@ -405,11 +405,11 @@ _acl_check_cb(void *item, void *data)
     }
     return 0;
 }
-    
+
 int
 dicod_acl_check(dicod_acl_t acl, int result)
 {
-    if (acl) 
+    if (acl)
 	dico_list_iterate(acl->list, _acl_check_cb, &result);
     return result;
 }
@@ -441,7 +441,7 @@ dicod_acl_install(dicod_acl_t acl, grecs_locus_t *locus)
 {
     dicod_acl_t ret;
     if (! ((acl_table
-	    || (acl_table = hash_initialize(0, 0, 
+	    || (acl_table = hash_initialize(0, 0,
 					    acl_hasher,
 					    acl_compare, 0)))
 	   && (ret = hash_insert(acl_table, acl))))
@@ -464,4 +464,3 @@ dicod_acl_lookup(const char *name)
     samp.name = (char*) name;
     return hash_lookup(acl_table, &samp);
 }
-

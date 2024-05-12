@@ -102,7 +102,7 @@ _crlfstr_read(void *data, char *buf, size_t size, size_t *pret)
 		s->cb = 0;
 		buf[total++] = *p;
 		break;
-		
+
 	    default:
 		if (s->cb) {
 		    buf[total++] = s->cb;
@@ -122,7 +122,7 @@ _crlfstr_read(void *data, char *buf, size_t size, size_t *pret)
 
 static int
 _crlfstr_destroy(void *data)
-{ 
+{
     struct _crlfstr *s = data;
     if (!s->noclose)
 	dico_stream_destroy(&s->transport);
@@ -149,7 +149,7 @@ static int
 _crlfstr_ioctl(void *data, int code, void *call_data)
 {
     struct _crlfstr *s = data;
-    
+
     switch (code) {
     case DICO_IOCTL_GET_TRANSPORT:
 	*(dico_stream_t*)call_data = s->transport;

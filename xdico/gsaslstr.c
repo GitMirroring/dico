@@ -88,7 +88,7 @@ _gsasl_read(void *data, char *buf, size_t size, size_t *pret)
     int rc;
     size_t len;
     char *bufp = NULL;
-  
+
     if ((len = g_buf_level(s->buf))) {
 	if (len > size)
 	    len = size;
@@ -103,7 +103,7 @@ _gsasl_read(void *data, char *buf, size_t size, size_t *pret)
 	char tmp[80];
 	size_t sz;
 	int status;
-	
+
 	status = dico_stream_read(s->transport, tmp, sizeof(tmp), &sz);
 	if (status == EINTR)
 	    continue;
@@ -127,7 +127,7 @@ _gsasl_read(void *data, char *buf, size_t size, size_t *pret)
 	errno = EIO;
 	return 1;
     }
-      
+
     g_buf_drop(s->buf);
     if (len > size) {
 	memcpy(buf, bufp, size);
@@ -139,7 +139,7 @@ _gsasl_read(void *data, char *buf, size_t size, size_t *pret)
 
     if (pret)
 	*pret = len;
-  
+
     free(bufp);
     return 0;
 }
@@ -150,7 +150,7 @@ _gsasl_write(void *data, const char *buf, size_t size, size_t *pret)
     struct _gsasl_str *s = data;
     char *obuf = NULL;
     size_t olen = 0;
-    
+
     int rc = gsasl_encode(s->sess, buf, size, &obuf, &olen);
     if (rc != GSASL_OK) {
 	set_error(s, _ERR_SASL, rc);
@@ -182,7 +182,7 @@ _gsasl_destroy(void *data)
 static const char *
 _gsasl_error_string(void *data, int code)
 {
-    
+
 }
 */
 
@@ -204,7 +204,7 @@ static int
 _gsasl_ioctl(void *data, int code, void *call_data)
 {
     struct _gsasl_str *s = data;
-    
+
     switch (code) {
     case DICO_IOCTL_GET_TRANSPORT:
 	*(dico_stream_t*)call_data = s->transport;
@@ -221,7 +221,7 @@ _gsasl_ioctl(void *data, int code, void *call_data)
     case DICO_IOCTL_BYTES_OUT:
 	*(off_t*)call_data = dico_stream_bytes_out(s->transport);
 	break;
-	
+
     default:
 	errno = EINVAL;
 	return -1;
@@ -264,7 +264,7 @@ insert_gsasl_stream(Gsasl_session *sess, dico_stream_t *pstr)
     dico_stream_t gsasl_str;
     dico_stream_t str = *pstr;
     dico_stream_t prev = NULL, s;
-    
+
     while ((rc = dico_stream_ioctl(str, DICO_IOCTL_GET_TRANSPORT, &s)) == 0
 	   && s) {
 	prev = str;
@@ -284,7 +284,7 @@ insert_gsasl_stream(Gsasl_session *sess, dico_stream_t *pstr)
 	dico_log(L_ERR, errno, _("Cannot create GSASL stream"));
 	return 1;
     }
-    
+
     if (!prev)
 	*pstr = gsasl_str;
     else if (dico_stream_ioctl(prev, DICO_IOCTL_SET_TRANSPORT, gsasl_str)) {

@@ -118,7 +118,7 @@ sockaddr_to_astr (const struct sockaddr *sa, int salen)
 {
     size_t size;
     char *p;
-    
+
     sockaddr_to_str(sa, salen, NULL, 0, &size);
     p = xmalloc(size);
     sockaddr_to_str(sa, salen, p, size, NULL);

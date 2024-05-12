@@ -1,6 +1,6 @@
 /* This file is part of GNU Dico
    Copyright (C) 2007-2024 Sergey Poznyakoff
- 
+
    GNU Dico is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 3, or (at your option)
@@ -15,7 +15,7 @@
    along with GNU Dico.  If not, see <http://www.gnu.org/licenses/>. */
 
 #include <config.h>
-#include <dico.h>    
+#include <dico.h>
 #include <string.h>
 
 #ifndef MIN
@@ -42,7 +42,7 @@ dico_levenshtein_distance(const char *astr, const char *bstr, int flags)
     int dist;
     int (*conv) (const char *, unsigned **, size_t *) =
 	(flags & DICO_LEV_NORM) ? utf8_mbstr_to_norm_wc : utf8_mbstr_to_wc;
-    
+
     if (conv(astr, &a, NULL))
 	return -1;
     if (conv(bstr, &b, NULL)) {
@@ -51,7 +51,7 @@ dico_levenshtein_distance(const char *astr, const char *bstr, int flags)
     }
     alen = utf8_wc_strlen(a);
     blen = utf8_wc_strlen(b);
-    
+
     rowptr = calloc(sizeof(rowptr[0]),
 		    (2 + !!(flags & DICO_LEV_DAMERAU)) * (blen + 1));
     row[0] = rowptr;
@@ -69,13 +69,13 @@ dico_levenshtein_distance(const char *astr, const char *bstr, int flags)
     DEBUGNL();
     idx = 1;
     prev = 0;
-    
+
     for (i = 0; i < alen; i++, prev = idx, idx = (idx + 1) % nrows ) {
-	row[idx][0] = i + 1;	
+	row[idx][0] = i + 1;
 	DEBUG(row[idx][0]);
-	for (j = 0; j < blen; j++) { 
+	for (j = 0; j < blen; j++) {
 	    unsigned n, cost;
-	    
+
 	    cost = !(utf8_wc_toupper(a[i]) == utf8_wc_toupper(b[j]));
 	    n = MIN(row[prev][j+1] + 1,   /* Deletion */
 		    row[idx][j] + 1);     /* Insertion */
@@ -99,4 +99,3 @@ dico_levenshtein_distance(const char *astr, const char *bstr, int flags)
     free(b);
     return dist;
 }
-	

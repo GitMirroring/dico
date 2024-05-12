@@ -341,7 +341,7 @@ SCM_DEFINE_PUBLIC(scm_dico_strat_select_p, "dico-strat-select?", 3, 0, 0,
 
     sp = (struct _guile_strategy *) SCM_CDR(strat);
     stratp = sp->strat;
-    
+
     wordstr = scm_to_locale_string(word);
     if (scm_is_string(key)) {
 	char *keystr = scm_to_locale_string(key);
@@ -361,7 +361,7 @@ SCM_DEFINE_PUBLIC(scm_dico_strat_select_p, "dico-strat-select?", 3, 0, 0,
 	struct dico_key *kptr;
 
 	SCM_ASSERT(CELL_IS_KEY(key), key, SCM_ARG3, FUNC_NAME);
-    
+
 	kptr = (struct dico_key *) SCM_CDR(key);
 	rc = dico_key_match(kptr, wordstr);
     }
@@ -422,7 +422,7 @@ SCM_DEFINE_PUBLIC(scm_dico_make_key, "dico-make-key",
     struct _guile_strategy *sp;
     char *wordstr;
     int rc;
-    
+
     SCM_ASSERT(CELL_IS_STRAT(strat), strat, SCM_ARG1, FUNC_NAME);
     SCM_ASSERT(scm_is_string(word), word, SCM_ARG2, FUNC_NAME);
     sp = (struct _guile_strategy *) SCM_CDR(strat);
@@ -1079,7 +1079,7 @@ mod_match(dico_handle_t hp, const dico_strategy_t strat, const char *word)
     SCM scm_key;
 
     scm_key = dico_new_scm_key(&key);
-    
+
     if (dico_key_init(key, strat, word)) {
 	dico_log(L_ERR, 0, _("mod_match: key initialization failed"));
 	return NULL;

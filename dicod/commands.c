@@ -35,10 +35,10 @@ dicod_help(dico_stream_t str, int argc, char **argv)
 {
     const char *text = help_text;
     dico_stream_t ostr;
-	
+
     stream_writez(str, "113 help text follows\n");
     ostr = dicod_ostream_create(str, NULL);
-    
+
     if (text) {
 	if (text[0] == '+') {
 	    dicod_show_std_help(ostr);
@@ -53,7 +53,7 @@ dicod_help(dico_stream_t str, int argc, char **argv)
     dico_stream_destroy(&ostr);
 
     stream_writez(str, ".\n");
-    stream_writez(str, "250 ok\n");    
+    stream_writez(str, "250 ok\n");
 }
 
 void
@@ -61,7 +61,7 @@ dicod_show_info(dico_stream_t str, int argc, char **argv)
 {
     char *dbname = argv[2];
     dicod_database_t *dict = find_database(dbname);
-    if (!dict) 
+    if (!dict)
 	stream_writez(str, "550 invalid database, use SHOW DB for a list\n");
     else {
 	dico_stream_t ostr;
@@ -76,9 +76,9 @@ dicod_show_info(dico_stream_t str, int argc, char **argv)
 	stream_writez(ostr, "\n");
 	dico_stream_close(ostr);
 	dico_stream_destroy(&ostr);
-	
+
 	stream_writez(str, ".\n");
-	stream_writez(str, "250 ok\n");    
+	stream_writez(str, "250 ok\n");
     }
 }
 
@@ -105,11 +105,11 @@ void
 dicod_show_databases(dico_stream_t str, int argc, char **argv)
 {
     size_t count = database_count();
-    if (count == 0) 
+    if (count == 0)
 	stream_printf(str, "554 No databases present\n");
     else {
 	dico_stream_t ostr;
-	
+
 	stream_printf(str, "110 %lu databases present\n",
 		      (unsigned long) count);
 	ostr = dicod_ostream_create(str, NULL);
@@ -140,7 +140,7 @@ dicod_show_strategies(dico_stream_t str, int argc, char **argv)
 	stream_printf(str, "555 No strategies available\n");
     else {
 	dico_stream_t ostr;
-	
+
 	stream_printf(str, "111 %lu strategies present: list follows\n",
 		      (unsigned long) count);
 	ostr = dicod_ostream_create(str, NULL);
@@ -151,12 +151,12 @@ dicod_show_strategies(dico_stream_t str, int argc, char **argv)
 	stream_writez(str, "250 ok\n");
     }
 }
-	
+
 void
 dicod_show_server(dico_stream_t str, int argc, char **argv)
 {
     dico_stream_t ostr;
-    
+
     stream_writez(str, "114 server information\n");
     ostr = dicod_ostream_create(str, NULL);
     stream_writez(str, "dicod ");
@@ -171,7 +171,7 @@ dicod_show_server(dico_stream_t str, int argc, char **argv)
     if (timing_option && show_sys_info_p()) {
 	xdico_timer_t t;
 	double x, fph;
-	
+
 	stream_writez(str, " up ");
 	t = timer_stop("server");
 	x = timer_get_real(t);
@@ -193,14 +193,14 @@ dicod_show_server(dico_stream_t str, int argc, char **argv)
     dico_stream_close(ostr);
     dico_stream_destroy(&ostr);
     stream_writez(str, ".\n");
-    stream_writez(str, "250 ok\n");    
+    stream_writez(str, "250 ok\n");
 }
 
 void
 dicod_status(dico_stream_t str, int argc, char **argv)
 {
     stream_writez(str, "210");
-    if (timing_option) 
+    if (timing_option)
 	report_timing(str, timer_stop("dicod"), &total_stat);
     else
 	stream_writez(str, " No timing data available");
@@ -228,19 +228,19 @@ dicod_match(dico_stream_t str, int argc, char **argv)
     const char *dbname = argv[1];
     const char *word = argv[3];
     const dico_strategy_t strat = dico_strategy_find(argv[2]);
-    
+
     total_bytes_out = 0;
-    if (!strat) 
+    if (!strat)
 	stream_writez(str,
 		      "551 Invalid strategy, use SHOW STRAT for a list\n");
-    else if (strcmp(dbname, "!") == 0) 
+    else if (strcmp(dbname, "!") == 0)
 	dicod_match_word_first(str, strat, word);
-    else if (strcmp(dbname, "*") == 0) 
+    else if (strcmp(dbname, "*") == 0)
 	dicod_match_word_all(str, strat, word);
     else {
 	dicod_database_t *db = find_database(dbname);
-    
-	if (!db) 
+
+	if (!db)
 	    stream_writez(str,
 			  "550 invalid database, use SHOW DB for a list\n");
 	else
@@ -254,16 +254,16 @@ dicod_define(dico_stream_t str, int argc, char **argv)
 {
     char *dbname = argv[1];
     char *word = argv[2];
-    
+
     total_bytes_out = 0;
     if (strcmp(dbname, "!") == 0) {
 	dicod_define_word_first(str, word);
     } else if (strcmp(dbname, "*") == 0) {
 	dicod_define_word_all(str, word);
-    } else {   
+    } else {
 	dicod_database_t *db = find_database(dbname);
-    
-	if (!db) 
+
+	if (!db)
 	    stream_writez(str,
 			  "550 invalid database, use SHOW DB for a list\n");
 	else
@@ -317,7 +317,7 @@ _cmd_arg_cmp(const void *item, const void *data, void *unused)
 	int len = strlen(datptr->argv[i]);
 	if (c_strncasecmp(p->keyword + off, datptr->argv[i], len) == 0) {
 	    off += len;
-	    if (p->keyword[off] == 0) 
+	    if (p->keyword[off] == 0)
 		return 0;
 	    if (p->keyword[off] == ' ') {
 		off++;
@@ -330,7 +330,7 @@ _cmd_arg_cmp(const void *item, const void *data, void *unused)
 }
 
 dico_list_t /* of struct dicod_command */ command_list;
-    
+
 void
 dicod_add_command(struct dicod_command *cmd)
 {
@@ -348,7 +348,7 @@ cmd_comp(const void *a, const void *b, void *closure)
     const struct dicod_command *cb = b;
     return c_strcasecmp (ca->keyword, cb->keyword);
 }
-	
+
 void
 dicod_remove_command(const char *name)
 {
@@ -361,8 +361,8 @@ void
 dicod_init_command_tab(void)
 {
     struct dicod_command *p;
-    
-    for (p = command_tab; p->keyword; p++) 
+
+    for (p = command_tab; p->keyword; p++)
 	dicod_add_command(p);
 }
 
@@ -378,7 +378,7 @@ _print_help(void *item, void *data)
 	stream_printf(str, " %s", p->param);
 	len += strlen(p->param) + 1;
     }
-    
+
     if (len < 31)
 	len = 31 - len;
     else
@@ -415,7 +415,7 @@ dicod_handle_command(dico_stream_t str, int argc, char **argv)
     }
 
     cmd = locate_command(argc, argv);
-    if (!cmd) 
+    if (!cmd)
 	stream_writez(str, "500 unknown command\n");
     else if (argc < cmd->minparam
 	     || (cmd->maxparam != DICOD_MAXPARAM_INF && argc > cmd->maxparam))
@@ -427,4 +427,3 @@ dicod_handle_command(dico_stream_t str, int argc, char **argv)
 
     free(nargv);
 }
-

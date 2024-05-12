@@ -20,7 +20,7 @@
 struct regex_flags {
     int flags;
 };
-    
+
 struct regex_data {
     regex_t reg;
 };
@@ -50,7 +50,7 @@ regex_sel(int cmd, dico_key_t key, const char *dict_word)
     case DICO_SELECT_RUN:
 	rc = regexec(&rp->reg, dict_word, 0, NULL, 0) == 0;
 	break;
-	
+
     case DICO_SELECT_END:
 	rc = 0;
 	regfree(&rp->reg);
@@ -88,5 +88,3 @@ register_regex(void)
     dico_strategy_add(&re_strat);
     dico_strategy_add(&regex_strat);
 }
-
-    

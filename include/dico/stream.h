@@ -43,7 +43,7 @@ void dico_stream_set_size(dico_stream_t stream,
 			  int (*sizefn) (void *, off_t *));
 void dico_stream_set_read(dico_stream_t stream,
 			  int (*readfn) (void *, char *, size_t, size_t *));
-void dico_stream_set_write(dico_stream_t stream,    
+void dico_stream_set_write(dico_stream_t stream,
 			   int (*writefn) (void *, const char *, size_t,
 					   size_t *));
 void dico_stream_set_flush(dico_stream_t stream, int (*flushfn) (void *));

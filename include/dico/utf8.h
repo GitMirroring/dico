@@ -103,4 +103,3 @@ int dico_levenshtein_distance(const char *a, const char *b, int flags);
 int dico_soundex(const char *s, char codestr[DICO_SOUNDEX_SIZE]);
 
 #endif
-

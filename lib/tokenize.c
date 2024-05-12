@@ -1,6 +1,6 @@
 /* This file is part of GNU Dico
    Copyright (C) 2008-2024 Sergey Poznyakoff
-  
+
    GNU Dico is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 3, or (at your option)
@@ -105,10 +105,10 @@ dico_tokenize_string(struct dico_tokbuf *tb, char *str)
     utf8_iter_first(&itr, str);
 
     start_level = tb->tb_level;
-	
+
     for (rc = 0; rc == 0;) {
 	int quote;
-	
+
 	for (; !utf8_iter_end_p(&itr)
 		 && utf8_iter_isascii(itr) && ISWS(*itr.curptr);
 	     utf8_iter_next(&itr))
@@ -151,7 +151,7 @@ dico_tokenize_string(struct dico_tokbuf *tb, char *str)
 
     if (rc)
 	return rc;
-    
+
     if (tb->tb_tokc + argc + 1 > tb->tb_tokm) {
 	size_t nmax = tb->tb_tokc + argc + 1;
 	char **nargv = realloc(tb->tb_tokv, sizeof(tb->tb_tokv[0]) * nmax);
@@ -168,4 +168,3 @@ dico_tokenize_string(struct dico_tokbuf *tb, char *str)
     tb->tb_tokv[tb->tb_tokc] = NULL;
     return 0;
 }
-

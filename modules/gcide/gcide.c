@@ -39,10 +39,10 @@ struct gcide_db {
     char *idxgcide;
     int flags;
     time_t latest_change;
-    
+
     int file_letter;
     dico_stream_t file_stream;
-    
+
     size_t idx_cache_size;
     gcide_idx_file_t idx;
 
@@ -85,7 +85,7 @@ static int
 gcide_check_dir(const char *dir)
 {
     struct stat st;
-    
+
     if (stat(dir, &st)) {
 	dico_log(L_ERR, errno, _("gcide: cannot stat `%s'"), dir);
 	return 1;
@@ -114,7 +114,7 @@ run_idxgcide(char *idxname, struct gcide_db *db)
     pid_t pid;
     int status;
     char *idxgcide = db->idxgcide ? db->idxgcide : idxgcide_program;
-    
+
     dico_log(L_NOTICE, 0, _("gcide_open_idx: creating index %s"),
 	     idxname);
     if (access(idxgcide, X_OK)) {
@@ -156,7 +156,7 @@ gcide_check_files(struct gcide_db *db)
     int i;
     time_t t = 0;
     struct stat st;
-    
+
     for (i = 0; letters[i]; i++) {
 	char *p = gcide_template_name(db, letters[i]);
 	if (access(p, R_OK)) {
@@ -198,23 +198,23 @@ gcide_access_idx(struct gcide_db *db, char *idxname)
     }
     return rc;
 }
-    
+
 static int
 gcide_open_idx(struct gcide_db *db)
 {
     int rc = 1;
     char *idxname;
-    
+
     idxname = dico_full_file_name(db->idx_dir, "GCIDE.IDX");
     if (!idxname) {
-        DICO_LOG_MEMERR();
+	DICO_LOG_MEMERR();
 	return 1;
     }
 
     rc = gcide_access_idx(db, idxname);
     if (rc == 1)
 	rc = run_idxgcide(idxname, db);
-	
+
     if (rc == 0) {
 	if (db->idx) {
 	    gcide_idx_file_close(db->idx);
@@ -224,7 +224,7 @@ gcide_open_idx(struct gcide_db *db)
 	if (!db->idx)
 	    rc = 1;
     }
-    
+
     free(idxname);
     return rc;
 }
@@ -238,21 +238,21 @@ gcide_init_db(const char *dbname, int argc, char **argv)
     long idx_cache_size = 16;
     int flags = 0;
     struct gcide_db *db;
-    
+
     struct dico_option init_db_option[] = {
 	{ DICO_OPTSTR(dbdir), dico_opt_string, &db_dir },
 	{ DICO_OPTSTR(idxdir), dico_opt_string, &idx_dir },
 	{ DICO_OPTSTR(index-program), dico_opt_string, &idxgcide },
 	{ DICO_OPTSTR(index-cache-size), dico_opt_long, &idx_cache_size },
-	{ DICO_OPTSTR(suppress-pr), dico_opt_bitmask, &flags, 
-          .v.value = GCIDE_NOPR },
-	{ DICO_OPTSTR(debug-lex), dico_opt_bitmask, &flags, 
-          .v.value = GCIDE_DBGLEX },
+	{ DICO_OPTSTR(suppress-pr), dico_opt_bitmask, &flags,
+	  .v.value = GCIDE_NOPR },
+	{ DICO_OPTSTR(debug-lex), dico_opt_bitmask, &flags,
+	  .v.value = GCIDE_DBGLEX },
 	{ DICO_OPTSTR(watch), dico_opt_bitmask, &flags,
 	  .v.value = GCIDE_WATCHER },
 	{ NULL }
     };
-    
+
     if (dico_parseopt(init_db_option, argc, argv, 0, NULL))
 	return NULL;
     if (!db_dir) {
@@ -263,7 +263,7 @@ gcide_init_db(const char *dbname, int argc, char **argv)
     if (!idx_dir) {
 	idx_dir = strdup(db_dir);
 	if (!idx_dir) {
-            DICO_LOG_ERRNO();
+	    DICO_LOG_ERRNO();
 	    free(db_dir);
 	    return NULL;
 	}
@@ -271,7 +271,7 @@ gcide_init_db(const char *dbname, int argc, char **argv)
 
     db = calloc(1, sizeof(*db));
     if (!db) {
-        DICO_LOG_MEMERR();
+	DICO_LOG_MEMERR();
 	free(db_dir);
 	free(idx_dir);
 	return NULL;
@@ -280,7 +280,7 @@ gcide_init_db(const char *dbname, int argc, char **argv)
     db->idx_dir = idx_dir;
     db->idx_cache_size = idx_cache_size;
     db->flags = flags;
-    
+
     if (gcide_check_dir(db->db_dir) || gcide_check_dir(db->idx_dir)) {
 	free_db(db);
 	return NULL;
@@ -292,7 +292,7 @@ gcide_init_db(const char *dbname, int argc, char **argv)
 	free_db(db);
 	return NULL;
     }
-    db->idxgcide = idxgcide; 
+    db->idxgcide = idxgcide;
     if (gcide_open_idx(db)) {
 	free_db(db);
 	return NULL;
@@ -340,7 +340,7 @@ read_info_file(const char *fname, int first_line)
     int rc;
     char *bufptr = NULL;
     size_t bufsize = 0;
-    
+
     stream = dico_mapfile_stream_create(fname, DICO_STREAM_READ);
     if (!stream) {
 	dico_log(L_NOTICE, errno, _("cannot create stream `%s'"), fname);
@@ -358,7 +358,7 @@ read_info_file(const char *fname, int first_line)
 
     if (first_line) {
 	size_t n;
-	
+
 	rc = dico_stream_getline(stream, &bufptr, &bufsize, &n);
 	if (rc) {
 	    dico_log(L_ERR, 0,
@@ -389,7 +389,7 @@ read_info_file(const char *fname, int first_line)
 		bufptr[bufsize] = 0;
 	}
     }
-    
+
     dico_stream_destroy(&stream);
     return bufptr;
 }
@@ -444,7 +444,7 @@ gcide_init(int argc, char **argv)
 {
     int i;
 
-    for (i = 0; i < DICO_ARRAY_SIZE(strat_tab); i++) 
+    for (i = 0; i < DICO_ARRAY_SIZE(strat_tab); i++)
 	dico_strategy_add(&strat_tab[i].strat);
 
     return 0;
@@ -454,7 +454,7 @@ static matcher_t
 find_matcher(const char *strat)
 {
     int i;
-    for (i = 0; i < DICO_ARRAY_SIZE(strat_tab); i++) 
+    for (i = 0; i < DICO_ARRAY_SIZE(strat_tab); i++)
 	if (strcmp(strat, strat_tab[i].strat.name) == 0)
 	    return strat_tab[i].matcher;
     return NULL;
@@ -482,10 +482,10 @@ static dico_list_t
 gcide_create_result_list(int unique)
 {
     dico_list_t list;
-    
+
     list = dico_list_create();
     if (!list) {
-        DICO_LOG_ERRNO();
+	DICO_LOG_ERRNO();
 	return NULL;
     }
     if (unique) {
@@ -501,14 +501,14 @@ gcide_result_list_append(dico_list_t list, struct gcide_ref *ref)
 {
     struct gcide_ref *copy = calloc(1,sizeof(*copy));
     if (!copy) {
-        DICO_LOG_ERRNO();       
+	DICO_LOG_ERRNO();
 	return -1;
     }
     *copy = *ref;
     copy->ref_headword = strdup(ref->ref_headword);
     if (!copy->ref_headword ||
 	(dico_list_append(list, copy) && errno == ENOMEM)) {
-        DICO_LOG_ERRNO();
+	DICO_LOG_ERRNO();
 	free(copy);
 	return -1;
     }
@@ -520,7 +520,7 @@ struct match_closure {
     dico_list_t list;
     struct dico_key key;
 };
-    
+
 static int
 match_key(struct gcide_ref *ref, void *data)
 {
@@ -539,30 +539,30 @@ gcide_match_all(struct gcide_db *db, const dico_strategy_t strat,
 {
     struct gcide_result *res;
     struct match_closure clos;
-    
+
     clos.list = gcide_create_result_list(1);
     if (!clos.list)
 	return NULL;
-    
+
     if (dico_key_init(&clos.key, strat, word)) {
 	dico_log(L_ERR, 0, _("%s: key initialization failed"), __func__);
 	dico_list_destroy(&clos.list);
 	return NULL;
     }
-    
+
     clos.strat = strat;
-    gcide_idx_enumerate(db->idx, match_key, &clos); 
-    
+    gcide_idx_enumerate(db->idx, match_key, &clos);
+
     dico_key_deinit(&clos.key);
 
     if (dico_list_count(clos.list) == 0) {
 	dico_list_destroy(&clos.list);
 	return NULL;
     }
-    
+
     res = calloc(1, sizeof(*res));
     if (!res) {
-        DICO_LOG_ERRNO();
+	DICO_LOG_ERRNO();
 	dico_list_destroy(&clos.list);
     } else {
 	res->type = result_match;
@@ -570,7 +570,7 @@ gcide_match_all(struct gcide_db *db, const dico_strategy_t strat,
 	res->list = clos.list;
 	res->compare_count = gcide_idx_defs(db->idx);
     }
-    
+
     return (dico_result_t) res;
 }
 
@@ -584,14 +584,14 @@ gcide_match(dico_handle_t hp, const dico_strategy_t strat, const char *word)
 
     if (reload_if_changed(db))
 	return NULL;
-    
+
     if (!matcher)
 	return gcide_match_all(db, strat, word);
     itr = matcher(db, word);
     if (itr) {
 	res = calloc(1, sizeof(*res));
 	if (!res) {
-            DICO_LOG_ERRNO();
+	    DICO_LOG_ERRNO();
 	    gcide_iterator_free(itr);
 	    return NULL;
 	}
@@ -623,12 +623,12 @@ gcide_define(dico_handle_t hp, const char *word)
 
     if (reload_if_changed(db))
 	return NULL;
-    
+
     itr = exact_match(db, word);
     if (itr) {
 	res = calloc(1, sizeof(*res));
 	if (!res) {
-            DICO_LOG_ERRNO();
+	    DICO_LOG_ERRNO();
 	    gcide_iterator_free(itr);
 	    return NULL;
 	}
@@ -732,7 +732,7 @@ static void
 print_tag(struct gcide_tag *tag, dico_stream_t stream, int flags)
 {
     tag_printer printer;
-    
+
     switch (tag->tag_type) {
     case gcide_content_top:
 	print_taglist(tag, stream, flags);
@@ -766,7 +766,7 @@ print_as(struct gcide_tag *tag, dico_stream_t stream, int flags)
 
     if (t && t->tag_type == gcide_content_text) {
 	char *s = t->v.text;
-	    
+
 	if (strncmp(s, "as", 2) == 0 && (isspace(s[3]) || ispunct(s[3]))) {
 	    dico_stream_write(stream, s, 3);
 	    for (s += 3; *s && isspace(*s); s++)
@@ -810,7 +810,7 @@ gcide_tag_get_param(struct gcide_tag *tag, char const *name)
 {
     size_t i;
     size_t namelen = strlen(name);
-    
+
     for (i = 0; i < tag->v.tag.tag_parmc; i++) {
 	size_t len = strcspn(tag->v.tag.tag_parmv[i], "=");
 	if (len == namelen &&
@@ -839,10 +839,10 @@ output_def(dico_stream_t str, struct gcide_db *db, struct gcide_ref *ref)
     struct gcide_parse_tree *tree;
     struct gcide_locus locus;
     int rc;
-    
+
     if (db->file_letter != ref->ref_letter) {
 	int rc;
-	
+
 	if (db->file_stream) {
 	    dico_stream_close(db->file_stream);
 	    dico_stream_destroy(&db->file_stream);
@@ -881,10 +881,10 @@ output_def(dico_stream_t str, struct gcide_db *db, struct gcide_ref *ref)
 
     buffer = malloc(ref->ref_size);
     if (!buffer) {
-        DICO_LOG_ERRNO();
+	DICO_LOG_ERRNO();
 	return 1;
     }
-    
+
     if ((rc = dico_stream_read(db->file_stream, buffer, ref->ref_size, NULL))) {
 	dico_log(L_ERR, 0, _("%s: read error: %s"),
 		 db->tmpl_name,
@@ -912,7 +912,7 @@ gcide_output_result(dico_result_t rp, size_t n, dico_stream_t str)
 {
     struct gcide_result *res = (struct gcide_result *) rp;
     struct gcide_ref *ref;
-    
+
     ref = gcide_result_ref(res);
     if (!ref)
 	return 1;

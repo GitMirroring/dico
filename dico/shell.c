@@ -1,4 +1,4 @@
-/* This file is part of GNU Dico. 
+/* This file is part of GNU Dico.
    Copyright (C) 1998-2024 Sergey Poznyakoff
 
    GNU Dico is free software; you can redistribute it and/or modify
@@ -41,31 +41,31 @@ char *helptext[][2] = {
 };
 
 struct funtab funtab[] = {
-    { "open",      1, 3, 
-      N_("[HOST [PORT]]"), 
+    { "open",      1, 3,
+      N_("[HOST [PORT]]"),
       N_("Connect to a DICT server."),
       ds_open, no_compl },
-    { "close",     1, 1, 
+    { "close",     1, 1,
       NULL,
       N_("Close the connection."),
       ds_close, },
-    { "database",  1, 2, 
+    { "database",  1, 2,
       N_("[NAME]"),
       N_("Set or display current database name."),
       ds_database, ds_compl_database },
-    { "strategy",  1, 2, 
+    { "strategy",  1, 2,
       N_("[NAME]"),
       N_("Set or display current strategy."),
       ds_strategy, ds_compl_strategy },
-    { "distance", 1, 2, 
+    { "distance", 1, 2,
       N_("[NUM]"),
       N_("Set or query Levenshtein distance (server-dependent)."),
       ds_distance, no_compl },
-    { "ls", 1, 1, 
+    { "ls", 1, 1,
       NULL,
       N_("List available matching strategies"),
       ds_show_strat, },
-    { "ld", 1, 1, 
+    { "ld", 1, 1,
       NULL,
       N_("List all accessible databases"),
       ds_show_db, },
@@ -73,11 +73,11 @@ struct funtab funtab[] = {
       N_("[DB]"),
       N_("Display the information about the database."),
       ds_show_info, ds_compl_database },
-    { "prefix", 1, 2, 
+    { "prefix", 1, 2,
       N_("[CHAR]"),
       N_("Set or display command prefix."),
       ds_prefix, },
-    { "transcript", 1, 2, 
+    { "transcript", 1, 2,
       N_("[BOOL]"),
       N_("Set or display session transcript mode."),
       ds_transcript, no_compl },
@@ -93,7 +93,7 @@ struct funtab funtab[] = {
       N_("STRING"),
       N_("Change or display pager settings."),
       ds_pager, no_compl },
-    { "autologin", 1, 2, 
+    { "autologin", 1, 2,
       N_("[FILE]"),
       N_("Set or display autologin file name."),
       ds_autologin,},
@@ -107,15 +107,15 @@ struct funtab funtab[] = {
       N_("Display command history."),
       ds_history, no_compl },
 #endif
-    { "help", 1, 1, 
+    { "help", 1, 1,
       NULL,
       N_("Display this help text."),
       ds_help, },
-    { "version", 1, 1, 
+    { "version", 1, 1,
       NULL,
       N_("Print program version."),
       ds_version, },
-    { "warranty", 1, 1, 
+    { "warranty", 1, 1,
       NULL,
       N_("Print copyright statement."),
       ds_warranty, },
@@ -123,7 +123,7 @@ struct funtab funtab[] = {
       NULL,
       NULL,
       ds_quiet },
-    { "quit", 1, 1, 
+    { "quit", 1, 1,
       NULL,
       N_("Quit the shell.") },
     { NULL }
@@ -173,8 +173,8 @@ ds_help(int argc, char **argv)
 		nlines++;
 	}
     }
-    
-    str = create_pager_stream(nlines);	
+
+    str = create_pager_stream(nlines);
     for (i = 0; i < DICO_ARRAY_SIZE(helptext); i++) {
 	stream_printf(str, "%-24s %s\n", gettext(helptext[i][0]),
 		      gettext(helptext[i][1]));
@@ -192,7 +192,7 @@ ds_help(int argc, char **argv)
 	}
 	stream_printf(str, "%s ", ft->name);
 	len += strlen(ft->name) + 1;
-	if (ft->argdoc) 
+	if (ft->argdoc)
 	    args = gettext(ft->argdoc);
 	else
 	    args = "";
@@ -224,13 +224,13 @@ script_diag(int category, int errcode, const char *fmt, va_list ap)
 {
     const char *pfx;
     char *newfmt;
-    
-    if (category == L_WARN) 
+
+    if (category == L_WARN)
 	pfx = _("warning: ");
-    else 
+    else
 	pfx = NULL;
-    
-    if (!filename) 
+
+    if (!filename)
 	asprintf(&newfmt, "%s%s", pfx ? pfx : "", fmt);
     else {
 	asprintf(&newfmt, "%s:%d: %s%s",
@@ -249,7 +249,7 @@ script_warning(const char *fmt, ...)
     va_start(ap, fmt);
     script_diag(L_WARN, 0, fmt, ap);
     va_end(ap);
-}    
+}
 
 void
 script_error(const char *fmt, ...)
@@ -281,14 +281,14 @@ parse_script_file(const char *fname, script_getln_fn getln, void *data)
     struct dico_tokbuf tb;
     int argc;
     char **argv;
-    
+
     filename = fname;
     line = 0;
     dico_tokenize_begin(&tb);
     while (getln(data, &buf)) {
 	char *p, *start;
 	char *xargv[3];
-	
+
 	line++;
 
 	start = skipws(buf);
@@ -303,7 +303,7 @@ parse_script_file(const char *fname, script_getln_fn getln, void *data)
 	    continue;
 
 	p = argv[0];
-	
+
 #ifdef WITH_READLINE
 	if (interactive) {
 	    if (retrieve_history(buf))
@@ -311,7 +311,7 @@ parse_script_file(const char *fname, script_getln_fn getln, void *data)
 	    add_history(buf);
 	}
 #endif
-	
+
 	switch (p[0]) {
 	case '/':
 	    xargv[0] = "match";
@@ -335,7 +335,7 @@ parse_script_file(const char *fname, script_getln_fn getln, void *data)
 		}
 	    }
 	}
-	    
+
 	if (is_command(&p)) {
 	    struct funtab *ft = find_funtab(p);
 	    if (!ft) {
@@ -355,7 +355,7 @@ parse_script_file(const char *fname, script_getln_fn getln, void *data)
 		script_error(_("too many arguments"));
 		continue;
 	    }
-	    
+
 	    if (ft->fun)
 		ft->fun(argc, argv);
 	    else {
@@ -371,7 +371,7 @@ parse_script_file(const char *fname, script_getln_fn getln, void *data)
     }
     dico_tokenize_end(&tb);
 }
-	
+
 
 struct init_script {
     FILE *fp;
@@ -394,7 +394,7 @@ parse_init_script(const char *name)
     struct init_script scr;
     scr.fp = fopen(name, "r");
     if (!scr.fp) {
-	if (errno != ENOENT) 
+	if (errno != ENOENT)
 	    dico_log(L_ERR, errno, _("Cannot open init file %s"), name);
 	return;
     }
@@ -429,7 +429,7 @@ _command_generator(const char *text, int state)
 {
     static int i, len;
     const char *name;
-  
+
     if (!state) {
 	i = 0;
 	len = strlen (text);
@@ -461,12 +461,12 @@ _command_completion(const char *cmd, int start, int end)
 {
     char **ret;
     struct wordsplit ws;
-    
+
     /* FIXME: Use tokenizer */
     if (wordsplit_len (rl_line_buffer, end, &ws, WRDSF_DEFFLAGS))
 	return NULL;
     rl_completion_append_character = ' ';
-  
+
     if (ws.ws_wordc == 0 ||
 	(ws.ws_wordc == 1 && strlen (ws.ws_wordv[0]) <= end - start)) {
 	ret = rl_completion_matches (cmd, _command_generator);
@@ -499,7 +499,7 @@ get_history_file_name(void)
 
   if (!filename) {
 	char *hname;
-	
+
 	hname = xmalloc(1 +
 			strlen (rl_readline_name) + sizeof HISTFILE_SUFFIX);
 	strcpy(hname, ".");
@@ -520,7 +520,7 @@ ds_history(int argc, char **argv)
 
     str = create_pager_stream(history_length);
     hlist = history_list();
-    for (i = 0; i < history_length; i++) 
+    for (i = 0; i < history_length; i++)
 	stream_printf(str, "%4d) %s\n", i + 1, hlist[i]->line);
     dico_stream_close(str);
     dico_stream_destroy(&str);
@@ -543,14 +543,14 @@ retrieve_history(char *str)
 {
     char *out;
     int rc;
-    
+
     rc = history_expand(str, &out);
     switch (rc)	{
     case -1:
 	script_error("%s", out);
 	free(out);
 	return 1;
-	
+
     case 0:
 	break;
 
@@ -558,7 +558,7 @@ retrieve_history(char *str)
 	pre_input_line = out;
 	rl_pre_input_hook = pre_input;
 	return 1;
-	
+
     case 2:
 	printf("%s\n", out);
 	free(out);
@@ -566,13 +566,13 @@ retrieve_history(char *str)
     }
     return 0;
 }
-	
+
 
 #endif
 
 char **
 dict_completion_matches(int argc, char **argv, int ws,
-                        char *(*generator)(const char *, int))
+			char *(*generator)(const char *, int))
 {
 #ifdef WITH_READLINE
     rl_attempted_completion_over = 1;
@@ -602,7 +602,7 @@ shell_init(struct init_script *p)
 	rl_readline_name = dico_program_name;
 	rl_attempted_completion_function = _command_completion;
 	read_history (get_history_file_name());
-    } 
+    }
 #endif
     p->fp = stdin;
     p->buf = NULL;
@@ -644,7 +644,7 @@ dico_shell(void)
     shell_init(&dat);
     if (interactive) {
 	xdico_assign_string(&prompt, DICO_PROMPT);
-	if (!quiet_option)  
+	if (!quiet_option)
 	    shell_banner();
     }
     if (!cmdprefix)
@@ -652,7 +652,3 @@ dico_shell(void)
     parse_script_file(NULL, shell_getline, &dat);
     shell_finish(&dat);
 }
-
-
-
-

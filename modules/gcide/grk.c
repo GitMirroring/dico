@@ -24,7 +24,7 @@ struct xlit {
 };
 
 /* NOTE: 1. According to WEBFONT.ASC, "[r]oman j, v, u are unused".
-            Nevertheless, "u" is used in place of "y" (meaning υ) so often
+	    Nevertheless, "u" is used in place of "y" (meaning υ) so often
 	    that I decided to support both forms.
 	 2. It is not clear whether trema (:) should appear after accents
 	    or vice-versa.  The table below supports both forms.

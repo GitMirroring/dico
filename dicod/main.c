@@ -631,7 +631,7 @@ set_database(enum grecs_callback_command cmd,
 	    dicod_database_free(dict);
 	    return 1;
 	}
-	
+
 	if (!database_list) {
 	    database_list = xdico_list_create();
 	    dico_list_set_comparator (database_list, cmp_database_name, NULL);

@@ -24,9 +24,9 @@ struct dico_strategy {
     char *name;             /* Strategy name */
     char *descr;            /* Strategy description */
     dico_select_t sel;      /* Selector function (can be NULL) */
-    void *closure;          /* Additional data for SEL */ 
+    void *closure;          /* Additional data for SEL */
     int is_default;         /* True, if this is a default strategy */
-    dico_list_t stratcl;    /* Strategy access control list */  
+    dico_list_t stratcl;    /* Strategy access control list */
 };
 
 struct dico_key {

@@ -21,7 +21,7 @@ dicod_xidle(dico_stream_t str, int argc, char **argv)
 {
     stream_printf(str, "110 %lu second(s)\n", inactivity_timeout);
 }
-    
+
 void
 register_xidle(void)
 {
@@ -32,4 +32,3 @@ register_xidle(void)
     };
     dicod_capa_register("xidle", cmd, NULL, NULL);
 }
-

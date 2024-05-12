@@ -53,7 +53,7 @@ output_capabilities(dico_stream_t str)
    When a client initially connects to a DICT server, a code 220 is sent
    if the client's IP is allowed to connect:
 
-             220 text capabilities msg-id
+	     220 text capabilities msg-id
 */
 static void
 initial_banner(dico_stream_t str)
@@ -177,7 +177,7 @@ int
 prefix_sel(int cmd, dico_key_t key, const char *dict_word)
 {
     size_t wordlen, keylen;
-    
+
     switch (cmd) {
     case DICO_SELECT_BEGIN:
 	key->call_data = (void*) utf8_strlen(key->word);
@@ -205,7 +205,7 @@ suffix_sel(int cmd, dico_key_t key, const char *dict_word)
 {
     size_t wordlen;
     struct suffix *suf;
-    
+
     switch (cmd) {
     case DICO_SELECT_BEGIN:
 	suf = malloc(sizeof(*suf));
@@ -256,7 +256,7 @@ soundex_sel(int cmd, dico_key_t key, const char *dict_word)
     }
     return 0;
 }
-	    
+
 void
 dicod_init_strategies(void)
 {
@@ -276,7 +276,7 @@ dicod_server_init(void)
 {
     load_modules();
     init_databases();
-    if (!dico_get_default_strategy()) 
+    if (!dico_get_default_strategy())
 	dico_set_default_strategy(DICTD_DEFAULT_STRATEGY);
 }
 
@@ -287,11 +287,11 @@ dicod_server_cleanup(void)
     dicod_database_t *dp;
 
     for (dp = dico_iterator_first(itr); dp; dp = dico_iterator_next(itr)) {
-	if (dicod_database_deinit(dp)) 
+	if (dicod_database_deinit(dp))
 	    dico_log(L_NOTICE, 0, _("error freeing database %s"), dp->name);
     }
     dico_iterator_destroy(&itr);
-}    
+}
 
 static void
 log_connection(const char *msg)
@@ -299,11 +299,11 @@ log_connection(const char *msg)
     if (debug_level) {
 	char *p = sockaddr_to_astr((struct sockaddr*)&client_addr,
 				   client_addrlen);
-	if (debug_source_info)						
+	if (debug_source_info)
 	    DICO_DEBUG_SINFO(debug_stream);
 	stream_writez(debug_stream, msg);
 	dico_stream_write(debug_stream, " ", 1);
-	if (identity_name) 
+	if (identity_name)
 	    stream_printf(debug_stream, "%s@", identity_name);
 	stream_writez(debug_stream, p);
 	dico_stream_write(debug_stream, "\n", 1);
@@ -326,7 +326,7 @@ dicod_loop(dico_stream_t str)
     size_t size = 0;
     size_t rdbytes;
     struct dico_tokbuf tb;
-    
+
     begin_timing("dicod");
     signal(SIGALRM, sig_alarm);
 
@@ -338,12 +338,12 @@ dicod_loop(dico_stream_t str)
 	str = xdico_transcript_stream_create(str, logstr, NULL);
     }
     replace_io_stream(str);
-    
-    if (identity_check && server_addr.sa_family == AF_INET) 
+
+    if (identity_check && server_addr.sa_family == AF_INET)
 	identity_name = query_ident_name((struct sockaddr_in *)&server_addr,
 					 (struct sockaddr_in *)&client_addr);
     log_connection(_("connection from"));
-    
+
     open_databases();
     check_db_visibility();
     initial_banner(iostr);
@@ -357,7 +357,7 @@ dicod_loop(dico_stream_t str)
 	dicod_handle_command(iostr, tb.tb_tokc, tb.tb_tokv);
     }
     dico_tokenize_end(&tb);
-    close_databases();    
+    close_databases();
     init_auth_data();
     access_log_free_cache();
     /* FIXME: destroy stream here, or at least do it if transcript is set */
@@ -379,7 +379,7 @@ dicod_inetd(void)
     server_addrlen = sizeof(server_addr);
     if (getsockname (1, &server_addr, &server_addrlen) == -1)
 	server_addrlen = 0;
-    
+
     return dicod_loop(str);
 }
 
@@ -387,9 +387,9 @@ dico_stream_t
 dicod_iostream(int ifd, int ofd)
 {
     dico_stream_t str = dico_fd_io_stream_create(ifd, ofd);
-	
+
     if (!str)
-        return NULL;
+	return NULL;
     dico_stream_set_buffer(str, dico_buffer_line, DICO_MAX_BUFFER);
     if (!isatty(ifd)) {
 	dico_stream_t s = dico_crlf_stream(str,
@@ -404,4 +404,3 @@ dicod_iostream(int ifd, int ofd)
     }
     return str;
 }
-

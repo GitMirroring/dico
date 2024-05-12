@@ -29,7 +29,7 @@ all_sel(int cmd, struct dico_key *key, const char *dict_word)
     switch (cmd) {
     case DICO_SELECT_BEGIN:
 	break;
-	
+
     case DICO_SELECT_RUN:
 	return 1;
 

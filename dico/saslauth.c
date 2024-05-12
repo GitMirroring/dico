@@ -1,4 +1,4 @@
-/* This file is part of GNU Dico. 
+/* This file is part of GNU Dico.
    Copyright (C) 1998-2024 Sergey Poznyakoff
 
    GNU Dico is free software; you can redistribute it and/or modify
@@ -33,7 +33,7 @@ get_implemented_mechs(Gsasl *ctx)
     dico_list_t supp = NULL;
     int rc;
     struct wordsplit ws;
-    
+
     rc =  gsasl_server_mechlist(ctx, &listmech);
     if (rc != GSASL_OK) {
 	dico_log(L_ERR, 0, _("cannot get list of available SASL mechanisms: "
@@ -46,7 +46,7 @@ get_implemented_mechs(Gsasl *ctx)
 	int i;
 	supp = xdico_list_create();
 	dico_list_set_free_item(supp, _free_el, NULL);
-	for (i = 0; i < ws.ws_wordc; i++) 
+	for (i = 0; i < ws.ws_wordc; i++)
 	    xdico_list_append(supp, ws.ws_wordv[i]);
 	ws.ws_wordc = 0;
 	wordsplit_free(&ws);
@@ -90,7 +90,7 @@ callback(Gsasl *ctx, Gsasl_session *sctx, Gsasl_property prop)
     case GSASL_AUTHZID:
 	gsasl_property_set(sctx, prop, NULL);
 	break;
-	
+
     case GSASL_SERVICE:
 	gsasl_property_set(sctx, prop,
 			   cred->service ? cred->service : "dico");
@@ -104,7 +104,7 @@ callback(Gsasl *ctx, Gsasl_session *sctx, Gsasl_property prop)
     case GSASL_HOSTNAME:
 	gsasl_property_set(sctx, prop, CRED_HOSTNAME(cred));
 	break;
-	
+
     default:
 	rc = GSASL_NO_CALLBACK;
 	dico_log(L_NOTICE, 0, _("Unknown callback property %d"), prop);
@@ -142,7 +142,7 @@ sasl_free_data(struct dict_connection *conn, char **pdata)
 	*pdata = NULL;
     }
 }
-    
+
 int
 do_gsasl_auth(Gsasl *ctx, struct dict_connection *conn, char *mech)
 {
@@ -150,7 +150,7 @@ do_gsasl_auth(Gsasl *ctx, struct dict_connection *conn, char *mech)
     int rc;
     char *output = NULL;
     char *input = NULL;
-    
+
     rc = gsasl_client_start(ctx, mech, &sess);
     if (rc != GSASL_OK) {
 	dico_log(L_ERR, 0, "SASL gsasl_client_start: %s",
@@ -199,9 +199,9 @@ do_gsasl_auth(Gsasl *ctx, struct dict_connection *conn, char *mech)
 	insert_gsasl_stream(sess, &conn->str);
 	return 0;
     }
-    
+
     print_reply(conn);
-    
+
     return 1;
 }
 
@@ -229,7 +229,7 @@ getauthcontext(struct dict_connection *conn, struct authctx *authctx)
     dico_list_t mechs;
     dico_iterator_t itr;
     char *p;
-    
+
     XDICO_DEBUG(1, _("Initializing SASL\n"));
     rc = gsasl_init(&ctx);
     if (rc != GSASL_OK)	{
@@ -259,7 +259,7 @@ getauthcontext(struct dict_connection *conn, struct authctx *authctx)
 
     authctx->ctx = ctx;
     authctx->mech = mechs;
-    
+
     return 0;
 }
 
@@ -277,7 +277,7 @@ saslauth0(struct dict_connection *conn, struct auth_cred *cred,
     int rc;
     char *mech;
     dico_list_t mechlist;
-    
+
     XDICO_DEBUG(1, _("Trying SASL\n"));
     gsasl_callback_hook_set(authctx->ctx, cred);
     gsasl_callback_set(authctx->ctx, callback);
@@ -296,15 +296,15 @@ saslauth0(struct dict_connection *conn, struct auth_cred *cred,
 
     mech = dico_list_item(mechlist, 0);
     upcase(mech);
-    
+
     dico_log(L_DEBUG, 0, _("Selected authentication mechanism %s"),
 	     mech);
-    
+
     rc = do_gsasl_auth(authctx->ctx, conn, mech);
 
     if (mechlist != cred->mech)
 	dico_list_destroy(&mechlist);
-    
+
     XDICO_DEBUG_F1(1, "%s\n",
 		   rc == 0 ?
 		   _("SASL authentication succeeded") :
@@ -323,7 +323,7 @@ saslauth(struct dict_connection *conn, dico_url_t url)
 
     if (getauthcontext(conn, &authctx))
 	return AUTH_CONT;
-    
+
     switch (auth_cred_get(url->host, &cred)) {
     case GETCRED_OK:
 	if (cred.sasl) {

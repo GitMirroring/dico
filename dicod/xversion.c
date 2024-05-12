@@ -23,7 +23,7 @@ dicod_xversion(dico_stream_t str, int argc, char **argv)
     stream_writez(str, (char*)program_version);
     dico_stream_write(str, "\n", 1);
 }
-    
+
 void
 register_xversion(void)
 {
@@ -31,7 +31,6 @@ register_xversion(void)
 	{ "XVERSION", 1, 1, NULL, "show implementation and version info",
 	  dicod_xversion },
 	{ NULL }
-    };	 
+    };
     dicod_capa_register("xversion", cmd, NULL, NULL);
 }
-

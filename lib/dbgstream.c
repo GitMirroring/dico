@@ -63,11 +63,11 @@ dbg_write(void *data, const char *buf, size_t size, size_t *pret)
 	dico_stream_write(p->transport, s, strlen(s));
 	dico_stream_write(p->transport, "] ", 2);
     }
-    
+
     if (p->file) {
 	char *s;
 	char nbuf[128];
-	
+
 	dico_stream_write(p->transport, p->file, strlen(p->file));
 	dico_stream_write(p->transport, ":", 1);
 	s = fmtline(p->line, nbuf, sizeof(nbuf));
@@ -113,7 +113,7 @@ dbg_ioctl(void *data, int code, void *call_data)
     }
     return 0;
 }
-	
+
 dico_stream_t
 dico_dbg_stream_create(void)
 {

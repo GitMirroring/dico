@@ -34,7 +34,7 @@ main(int argc, char **argv)
     int flags = 0;
     size_t in_bufsize = 1024, out_bufsize = 1024;
     int buffered;
-    
+
     dico_set_program_name(argv[0]);
 
     while (--argc) {
@@ -80,7 +80,7 @@ main(int argc, char **argv)
 	    return 1;
 	}
     }
-	
+
     rc = dico_stream_open(in);
     if (rc) {
 	dico_log(L_ERR, 0,
@@ -101,7 +101,7 @@ main(int argc, char **argv)
 
 	in = s;
     }
-    
+
     out = dico_fd_stream_create(1, DICO_STREAM_WRITE, 1);
     if (!out) {
 	dico_log(L_ERR, errno, "cannot create stdout stream");
@@ -125,7 +125,7 @@ main(int argc, char **argv)
 	}
 	if (filename || (buffered & CRLF_OUT))
 	    dico_stream_set_buffer(s, dico_buffer_full, out_bufsize);
-	
+
 	out = s;
     }
 

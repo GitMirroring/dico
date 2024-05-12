@@ -45,7 +45,7 @@ struct gcide_page_header {
     size_t phdr_numentries;
     size_t phdr_text_offset;
 };
-    
+
 struct gcide_idx_page {
     union {
 	struct gcide_page_header hdr;
@@ -136,6 +136,3 @@ int watcher_is_modified(WATCHER w);
 # define watcher_close(w)
 # define watcher_is_modified(w) 1
 #endif
-
-
-

@@ -1,6 +1,6 @@
 /* This file is part of GNU Dico
    Copyright (C) 1999-2019 Free Software Foundation, Inc.
-  
+
    GNU Dico is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 3, or (at your option)
@@ -78,7 +78,7 @@ dico_base64_decode (const unsigned char *input, size_t input_len,
 {
     int olen = input_len;
     unsigned char *out = malloc(olen);
-    
+
     if (!out)
 	return -1;
     *output = out;
@@ -114,7 +114,7 @@ _flt_base64_decode(const char *ibuf, size_t isize, char *optr, size_t osize,
     unsigned char data[4];
     size_t nbytes = 0;
     const unsigned char *iptr = (const unsigned char *) ibuf;
-    
+
     while (consumed < isize && nbytes + 3 < osize) {
 	while (i < 4 && consumed < isize) {
 	    tmp = b64val[*iptr++];
@@ -153,13 +153,13 @@ _flt_base64_encode (const char *iptr, size_t isize,
     int pad = 0;
     const unsigned char* ptr = (const unsigned char*) iptr;
     size_t nbytes = 0;
-  
+
     if (isize <= 3)
 	pad = 1;
     while ((consumed + 3 <= isize && nbytes + 4 <= osize) || pad) {
 	unsigned char c1 = 0, c2 = 0, x = '=', y = '=';
-	
-        *optr++ = b64tab[ptr[0] >> 2];
+
+	*optr++ = b64tab[ptr[0] >> 2];
 	consumed++;
 	switch (isize - consumed) {
 	default:
@@ -175,7 +175,7 @@ _flt_base64_encode (const char *iptr, size_t isize,
 	    *optr++ = x;
 	    *optr++ = y;
 	}
-	
+
 	ptr += 3;
 	nbytes += 4;
 	pad = 0;

@@ -1,6 +1,6 @@
 /* This file is part of GNU Dico
    Copyright (C) 2008-2024 Sergey Poznyakoff
-  
+
    GNU Dico is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 3, or (at your option)
@@ -62,7 +62,7 @@ dico_full_file_name(const char *dir, const char *file)
 
     if (!buf)
 	return NULL;
-    
+
     strcpy(buf, dir);
     if (need_slash)
 	strcpy(buf + dirlen++, "/");
@@ -76,4 +76,3 @@ dico_full_file_name(const char *dir, const char *file)
     strcpy(buf + dirlen, file);
     return buf;
 }
-

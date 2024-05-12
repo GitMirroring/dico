@@ -59,7 +59,7 @@ dico_mergesort(void *a, void *b, size_t nmemb, size_t size,
     for (width = 1; width < nmemb; width <<= 1) {
 	size_t i;
 	void *t;
-	
+
 	for (i = 0; i < nmemb; i += 2 * width) {
 	    merge(a, b, size,
 		  i, min(i + width, nmemb), min(i + 2 * width, nmemb),
@@ -83,7 +83,7 @@ merge(void *source, void *work, size_t size,
     size_t k;
 #define MEMB(b,n) ((char*)(b) + (n) * size)
 #define COPY(dp,dn,sp,sn) (memcpy(MEMB(dp,dn), MEMB(sp,sn), size))
-    
+
     for (k = left; k < end; k++) {
 	if (i < right
 	    && (j >= end || comp(MEMB(source, i),

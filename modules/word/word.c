@@ -28,7 +28,7 @@ word_sel(int cmd, dico_key_t key, const char *dict_word)
     char const *key_word = key->word;
     struct dico_tokbuf tb;
     int i;
-    
+
     switch (cmd) {
     case DICO_SELECT_BEGIN:
 	break;
@@ -59,14 +59,14 @@ first_sel(int cmd, dico_key_t key, const char *dict_word)
     int rc = 0;
     char const *key_word = key->word;
     struct dico_tokbuf tb;
-    
+
     switch (cmd) {
     case DICO_SELECT_BEGIN:
 	break;
 
     case DICO_SELECT_RUN:
 	dico_tokenize_begin(&tb);
-	if (dico_tokenize_string(&tb, (char*) dict_word) == 0 && tb.tb_tokc) 
+	if (dico_tokenize_string(&tb, (char*) dict_word) == 0 && tb.tb_tokc)
 	    rc = utf8_strcasecmp(tb.tb_tokv[0], (char*) key_word) == 0;
 	dico_tokenize_end(&tb);
 	break;
@@ -83,7 +83,7 @@ last_sel(int cmd, dico_key_t key, const char *dict_word)
     int rc = 0;
     char const *key_word = key->word;
     struct dico_tokbuf tb;
-    
+
     switch (cmd) {
     case DICO_SELECT_BEGIN:
 	break;
@@ -130,7 +130,7 @@ word_init(int argc, char **argv)
 	    dico_strategy_add(sp);
     } else {
 	int i;
-	
+
 	for (i = 1; i < argc; i++)
 	    if ((sp = findstrat(argv[i])))
 		dico_strategy_add(sp);
@@ -143,5 +143,3 @@ struct dico_database_module DICO_EXPORT(word, module) = {
     DICO_CAPA_NODB,
     word_init,
 };
-
-	

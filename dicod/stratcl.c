@@ -26,7 +26,7 @@ enum stratcl_type {
     stratcl_word,
     stratcl_length
 };
-    
+
 struct stratcl {
     enum stratcl_type type;
     union {
@@ -60,7 +60,7 @@ stratcl_add_disable(dico_list_t list)
     struct stratcl *sp = xmalloc(sizeof(*sp));
     sp->type = stratcl_all;
     xdico_list_append(list, sp);
-}    
+}
 
 struct stratcl_check {
     const char *word;
@@ -88,23 +88,23 @@ check_word(void *item, void *data)
 	case cmp_eq:
 	    cp->res = cp->len == sp->v.wl.len;
 	    break;
-	    
+
 	case cmp_ne:
 	    cp->res = cp->len != sp->v.wl.len;
 	    break;
-	    
+
 	case cmp_lt:
 	    cp->res = cp->len < sp->v.wl.len;
 	    break;
-	    
+
 	case cmp_le:
 	    cp->res = cp->len <= sp->v.wl.len;
 	    break;
-	    
+
 	case cmp_gt:
 	    cp->res = cp->len > sp->v.wl.len;
 	    break;
-	    
+
 	case cmp_ge:
 	    cp->res = cp->len >= sp->v.wl.len;
 	}
@@ -112,7 +112,7 @@ check_word(void *item, void *data)
     }
     return cp->res;
 }
-	    
+
 int
 stratcl_check_word(dico_list_t list, const char *word)
 {
@@ -126,6 +126,3 @@ stratcl_check_word(dico_list_t list, const char *word)
     dico_list_iterate(list, check_word, &s);
     return s.res;
 }
-    
-
-    

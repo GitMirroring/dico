@@ -47,21 +47,21 @@ int
 alias_install(const char *kw, int argc, char **argv, grecs_locus_t *ploc)
 {
     struct alias *sample = xmalloc(sizeof(*sample)),
-	         *ap;
+		 *ap;
 
     sample->kw = xstrdup(kw);
     sample->argc = argc;
     sample->argv = argv;
     sample->locus = *ploc;
-    
+
     if (! ((alias_table
-	    || (alias_table = hash_initialize(0, 0, 
+	    || (alias_table = hash_initialize(0, 0,
 					      alias_hasher,
 					      alias_compare,
 					      NULL)))
 	   && (ap = hash_insert(alias_table, sample))))
 	xalloc_die();
-    
+
     if (ap != sample) {
 	free(sample->kw);
 	free(sample);
@@ -86,10 +86,10 @@ alias_expand(int argc, char **argv, int *pargc, char ***pargv)
 {
     struct alias sample, *ap;
     dico_list_t alist = NULL;
-    
+
     if (!alias_table)
 	return 1;
-    
+
     for (sample.kw = argv[0]; (ap = hash_lookup(alias_table, &sample));) {
 	if (alist && dico_list_locate(alist, ap))
 	    break;
@@ -107,9 +107,9 @@ alias_expand(int argc, char **argv, int *pargc, char ***pargv)
 	char **nargv;
 	dico_iterator_t itr = xdico_list_iterator(alist);
 	char *kw;
-	
+
 	nargc = 1;
-	for (ap = dico_iterator_first(itr); ap; ap = dico_iterator_next(itr)) 
+	for (ap = dico_iterator_first(itr); ap; ap = dico_iterator_next(itr))
 	    nargc += ap->argc - 1;
 
 	pos = nargc;

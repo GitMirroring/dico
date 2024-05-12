@@ -23,7 +23,7 @@ struct _iostr {
     dico_stream_t out;
     dico_stream_t last_err;
 };
-    
+
 
 static int
 io_read(void *data, char *buf, size_t size, size_t *pret)
@@ -119,4 +119,3 @@ dico_io_stream(dico_stream_t in, dico_stream_t out)
     dico_stream_set_error_string(str, io_error_string);
     return str;
 }
-

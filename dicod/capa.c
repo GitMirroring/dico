@@ -73,7 +73,7 @@ dicod_capa_flush(void)
 {
     dico_iterator_t itr;
     struct dicod_capa *cp;
-    
+
     itr = xdico_list_iterator(capa_list);
     for (cp = dico_iterator_first(itr); cp; cp = dico_iterator_next(itr)) {
 	if (cp->enabled) {
@@ -101,7 +101,7 @@ _iter_helper(void *item, void *data)
     struct iter_data *dp = data;
     return dp->fun(cp->name, cp->enabled, dp->closure);
 }
-	
+
 void
 dicod_capa_iterate(int (*fun)(const char*, int, void *), void *closure)
 {
@@ -110,6 +110,3 @@ dicod_capa_iterate(int (*fun)(const char*, int, void *), void *closure)
     dat.closure = closure;
     dico_list_iterate(capa_list, _iter_helper, &dat);
 }
-    
-
-

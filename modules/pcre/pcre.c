@@ -41,7 +41,7 @@ static int
 pcre_flag(int c, uint32_t *pflags)
 {
     struct dico_pcre_flag *p;
-    
+
     for (p = flagtab; p->c; p++) {
 	if (p->c == c) {
 	    *pflags |= p->flag;
@@ -53,7 +53,7 @@ pcre_flag(int c, uint32_t *pflags)
     }
     return 1;
 }
-    
+
 static pcre2_code *
 compile_pattern(const char *pattern)
 {
@@ -100,8 +100,8 @@ compile_pattern(const char *pattern)
 	case PCRE2_ERROR_BADDATA:
 	    strncpy(errbuf, "bad error code", sizeof(errbuf)-1);
 	    break;
-	}	
-	dico_log(L_ERR, 0, 
+	}
+	dico_log(L_ERR, 0,
 		 _("pcre_compile(\"%s\") failed at offset %lu: %s"),
 		 pattern, error_offset, errbuf);
     }
@@ -124,9 +124,9 @@ pcre_sel(int cmd, dico_key_t key, const char *dict_word)
     switch (cmd) {
     case DICO_SELECT_BEGIN:
 	if ((cdata = calloc(1, sizeof(cdata[0]))) == NULL) {
-            DICO_LOG_MEMERR();
-            return 1;
-        }
+	    DICO_LOG_MEMERR();
+	    return 1;
+	}
 	if ((cdata->code = compile_pattern(word)) == NULL) {
 	    free(cdata);
 	    return 1;
@@ -145,7 +145,7 @@ pcre_sel(int cmd, dico_key_t key, const char *dict_word)
 			 (PCRE2_SPTR8)dict_word, PCRE2_ZERO_TERMINATED,
 			 0, 0, cdata->md, NULL) >= 0;
 	break;
-	
+
     case DICO_SELECT_END:
 	pcre2_match_data_free(cdata->md);
 	pcre2_code_free(cdata->code);
@@ -173,4 +173,3 @@ struct dico_database_module DICO_EXPORT(pcre, module) = {
     DICO_CAPA_NODB,
     pcre_init,
 };
-
