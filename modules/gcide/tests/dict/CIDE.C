@@ -28,7 +28,8 @@ expression and wild power</def><br/
 <p><ent>Cyclic</ent><br/
 <mhw>{ <hw>Cyc"lic</hw>, <hw>Cyc"lic*al</hw>}</mhw> <pos>a.</pos>
 <ety>[Gr. <grk>kykliko`s</grk>, fr. <grk>ky`klos</grk> See <er>Cycle</er>.]
-</ety><def>Going in cycles</def><br/
+</ety>
+<def>Going in cycles</def><br/
 [<source>Dico testsuite</source>]</p>
 
 

@@ -60,12 +60,8 @@ print_tag(int end, struct gcide_tag *tag, void *data)
 	break;
     case gcide_content_text:
 	printf("TEXT");
-	for (i = 0; i < tag->v.tag.tag_parmc; i++)
-	    printf(" %s", tag->v.tag.tag_parmv[i]);
 	printf(":\n%s\n%*.*sENDTEXT", tag->v.text,
 	       2*clos->level, 2*clos->level, "");
-	if (tag->v.tag.tag_parmc)
-	    printf(" %s", tag->tag_name);
 	putchar('\n');
 	break;
     case gcide_content_tag:
@@ -75,6 +71,11 @@ print_tag(int end, struct gcide_tag *tag, void *data)
 	putchar('\n');
 	clos->level++;
 	break;
+    case gcide_content_nl:
+	printf("NL\n");
+	break;
+    case gcide_content_br:
+	printf("BR\n");
     }
     return 0;
 }
@@ -123,20 +124,33 @@ print_text(int end, struct gcide_tag *tag, void *data)
 		    fprintf(clos->stream, "%s", quote[1]);
 		else if (strcmp(tag->tag_name, "er") == 0)
 		    fprintf(clos->stream, "%s", ref[1]);
+		else if (strcmp(tag->tag_name, "source") == 0)
+		    fputc(']', clos->stream);
 	    } else {
 		if (strcmp(tag->tag_name, "pr") == 0 &&
 			 clos->flags & GCIDE_NOPR)
 		    clos->flags |= GOF_IGNORE;
 		else if (clos->flags & GOF_IGNORE)
 		    break;
-		else if (strcmp(tag->tag_name, "sn") == 0)
+
+		if (gcide_is_block_tag(tag))
 		    fputc('\n', clos->stream);
-		else if (strcmp(tag->tag_name, "as") == 0)
+
+		if (strcmp(tag->tag_name, "as") == 0)
 		    clos->flags |= GOF_AS;
 		else if (strcmp(tag->tag_name, "er") == 0)
 		    fprintf(clos->stream, "%s", ref[0]);
+		else if (strcmp(tag->tag_name, "source") == 0)
+		    fputc('[', clos->stream);
 	    }
 	}
+	break;
+    case gcide_content_nl:
+	fputc(' ', clos->stream);
+	break;
+    case gcide_content_br:
+	fputc('\n', clos->stream);
+	break;
     }
     return 0;
 }
@@ -242,6 +256,8 @@ main(int argc, char **argv)
 	clos.level = 0;
 	gcide_parse_tree_inorder(tree, show_struct ? print_tag : print_text,
 				 &clos);
+	if (!show_struct)
+	    fputc('\n', stdout);
     }
 
     gcide_parse_tree_free(tree);

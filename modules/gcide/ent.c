@@ -336,7 +336,7 @@ static struct gcide_entity gcide_entity[] = {
     { "larr",     "←" },
     { "schwa",    "ə" },
 
-    { "br",       "\n" },
+/*  { "br",       "\n" },  This is handled explicitly by the scanner. */
     { "and",      "and" },
     { "or",       "or" },
 

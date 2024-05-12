@@ -181,7 +181,7 @@ alloc_tag(enum gcide_content_type type)
 	    dico_list_set_free_item(list, free_tag, NULL);
 	    tag->v.tag.taglist = list;
 	    break;
-    case gcide_content_text:
+    default:
 	    break;
     }
     return tag;
@@ -216,7 +216,7 @@ free_tag(void *item, void *data)
     if (!tag)
 	return 0;
     switch (tag->tag_type) {
-    case gcide_content_text:
+    default:
 	break;
     case gcide_content_top:
     case gcide_content_tag:
@@ -248,8 +248,7 @@ append_tag(struct gcide_tag *tag)
 	break;
     }
 
-    case gcide_content_top:
-    case gcide_content_tag:
+    default:
 	break;
     }
 
@@ -301,6 +300,10 @@ WS [ \t]
       dico_log(L_WARN, 0, _("%s:%zu: malformed entity or tag: %s"),
 	       LOCUS_FILE, LOCUS_OFF(token_beg), yytext);
   }
+  "<br/" {
+      flush_text_segment();
+      append_tag(alloc_tag(gcide_content_br));
+  }
   "<"[a-zA-Z?][a-zA-Z0-9]*"/" {
       char const *s = gcide_entity_to_utf8(yytext);
       if (s)
@@ -326,10 +329,13 @@ WS [ \t]
       yyless(1);
   }
   \r    ;
-  \n  text_add_chr(yytext[0]);
+  \n+   {
+      flush_text_segment();
+      append_tag(alloc_tag(gcide_content_nl));
+  }
 }
 <INITIAL>{
-  [^<\\\r]+  text_add_str(yytext, yyleng);
+  [^<\\\r\n]+  text_add_str(yytext, yyleng);
 }
 <HW>{
   [""`*]       ;
@@ -452,7 +458,6 @@ gcide_parse_tree_inorder(struct gcide_parse_tree *tp,
     return inorder_helper(tp->root, &clos);
 }
 
-
 static int
 tag_fixup(void *item, void *data)
 {
@@ -467,8 +472,118 @@ tag_fixup(void *item, void *data)
     case gcide_content_tag:
 	dico_list_iterate(tag->v.tag.taglist, tag_fixup, textspace);
 	break;
+    default:
+	break;
     }
     return 0;
+}
+
+static char const *block_tags[] = {
+	"source",
+	"sn",
+	NULL
+};
+
+int
+gcide_is_block_tag(struct gcide_tag *tag)
+{
+    if (tag->tag_type == gcide_content_tag) {
+	char const **p;
+
+	for (p = block_tags; *p; p++)
+	    if (strcmp(tag->tag_name, *p) == 0)
+		return 1;
+    }
+    return 0;
+}
+
+/*
+ * Fix up the nl/br usage.  See the comment to ws_fixup, below.
+ */
+static int
+ws_reduce(void *a, void *b, void *data)
+{
+    struct gcide_tag *atag = a;
+    struct gcide_tag *btag = b;
+
+    switch (atag->tag_type) {
+    case gcide_content_tag:
+	    if (strcmp(atag->tag_name, "source") == 0 &&
+		btag &&
+		btag->tag_type == gcide_content_text &&
+		btag->v.text[0] == ']')
+		    btag->v.text++;
+	    dico_list_reduce(atag->v.tag.taglist, ws_reduce, NULL);
+	    break;
+
+    case gcide_content_text:
+	    if (atag->v.text[0] == 0)
+		    return 1;
+	    else {
+		    size_t len = strlen(atag->v.text);
+		    if (atag->v.text[len-1] == '[' &&
+			btag &&
+			btag->tag_type == gcide_content_tag &&
+			strcmp(btag->tag_name, "source") == 0) {
+			    if (len == 1)
+				    return 1;
+			    atag->v.text[len-1] = 0;
+		    }
+	    }
+	    break;
+
+    case gcide_content_nl:
+	    if (atag->v.delete)
+		    return 1;
+	    if (btag == NULL)
+		    return 1;
+	    switch (btag->tag_type) {
+	    case gcide_content_tag:
+		    return gcide_is_block_tag(btag);
+
+	    case gcide_content_text:
+		    if (btag->v.text[0] == ' ' || btag->v.text[0] == '\t')
+			    return 1;
+		    break;
+
+	    case gcide_content_nl:
+	    case gcide_content_br:
+		    return 1;
+
+	    default:
+		    break;
+	    }
+	    break;
+
+    case gcide_content_br:
+	    if (btag != NULL) {
+		    if (btag->tag_type == gcide_content_nl)
+			    btag->v.delete = 1;
+	    }
+	    break;
+
+    default:
+	    break;
+    }
+    return 0;
+}
+
+/*
+ * This analyzes the placement of gcide_content_nl and gcide_content_br
+ * elements and removes the former where they are superfluous.
+ * The gcide_content_nl elements are removed when they appear at either
+ * side of a gcide_content_br element, or before a block tag, or a text
+ * segment that begins with a whitespace character.
+ *
+ * Additionally, curly brackets surrounding a <source>...</source> construct
+ * are removed as well.
+ */
+static void
+ws_fixup(struct gcide_tag *tag)
+{
+    if (tag->tag_type == gcide_content_top ||
+	tag->tag_type == gcide_content_tag)
+	    dico_list_reduce(tag->v.tag.taglist, ws_reduce, NULL);
 }
 
 static size_t
@@ -506,6 +621,8 @@ early_fixup(void *item, void *data)
     case gcide_content_tag:
 	translate = (tag->v.tag.tag_parmc && strcmp(tag->tag_name, "grk") == 0);
 	dico_list_iterate(tag->v.tag.taglist, early_fixup, &translate);
+	break;
+    default:
 	break;
     }
     return 0;
@@ -579,6 +696,7 @@ gcide_markup_parse(char const *text, size_t len, int dbg, struct gcide_locus *lo
     tp->root = current_tag;
 
     tag_fixup(tp->root, textspace);
+    ws_fixup(tp->root);
 
     return tp;
 }

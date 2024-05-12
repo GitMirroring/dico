@@ -91,10 +91,12 @@ const char *gcide_grk_to_utf8(const char *input, size_t *prd);
 
 enum gcide_content_type
 {
-    gcide_content_top, /* Top-level element: same as gcide_content_tag, but
-			  with tag_parmc == 0 and tag_parmv == NULL. */
-    gcide_content_tag, /* Regular tag. */
-    gcide_content_text /* Text segment. */
+    gcide_content_top,  /* Top-level element: same as gcide_content_tag, but
+			   with tag_parmc == 0 and tag_parmv == NULL. */
+    gcide_content_tag,  /* Regular tag. */
+    gcide_content_text, /* Text segment. */
+    gcide_content_nl,   /* "Soft" newline. */
+    gcide_content_br    /* Line break. */
 };
 
 struct gcide_tag {
@@ -105,6 +107,7 @@ struct gcide_tag {
     union {
 	char *text;
 	size_t textpos;
+	int delete;
 	struct {
 	    size_t tag_parmc;
 	    char **tag_parmv;
@@ -125,6 +128,8 @@ void gcide_parse_tree_free(struct gcide_parse_tree *tp);
 int gcide_parse_tree_inorder(struct gcide_parse_tree *tp,
 			     int (*fun)(int, struct gcide_tag *, void *),
 			     void *data);
+
+int gcide_is_block_tag(struct gcide_tag *tag);
 
 typedef struct pollfd *WATCHER;
 

@@ -690,3 +690,25 @@ dico_list_intersect_p(dico_list_t a, dico_list_t b,
     dico_iterator_destroy (&itr);
     return rc;
 }
+
+typedef int (*dico_list_reduce_t) (void *, void *, void *);
+
+int
+dico_list_reduce(dico_list_t list, dico_list_reduce_t fn, void *data)
+{
+    struct list_entry *cur;
+
+    if (!fn)
+	return 0;
+    cur = list->head;
+    while (cur) {
+	struct list_entry *next = cur->next;
+	int rc = fn(cur->data, next ? next->data : NULL, data);
+	if (rc < 0)
+	    return rc;
+	if (rc != 0)
+	    _dico_list_remove_item(list, cur, NULL);
+	cur = next;
+    }
+    return 0;
+}

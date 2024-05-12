@@ -27,6 +27,7 @@
 
 typedef int (*dico_list_iterator_t)(void *item, void *data);
 typedef int (*dico_list_comp_t)(const void *, const void *, void *);
+typedef int (*dico_list_reduce_t) (void *, void *, void *);
 
 dico_list_t dico_list_create(void);
 void dico_list_destroy(dico_list_t *list);
@@ -79,5 +80,7 @@ size_t dico_iterator_position(dico_iterator_t ip);
 
 void dico_iterator_remove_current(dico_iterator_t ip, void **pptr);
 void dico_iterator_set_data(dico_iterator_t ip, void *data);
+
+int dico_list_reduce(dico_list_t list, dico_list_reduce_t fn, void *data);
 
 #endif
