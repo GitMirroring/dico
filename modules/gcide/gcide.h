@@ -104,10 +104,10 @@ struct gcide_tag {
     enum gcide_content_type tag_type;
     struct gcide_tag *tag_next;
 #   define tag_name v.tag.tag_parmv[0]
+    int delete;
     union {
 	char *text;
 	size_t textpos;
-	int delete;
 	struct {
 	    size_t tag_parmc;
 	    char **tag_parmv;

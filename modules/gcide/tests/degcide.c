@@ -81,8 +81,9 @@ print_tag(int end, struct gcide_tag *tag, void *data)
 }
 
 #define GCIDE_NOPR 0x0000001
-#define GOF_IGNORE 0x0001000
-#define GOF_AS     0x0002000
+#define GOF_INIT   0x0001000
+#define GOF_IGNORE 0x0002000
+#define GOF_AS     0x0004000
 
 static int
 print_text(int end, struct gcide_tag *tag, void *data)
@@ -133,8 +134,12 @@ print_text(int end, struct gcide_tag *tag, void *data)
 		else if (clos->flags & GOF_IGNORE)
 		    break;
 
-		if (gcide_is_block_tag(tag))
-		    fputc('\n', clos->stream);
+		if (gcide_is_block_tag(tag)) {
+		    if (clos->flags & GOF_INIT)
+			fputc('\n', clos->stream);
+		    else
+			clos->flags |= GOF_INIT;
+		}
 
 		if (strcmp(tag->tag_name, "as") == 0)
 		    clos->flags |= GOF_AS;

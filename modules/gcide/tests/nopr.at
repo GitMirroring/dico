@@ -24,7 +24,8 @@ AT_DATA([input],
 
 AT_CHECK([degcide -nopr input],
 [0],
-[Acroterial , a. Pertaining to an acroterium; as, ``acroterial ornaments''.  P. Cyc.
+[Acroterial , a. Pertaining to an acroterium; as, ``acroterial ornaments''.
+P. Cyc.
 
 [[1913 Webster]]
 ])

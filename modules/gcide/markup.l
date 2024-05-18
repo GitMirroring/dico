@@ -71,6 +71,17 @@ static size_t input_len;
 static unsigned token_beg;
 static unsigned token_end;
 
+/*
+ * Dictionary entries in GCIDE corpus files begin with "<p><ent>", but index
+ * entries in the GCIDE.IDX file point to the first "<hw>" tag that follows.
+ * Thus, the very first "</p>" encountered when parsing an entry has no
+ * corresponding "<p>" tag.  The first_p_seen variable is set by push_tag
+ * when it sees the first opening "<p>" tag and is used in pop_tag to generate
+ * the first "p" block tag and avoid issuing a spurious error message when
+ * the first "</p>" is encountered.
+ */
+static int first_p_seen;
+
 #ifndef SIZE_MAX
 # define SIZE_MAX ((size_t)-1)
 #endif
@@ -283,7 +294,6 @@ WS [ \t]
 <INITIAL,PR,HW>{
   "<--"    BEGIN_COMMENT("-->");
   "<!"     BEGIN_COMMENT("!>");
-  "<p>"|"</p>" ;
   "<"[a-zA-Z][a-zA-Z0-9._-]*">" {
       flush_text_segment();
       push_tag(alloc_taglist(yytext + 1, yyleng - 2));
@@ -381,12 +391,14 @@ push_tag(struct gcide_tag *tag)
 	    BEGIN(PR);
     else if (strcmp(current_tag->tag_name, "hw") == 0)
 	    BEGIN(HW);
+    else if (strcmp(current_tag->tag_name, "p") == 0)
+	    first_p_seen = 1;
 }
 
 static void
 pop_tag(const char *tagstr, size_t taglen)
 {
-    size_t len;
+    int len;
 
     for (len = 0; len < taglen; len++)
 	if (tagstr[len] == ' ' || tagstr[len] == '\t')
@@ -400,7 +412,37 @@ pop_tag(const char *tagstr, size_t taglen)
 	strlen(current_tag->tag_name) == len &&
 	memcmp(current_tag->tag_name, tagstr, len) == 0)
 	current_tag = dico_list_pop(tagstk);
-    else {
+    else if (current_tag->tag_type == gcide_content_top &&
+	     len == 1 &&
+	     tagstr[0] == 'p' &&
+	     !first_p_seen) {
+	/*
+	 * The first instance of </p> has no corresponding open <p> tag
+	 * because idxgcide stores the offset of the first <hw> tag in the
+	 * index entry, whereas the opening <p> tag in GCIDE entries appears
+	 * before the <ent> tag (which precedes the <hw>).
+	 *
+	 * Re-create the first <p>...</p> block from the data collected so
+	 * far and push it as the first element to the newly created top-
+	 * level tag list.  Set first_p_seen flag to make sure this code is
+	 * executed once.
+	 *
+	 * See also the comment to first_p_seen, above.
+	 */
+	struct gcide_tag *tag = current_tag;
+	tag->tag_type = gcide_content_tag;
+	tag->v.tag.tag_parmc = 1;
+	tag->v.tag.tag_parmv = calloc(2, sizeof(tag->v.tag.tag_parmv[0]));
+	if (!tag->v.tag.tag_parmv)
+		memerr("pop_tag");
+	tag->v.tag.tag_parmv[0] = strdup("p");
+	if (!tag->v.tag.tag_parmv[0])
+		memerr("pop_tag");
+	tag->v.tag.tag_parmv[1] = NULL;
+	current_tag = alloc_tag(gcide_content_top);
+	append_tag(tag);
+	first_p_seen = 1;
+    } else {
 	size_t i, count;
 
 	/* Try to find matching entry */
@@ -412,7 +454,7 @@ pop_tag(const char *tagstr, size_t taglen)
 		    memcmp(p->tag_name, tagstr, len) == 0) {
 		    do {
 			if (current_tag->tag_type == gcide_content_tag)
-			    dico_log(L_WARN, 0, "%s:%zu: unclosed %s tag",
+			    dico_log(L_WARN, 0, "%s:%zu: %s: unclosed tag",
 				     LOCUS_FILE, LOCUS_OFF(current_tag->offset),
 				     current_tag->tag_name);
 		    } while ((current_tag = dico_list_pop(tagstk)) != p);
@@ -420,8 +462,8 @@ pop_tag(const char *tagstr, size_t taglen)
 		    return;
 		}
 	}
-	dico_log(L_WARN, 0, "%s:%zu: unexpected closing tag",
-		 LOCUS_FILE, LOCUS_OFF(token_beg));
+	dico_log(L_WARN, 0, "%s:%zu: %*.*s: unexpected closing tag",
+		 LOCUS_FILE, LOCUS_OFF(token_beg), len, len, tagstr);
     }
 }
 
@@ -481,18 +523,32 @@ tag_fixup(void *item, void *data)
 static char const *block_tags[] = {
 	"source",
 	"sn",
+	"p",
+	"q",
+	"rj",
 	NULL
 };
 
 int
 gcide_is_block_tag(struct gcide_tag *tag)
 {
-    if (tag->tag_type == gcide_content_tag) {
+    if (tag && tag->tag_type == gcide_content_tag) {
 	char const **p;
 
 	for (p = block_tags; *p; p++)
 	    if (strcmp(tag->tag_name, *p) == 0)
 		return 1;
+    }
+    return 0;
+}
+
+int
+gcide_is_ws_text(struct gcide_tag *tag)
+{
+    if (tag && tag->tag_type == gcide_content_text) {
+	    char *p;
+	    for (p = tag->v.text; *p == '\n' || *p == ' ' || *p == '\t';  p++);
+	    return *p == 0;
     }
     return 0;
 }
@@ -506,6 +562,9 @@ ws_reduce(void *a, void *b, void *data)
     struct gcide_tag *atag = a;
     struct gcide_tag *btag = b;
 
+    if (atag->delete)
+	    return 1;
+
     switch (atag->tag_type) {
     case gcide_content_tag:
 	    if (strcmp(atag->tag_name, "source") == 0 &&
@@ -514,10 +573,14 @@ ws_reduce(void *a, void *b, void *data)
 		btag->v.text[0] == ']')
 		    btag->v.text++;
 	    dico_list_reduce(atag->v.tag.taglist, ws_reduce, NULL);
+	    if (gcide_is_block_tag(atag) && gcide_is_ws_text(btag))
+		    btag->delete = 1;
 	    break;
 
     case gcide_content_text:
 	    if (atag->v.text[0] == 0)
+		    return 1;
+	    else if (gcide_is_ws_text(atag) && gcide_is_block_tag(btag))
 		    return 1;
 	    else {
 		    size_t len = strlen(atag->v.text);
@@ -533,8 +596,6 @@ ws_reduce(void *a, void *b, void *data)
 	    break;
 
     case gcide_content_nl:
-	    if (atag->v.delete)
-		    return 1;
 	    if (btag == NULL)
 		    return 1;
 	    switch (btag->tag_type) {
@@ -558,7 +619,7 @@ ws_reduce(void *a, void *b, void *data)
     case gcide_content_br:
 	    if (btag != NULL) {
 		    if (btag->tag_type == gcide_content_nl)
-			    btag->v.delete = 1;
+			    btag->delete = 1;
 	    }
 	    break;
 
@@ -637,6 +698,7 @@ gcide_markup_parse(char const *text, size_t len, int dbg, struct gcide_locus *lo
     input_buf = text;
     input_len = len;
     token_beg = token_end = 0;
+    first_p_seen = 0;
     base_locus = loc;
 
     if (setjmp(errbuf)) {

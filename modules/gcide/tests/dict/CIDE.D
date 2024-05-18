@@ -23,7 +23,7 @@
 typed with the left hand?  Now the layout of the <er>QWERTY</er> typewriter
 keyboard was designed, among other things, to facilitate the even use
 of both hands.  It follows, therefore, that writing about databases is
-not only unnatural, but a lot harder than it appears.</q> <rj><qau>The Fortune program.</qau></rj><br/</p><br/
+not only unnatural, but a lot harder than it appears.</q> <rj><qau>The Fortune program.</qau></rj><br/
 [<source>Dico testsuite</source>]</p>
 
 <p><ent>Double</ent><br/

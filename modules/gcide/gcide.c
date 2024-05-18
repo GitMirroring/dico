@@ -665,47 +665,54 @@ gcide_result_ref(struct gcide_result *res)
     return ref;
 }
 
-typedef void (*tag_printer)(struct gcide_tag *, dico_stream_t, int);
+struct print_closure;
+typedef void (*tag_printer)(struct gcide_tag *, struct print_closure *);
 
 struct print_closure {
     tag_printer printer;
     dico_stream_t stream;
     unsigned skip;
     int flags;
+    int newline;
 };
 
 static int
-print_helper(void *item, void *flags)
+print_helper(void *item, void *data)
 {
     struct gcide_tag *tag = item;
-    struct print_closure *p = flags;
+    struct print_closure *p = data;
     if (p->skip > 0)
 	p->skip--;
-    else
-	p->printer(tag, p->stream, p->flags);
+    else {
+	p->printer(tag, p);
+    }
     return 0;
 }
 
-static void print_tag(struct gcide_tag *tag, dico_stream_t stream, int);
+static void print_tag(struct gcide_tag *tag, struct print_closure *);
 
 static void
-print_taglist(struct gcide_tag *tag, dico_stream_t stream, int flags)
+print_taglist(struct gcide_tag *tag, struct print_closure *clos)
 {
     struct print_closure c = {
 	.printer = print_tag,
-	.stream  = stream,
-	.flags   = flags,
+	.stream  = clos->stream,
+	.flags   = clos->flags,
+	.newline = clos->newline,
 	.skip    = 0
     };
     dico_list_iterate(tag->v.tag.taglist, print_helper, &c);
+    clos->newline = c.newline;
 }
 
-static void print_as(struct gcide_tag *, dico_stream_t, int);
-static void print_er(struct gcide_tag *, dico_stream_t, int);
-static void print_sn(struct gcide_tag *, dico_stream_t, int);
-static void print_pr(struct gcide_tag *, dico_stream_t, int);
-static void print_a(struct gcide_tag *, dico_stream_t, int);
-static void print_source(struct gcide_tag *, dico_stream_t, int);
+static void print_as(struct gcide_tag *, struct print_closure *);
+static void print_er(struct gcide_tag *, struct print_closure *);
+static void print_pr(struct gcide_tag *, struct print_closure *);
+static void print_a(struct gcide_tag *, struct print_closure *);
+static void print_source(struct gcide_tag *, struct print_closure *);
+static void print_rj(struct gcide_tag *, struct print_closure *);
+static void print_qau(struct gcide_tag *, struct print_closure *);
+static void print_sn(struct gcide_tag *, struct print_closure *);
 
 static struct tagdef {
     char const *tag;
@@ -713,10 +720,12 @@ static struct tagdef {
 } tagdef[] = {
     { "as",     print_as },
     { "er",     print_er },
-    { "sn",     print_sn },
     { "pr",     print_pr },
     { "a",      print_a },
     { "source", print_source },
+    { "qau",    print_qau },
+    { "rj",     print_rj },
+    { "sn",     print_sn },
     { NULL }
 };
 
@@ -731,35 +740,56 @@ find_printer(char const *name)
 }
 
 static void
-print_tag(struct gcide_tag *tag, dico_stream_t stream, int flags)
+print_tag(struct gcide_tag *tag, struct print_closure *clos)
 {
     tag_printer printer;
 
     switch (tag->tag_type) {
     case gcide_content_top:
-	print_taglist(tag, stream, flags);
+	print_taglist(tag, clos);
 	break;
 
     case gcide_content_tag:
-	if (gcide_is_block_tag(tag))
-	    dico_stream_write(stream, "\n", 1);
+	if (gcide_is_block_tag(tag)) {
+	    if (clos->newline == 0) {
+		dico_stream_write(clos->stream, "\n", 1);
+		clos->newline++;
+	    }
+	    if (clos->newline < 2) {
+		dico_stream_write(clos->stream, "\n", 1);
+		clos->newline++;
+	    }
+	}
 	printer = find_printer(tag->tag_name);
 	if (printer)
-	    printer(tag, stream, flags);
+	    printer(tag, clos);
 	else
-	    print_taglist(tag, stream, flags);
+	    print_taglist(tag, clos);
+	if (gcide_is_block_tag(tag)) {
+	    if (clos->newline == 0) {
+		dico_stream_write(clos->stream, "\n", 1);
+		clos->newline++;
+	    }
+	    if (clos->newline < 2) {
+		dico_stream_write(clos->stream, "\n", 1);
+		clos->newline++;
+	    }
+	}
 	break;
 
     case gcide_content_text:
-	dico_stream_write(stream, tag->v.text, strlen(tag->v.text));
+	dico_stream_write(clos->stream, tag->v.text, strlen(tag->v.text));
+	clos->newline = 0;
 	break;
 
     case gcide_content_nl:
-	dico_stream_write(stream, " ", 1);
+	dico_stream_write(clos->stream, " ", 1);
+	clos->newline = 0;
 	break;
 
     case gcide_content_br:
-	dico_stream_write(stream, "\n", 1);
+	dico_stream_write(clos->stream, "\n", 1);
+	clos->newline++;
 	break;
 
     default:
@@ -768,13 +798,14 @@ print_tag(struct gcide_tag *tag, dico_stream_t stream, int flags)
 }
 
 static void
-print_as(struct gcide_tag *tag, dico_stream_t stream, int flags)
+print_as(struct gcide_tag *tag, struct print_closure *clos)
 {
     struct gcide_tag *t = dico_list_head(tag->v.tag.taglist);
     struct print_closure c = {
 	.printer = print_tag,
-	.stream  = stream,
-	.flags   = flags,
+	.stream  = clos->stream,
+	.flags   = clos->flags,
+	.newline = clos->newline,
 	.skip    = 0
     };
     static char *quote[2] = { "“", "”" };
@@ -783,41 +814,35 @@ print_as(struct gcide_tag *tag, dico_stream_t stream, int flags)
 	char *s = t->v.text;
 
 	if (strncmp(s, "as", 2) == 0 && (isspace(s[3]) || ispunct(s[3]))) {
-	    dico_stream_write(stream, s, 3);
+	    dico_stream_write(c.stream, s, 3);
 	    for (s += 3; *s && isspace(*s); s++)
-		dico_stream_write(stream, s, 1);
-	    dico_stream_write(stream, quote[0], strlen(quote[0]));
-	    dico_stream_write(stream, s, strlen(s));
+		dico_stream_write(c.stream, s, 1);
+	    dico_stream_write(c.stream, quote[0], strlen(quote[0]));
+	    dico_stream_write(c.stream, s, strlen(s));
 	    c.skip = 1;
 	} else
-	    dico_stream_write(stream, quote[0], strlen(quote[0]));
+	    dico_stream_write(c.stream, quote[0], strlen(quote[0]));
     } else
-	dico_stream_write(stream, quote[0], strlen(quote[0]));
+	dico_stream_write(c.stream, quote[0], strlen(quote[0]));
     dico_list_iterate(tag->v.tag.taglist, print_helper, &c);
-    dico_stream_write(stream, quote[1], strlen(quote[1]));
+    dico_stream_write(c.stream, quote[1], strlen(quote[1]));
+    clos->newline = c.newline;
 }
 
 static void
-print_er(struct gcide_tag *tag, dico_stream_t stream, int flags)
+print_er(struct gcide_tag *tag, struct print_closure *clos)
 {
     static char *ref[2] = { "{" , "}" };
-    dico_stream_write(stream, ref[0], strlen(ref[0]));
-    print_taglist(tag, stream, flags);
-    dico_stream_write(stream, ref[1], strlen(ref[1]));
+    dico_stream_write(clos->stream, ref[0], strlen(ref[0]));
+    print_taglist(tag, clos);
+    dico_stream_write(clos->stream, ref[1], strlen(ref[1]));
 }
 
 static void
-print_sn(struct gcide_tag *tag, dico_stream_t stream, int flags)
+print_pr(struct gcide_tag *tag, struct print_closure *clos)
 {
-    dico_stream_write(stream, "\n", 1);
-    print_taglist(tag, stream, flags);
-}
-
-static void
-print_pr(struct gcide_tag *tag, dico_stream_t stream, int flags)
-{
-    if (!(flags & GCIDE_NOPR))
-	print_taglist(tag, stream, flags);
+    if (!(clos->flags & GCIDE_NOPR))
+	print_taglist(tag, clos);
 }
 
 static char *
@@ -836,23 +861,46 @@ gcide_tag_get_param(struct gcide_tag *tag, char const *name)
 }
 
 static void
-print_a(struct gcide_tag *tag, dico_stream_t stream, int flags)
+print_a(struct gcide_tag *tag, struct print_closure *clos)
 {
     char *href = gcide_tag_get_param(tag, "href");
-    print_taglist(tag, stream, flags);
+    print_taglist(tag, clos);
     if (href != NULL) {
-	dico_stream_write(stream, " (see ", 6);
-	dico_stream_write(stream, href, strlen(href));
-	dico_stream_write(stream, ")", 1);
+	dico_stream_write(clos->stream, " (see ", 6);
+	dico_stream_write(clos->stream, href, strlen(href));
+	dico_stream_write(clos->stream, ")", 1);
     }
 }
 
 static void
-print_source(struct gcide_tag *tag, dico_stream_t stream, int flags)
+print_source(struct gcide_tag *tag, struct print_closure *clos)
 {
-    dico_stream_write(stream, "[", 1);
-    print_taglist(tag, stream, flags);
-    dico_stream_write(stream, "]", 1);
+    dico_stream_write(clos->stream, "[", 1);
+    print_taglist(tag, clos);
+    dico_stream_write(clos->stream, "]", 1);
+}
+
+static void
+print_qau(struct gcide_tag *tag, struct print_closure *clos)
+{
+    dico_stream_write(clos->stream, "-- ", 3);
+    print_taglist(tag, clos);
+}
+
+static void
+print_rj(struct gcide_tag *tag, struct print_closure *clos)
+{
+    static char indent[] = "        ";
+    dico_stream_write(clos->stream, indent, strlen(indent));
+    print_taglist(tag, clos);
+}
+
+static void
+print_sn(struct gcide_tag *tag, struct print_closure *clos)
+{
+    print_taglist(tag, clos);
+    dico_stream_write(clos->stream, " ", 1);
+    clos->newline = 2;
 }
 
 static int
@@ -923,7 +971,14 @@ output_def(dico_stream_t str, struct gcide_db *db, struct gcide_ref *ref)
     if (!tree)
 	rc = dico_stream_write(str, buffer, ref->ref_size);
     else {
-	print_tag(tree->root, str, db->flags);
+	struct print_closure c = {
+	    .printer = print_tag,// FIXME
+	    .stream  = str,
+	    .flags   = db->flags,
+	    .newline = 2,//FIXME
+	    .skip    = 0
+	};
+	print_tag(tree->root, &c);
 	rc = 0; // FIXME
     }
     free(buffer);
