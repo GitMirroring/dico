@@ -143,8 +143,11 @@ proc seterrheader {args} {
 # Setup main window structure
 ############################################################################
 
+# Update this variable along with the copyright header.
+set copyright_year 2024
+
 set license  {This is GCIDER, a part of GNU Dico
-Copyright (C) 2012-2016 Sergey Poznyakoff
+Copyright (C) 2012-$copyright_year Sergey Poznyakoff
 
 GNU Dico is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -207,7 +210,7 @@ proc setupvisual {} {
 	-command { helpbox "Manual" \
 		       -file "| info -o - --subnodes Dico gcider" }
     $m.help add command -label "License" -underline 0 \
-	-command { helpbox "License" -text $license }
+	-command { helpbox "License" -text [subst -nobackslashes -nocommands $license] }
 
     $m.help add separator
     $m.help add command -label "About" -command about -underline 0
@@ -543,7 +546,8 @@ proc helpbox {title type arg} {
 # About box
 proc about {} {
     global version
-    
+    global copyright_year
+
     set top .aboutbox
     if [winfo exist $top] {
 	raise $top
@@ -573,7 +577,7 @@ proc about {} {
           -justify left \
           -font "-adobe-helvetica-medium-r-*-*-*-100-*-*-*-*-*-*" \
 	      -text "\n\n\
-Copyright (C) 2012, Sergey Poznyakoff\n\
+Copyright (C) 2012-$copyright_year, Sergey Poznyakoff\n\
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n\
 This is free software: you are free to change and redistribute it.\n\
 There is NO WARRANTY, to the extent permitted by law.\n"] \
