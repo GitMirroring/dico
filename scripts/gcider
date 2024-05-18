@@ -1404,6 +1404,9 @@ proc readdefns {} {
 	incr num
 	set reply [dictread]
 	while {$reply != "."} {
+	    if {[string index $reply 0] == "."} {
+		set reply [string range $reply 1 end]
+	    }
 	    set beg 0
 	    foreach x [regexp -indices -all -inline {\{[^\{\}]+\}} $reply] {
 		set start [lindex $x 0]
