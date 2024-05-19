@@ -672,6 +672,7 @@ struct print_closure {
     tag_printer printer;
     dico_stream_t stream;
     unsigned skip;
+    unsigned indent;
     int flags;
     int newline;
 };
@@ -694,13 +695,8 @@ static void print_tag(struct gcide_tag *tag, struct print_closure *);
 static void
 print_taglist(struct gcide_tag *tag, struct print_closure *clos)
 {
-    struct print_closure c = {
-	.printer = print_tag,
-	.stream  = clos->stream,
-	.flags   = clos->flags,
-	.newline = clos->newline,
-	.skip    = 0
-    };
+    struct print_closure c = *clos;
+    c.printer = print_tag;
     dico_list_iterate(tag->v.tag.taglist, print_helper, &c);
     clos->newline = c.newline;
 }
@@ -713,6 +709,7 @@ static void print_source(struct gcide_tag *, struct print_closure *);
 static void print_rj(struct gcide_tag *, struct print_closure *);
 static void print_qau(struct gcide_tag *, struct print_closure *);
 static void print_sn(struct gcide_tag *, struct print_closure *);
+static void print_q(struct gcide_tag *, struct print_closure *);
 
 static struct tagdef {
     char const *tag;
@@ -726,6 +723,7 @@ static struct tagdef {
     { "qau",    print_qau },
     { "rj",     print_rj },
     { "sn",     print_sn },
+    { "q",      print_q },
     { NULL }
 };
 
@@ -737,6 +735,16 @@ find_printer(char const *name)
 	if (strcmp(p->tag, name) == 0)
 	    return p->printer;
     return NULL;
+}
+
+static void
+do_indent(struct print_closure *clos)
+{
+    static char indent[] = "    ";
+    int i;
+    for (i = 0; i < clos->indent; i++)
+	dico_stream_write(clos->stream, indent, strlen(indent));
+    clos->newline = 0;
 }
 
 static void
@@ -759,7 +767,8 @@ print_tag(struct gcide_tag *tag, struct print_closure *clos)
 		dico_stream_write(clos->stream, "\n", 1);
 		clos->newline++;
 	    }
-	}
+	} else if (clos->newline && clos->indent)
+	    do_indent(clos);
 	printer = find_printer(tag->tag_name);
 	if (printer)
 	    printer(tag, clos);
@@ -778,11 +787,15 @@ print_tag(struct gcide_tag *tag, struct print_closure *clos)
 	break;
 
     case gcide_content_text:
+	if (clos->newline && clos->indent)
+	    do_indent(clos);
 	dico_stream_write(clos->stream, tag->v.text, strlen(tag->v.text));
 	clos->newline = 0;
 	break;
 
     case gcide_content_nl:
+	if (clos->newline && clos->indent)
+	    do_indent(clos);
 	dico_stream_write(clos->stream, " ", 1);
 	clos->newline = 0;
 	break;
@@ -806,7 +819,8 @@ print_as(struct gcide_tag *tag, struct print_closure *clos)
 	.stream  = clos->stream,
 	.flags   = clos->flags,
 	.newline = clos->newline,
-	.skip    = 0
+	.skip    = 0,
+	.indent  = 0
     };
     static char *quote[2] = { "“", "”" };
 
@@ -888,19 +902,39 @@ print_qau(struct gcide_tag *tag, struct print_closure *clos)
 }
 
 static void
-print_rj(struct gcide_tag *tag, struct print_closure *clos)
-{
-    static char indent[] = "        ";
-    dico_stream_write(clos->stream, indent, strlen(indent));
-    print_taglist(tag, clos);
-}
-
-static void
 print_sn(struct gcide_tag *tag, struct print_closure *clos)
 {
     print_taglist(tag, clos);
     dico_stream_write(clos->stream, " ", 1);
     clos->newline = 2;
+}
+
+static void
+print_taglist_indent(struct gcide_tag *tag, struct print_closure *clos,
+		     unsigned level)
+{
+    struct print_closure c = {
+	.printer = print_tag,
+	.stream  = clos->stream,
+	.flags   = clos->flags,
+	.newline = clos->newline,
+	.skip    = 0,
+	.indent  = level
+    };
+    print_taglist(tag, &c);
+    clos->newline = c.newline;
+}
+
+static void
+print_q(struct gcide_tag *tag, struct print_closure *clos)
+{
+    print_taglist_indent(tag, clos, 1);
+}
+
+static void
+print_rj(struct gcide_tag *tag, struct print_closure *clos)
+{
+    print_taglist_indent(tag, clos, 2);
 }
 
 static int
