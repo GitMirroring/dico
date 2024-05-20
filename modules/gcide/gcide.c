@@ -30,6 +30,7 @@
 #define GCIDE_DBGLEX   0x02
 #define GCIDE_WATCHER  0x04
 #define GCIDE_IDX_FAIL 0x08
+#define GCIDE_HTML     0x10
 
 struct gcide_db {
     char *db_dir;
@@ -250,6 +251,8 @@ gcide_init_db(const char *dbname, int argc, char **argv)
 	  .v.value = GCIDE_DBGLEX },
 	{ DICO_OPTSTR(watch), dico_opt_bitmask, &flags,
 	  .v.value = GCIDE_WATCHER },
+	{ DICO_OPTSTR(html), dico_opt_bitmask, &flags,
+	  .v.value = GCIDE_HTML },
 	{ NULL }
     };
 
@@ -665,11 +668,11 @@ gcide_result_ref(struct gcide_result *res)
     return ref;
 }
 
-struct print_closure;
-typedef void (*tag_printer)(struct gcide_tag *, struct print_closure *);
+struct print_text_closure;
+typedef void (*tag_text_printer)(struct gcide_tag *, struct print_text_closure *);
 
-struct print_closure {
-    tag_printer printer;
+struct print_text_closure {
+    tag_text_printer printer;
     dico_stream_t stream;
     unsigned skip;
     unsigned indent;
@@ -678,10 +681,10 @@ struct print_closure {
 };
 
 static int
-print_helper(void *item, void *data)
+print_text_helper(void *item, void *data)
 {
     struct gcide_tag *tag = item;
-    struct print_closure *p = data;
+    struct print_text_closure *p = data;
     if (p->skip > 0)
 	p->skip--;
     else {
@@ -690,55 +693,55 @@ print_helper(void *item, void *data)
     return 0;
 }
 
-static void print_tag(struct gcide_tag *tag, struct print_closure *);
+static void print_text_tag(struct gcide_tag *tag, struct print_text_closure *);
 
 static void
-print_taglist(struct gcide_tag *tag, struct print_closure *clos)
+print_text_taglist(struct gcide_tag *tag, struct print_text_closure *clos)
 {
-    struct print_closure c = *clos;
-    c.printer = print_tag;
-    dico_list_iterate(tag->v.tag.taglist, print_helper, &c);
+    struct print_text_closure c = *clos;
+    c.printer = print_text_tag;
+    dico_list_iterate(tag->v.tag.taglist, print_text_helper, &c);
     clos->newline = c.newline;
 }
 
-static void print_as(struct gcide_tag *, struct print_closure *);
-static void print_er(struct gcide_tag *, struct print_closure *);
-static void print_pr(struct gcide_tag *, struct print_closure *);
-static void print_a(struct gcide_tag *, struct print_closure *);
-static void print_source(struct gcide_tag *, struct print_closure *);
-static void print_rj(struct gcide_tag *, struct print_closure *);
-static void print_qau(struct gcide_tag *, struct print_closure *);
-static void print_sn(struct gcide_tag *, struct print_closure *);
-static void print_q(struct gcide_tag *, struct print_closure *);
+static void print_text_as(struct gcide_tag *, struct print_text_closure *);
+static void print_text_er(struct gcide_tag *, struct print_text_closure *);
+static void print_text_pr(struct gcide_tag *, struct print_text_closure *);
+static void print_text_a(struct gcide_tag *, struct print_text_closure *);
+static void print_text_source(struct gcide_tag *, struct print_text_closure *);
+static void print_text_rj(struct gcide_tag *, struct print_text_closure *);
+static void print_text_qau(struct gcide_tag *, struct print_text_closure *);
+static void print_text_sn(struct gcide_tag *, struct print_text_closure *);
+static void print_text_q(struct gcide_tag *, struct print_text_closure *);
 
-static struct tagdef {
+static struct tagdef_text {
     char const *tag;
-    tag_printer printer;
-} tagdef[] = {
-    { "as",     print_as },
-    { "er",     print_er },
-    { "pr",     print_pr },
-    { "a",      print_a },
-    { "source", print_source },
-    { "qau",    print_qau },
-    { "rj",     print_rj },
-    { "sn",     print_sn },
-    { "q",      print_q },
+    tag_text_printer printer;
+} tagdef_text[] = {
+    { "as",     print_text_as },
+    { "er",     print_text_er },
+    { "pr",     print_text_pr },
+    { "a",      print_text_a },
+    { "source", print_text_source },
+    { "qau",    print_text_qau },
+    { "rj",     print_text_rj },
+    { "sn",     print_text_sn },
+    { "q",      print_text_q },
     { NULL }
 };
 
-static tag_printer
-find_printer(char const *name)
+static tag_text_printer
+find_text_printer(char const *name)
 {
-    struct tagdef *p;
-    for (p = tagdef; p->tag; p++)
+    struct tagdef_text *p;
+    for (p = tagdef_text; p->tag; p++)
 	if (strcmp(p->tag, name) == 0)
 	    return p->printer;
     return NULL;
 }
 
 static void
-do_indent(struct print_closure *clos)
+do_indent(struct print_text_closure *clos)
 {
     static char indent[] = "    ";
     int i;
@@ -748,13 +751,13 @@ do_indent(struct print_closure *clos)
 }
 
 static void
-print_tag(struct gcide_tag *tag, struct print_closure *clos)
+print_text_tag(struct gcide_tag *tag, struct print_text_closure *clos)
 {
-    tag_printer printer;
+    tag_text_printer printer;
 
     switch (tag->tag_type) {
     case gcide_content_top:
-	print_taglist(tag, clos);
+	print_text_taglist(tag, clos);
 	break;
 
     case gcide_content_tag:
@@ -769,11 +772,11 @@ print_tag(struct gcide_tag *tag, struct print_closure *clos)
 	    }
 	} else if (clos->newline && clos->indent)
 	    do_indent(clos);
-	printer = find_printer(tag->tag_name);
+	printer = find_text_printer(tag->tag_name);
 	if (printer)
 	    printer(tag, clos);
 	else
-	    print_taglist(tag, clos);
+	    print_text_taglist(tag, clos);
 	if (gcide_is_block_tag(tag)) {
 	    if (clos->newline == 0) {
 		dico_stream_write(clos->stream, "\n", 1);
@@ -811,52 +814,30 @@ print_tag(struct gcide_tag *tag, struct print_closure *clos)
 }
 
 static void
-print_as(struct gcide_tag *tag, struct print_closure *clos)
+print_text_as(struct gcide_tag *tag, struct print_text_closure *clos)
 {
-    struct gcide_tag *t = dico_list_head(tag->v.tag.taglist);
-    struct print_closure c = {
-	.printer = print_tag,
-	.stream  = clos->stream,
-	.flags   = clos->flags,
-	.newline = clos->newline,
-	.skip    = 0,
-	.indent  = 0
-    };
     static char *quote[2] = { "“", "”" };
 
-    if (t && t->tag_type == gcide_content_text) {
-	char *s = t->v.text;
-
-	if (strncmp(s, "as", 2) == 0 && (isspace(s[3]) || ispunct(s[3]))) {
-	    dico_stream_write(c.stream, s, 3);
-	    for (s += 3; *s && isspace(*s); s++)
-		dico_stream_write(c.stream, s, 1);
-	    dico_stream_write(c.stream, quote[0], strlen(quote[0]));
-	    dico_stream_write(c.stream, s, strlen(s));
-	    c.skip = 1;
-	} else
-	    dico_stream_write(c.stream, quote[0], strlen(quote[0]));
-    } else
-	dico_stream_write(c.stream, quote[0], strlen(quote[0]));
-    dico_list_iterate(tag->v.tag.taglist, print_helper, &c);
-    dico_stream_write(c.stream, quote[1], strlen(quote[1]));
-    clos->newline = c.newline;
+    dico_stream_write(clos->stream, quote[0], strlen(quote[0]));
+    print_text_taglist(tag, clos);
+    dico_stream_write(clos->stream, quote[1], strlen(quote[1]));
+    clos->newline = 0;
 }
 
 static void
-print_er(struct gcide_tag *tag, struct print_closure *clos)
+print_text_er(struct gcide_tag *tag, struct print_text_closure *clos)
 {
     static char *ref[2] = { "{" , "}" };
     dico_stream_write(clos->stream, ref[0], strlen(ref[0]));
-    print_taglist(tag, clos);
+    print_text_taglist(tag, clos);
     dico_stream_write(clos->stream, ref[1], strlen(ref[1]));
 }
 
 static void
-print_pr(struct gcide_tag *tag, struct print_closure *clos)
+print_text_pr(struct gcide_tag *tag, struct print_text_closure *clos)
 {
     if (!(clos->flags & GCIDE_NOPR))
-	print_taglist(tag, clos);
+	print_text_taglist(tag, clos);
 }
 
 static char *
@@ -875,10 +856,10 @@ gcide_tag_get_param(struct gcide_tag *tag, char const *name)
 }
 
 static void
-print_a(struct gcide_tag *tag, struct print_closure *clos)
+print_text_a(struct gcide_tag *tag, struct print_text_closure *clos)
 {
     char *href = gcide_tag_get_param(tag, "href");
-    print_taglist(tag, clos);
+    print_text_taglist(tag, clos);
     if (href != NULL) {
 	dico_stream_write(clos->stream, " (see ", 6);
 	dico_stream_write(clos->stream, href, strlen(href));
@@ -887,54 +868,402 @@ print_a(struct gcide_tag *tag, struct print_closure *clos)
 }
 
 static void
-print_source(struct gcide_tag *tag, struct print_closure *clos)
+print_text_source(struct gcide_tag *tag, struct print_text_closure *clos)
 {
     dico_stream_write(clos->stream, "[", 1);
-    print_taglist(tag, clos);
+    print_text_taglist(tag, clos);
     dico_stream_write(clos->stream, "]", 1);
 }
 
 static void
-print_qau(struct gcide_tag *tag, struct print_closure *clos)
+print_text_qau(struct gcide_tag *tag, struct print_text_closure *clos)
 {
     dico_stream_write(clos->stream, "-- ", 3);
-    print_taglist(tag, clos);
+    print_text_taglist(tag, clos);
 }
 
 static void
-print_sn(struct gcide_tag *tag, struct print_closure *clos)
+print_text_sn(struct gcide_tag *tag, struct print_text_closure *clos)
 {
-    print_taglist(tag, clos);
+    print_text_taglist(tag, clos);
     dico_stream_write(clos->stream, " ", 1);
     clos->newline = 2;
 }
 
 static void
-print_taglist_indent(struct gcide_tag *tag, struct print_closure *clos,
+print_text_taglist_indent(struct gcide_tag *tag, struct print_text_closure *clos,
 		     unsigned level)
 {
-    struct print_closure c = {
-	.printer = print_tag,
+    struct print_text_closure c = {
+	.printer = print_text_tag,
 	.stream  = clos->stream,
 	.flags   = clos->flags,
 	.newline = clos->newline,
 	.skip    = 0,
 	.indent  = level
     };
-    print_taglist(tag, &c);
+    print_text_taglist(tag, &c);
     clos->newline = c.newline;
 }
 
 static void
-print_q(struct gcide_tag *tag, struct print_closure *clos)
+print_text_q(struct gcide_tag *tag, struct print_text_closure *clos)
 {
-    print_taglist_indent(tag, clos, 1);
+    print_text_taglist_indent(tag, clos, 1);
 }
 
 static void
-print_rj(struct gcide_tag *tag, struct print_closure *clos)
+print_text_rj(struct gcide_tag *tag, struct print_text_closure *clos)
 {
-    print_taglist_indent(tag, clos, 2);
+    print_text_taglist_indent(tag, clos, 3);
+}
+
+static int
+output_def_text(dico_stream_t str, struct gcide_db *db,
+		struct gcide_parse_tree *tree)
+{
+	struct print_text_closure c = {
+	    .printer = print_text_tag,
+	    .stream  = str,
+	    .flags   = db->flags,
+	    .newline = 2,
+	    .skip    = 0
+	};
+	print_text_tag(tree->root, &c);
+	return 0; // FIXME
+}
+
+struct html_closure;
+typedef void (*tag_html_printer)(struct gcide_tag *, struct html_closure *);
+
+struct html_closure {
+    tag_html_printer printer;
+    int flags;
+    dico_stream_t stream;
+};
+
+static int
+print_html_helper(void *item, void *data)
+{
+    struct gcide_tag *tag = item;
+    struct html_closure *p = data;
+    p->printer(tag, p);
+    return 0;
+}
+
+static void print_html_tag(struct gcide_tag *tag, struct html_closure *);
+
+static void
+print_html_taglist(struct gcide_tag *tag, struct html_closure *clos)
+{
+    struct html_closure c = *clos;
+    c.printer = print_html_tag;
+    dico_list_iterate(tag->v.tag.taglist, print_html_helper, &c);
+}
+
+static void
+copy_html_tag(struct gcide_tag *tag, struct html_closure *clos)
+{
+    int i;
+
+    dico_stream_write(clos->stream, "<", 1);
+    dico_stream_write(clos->stream, tag->tag_name,
+		      strlen(tag->tag_name));
+    for (i = 1; i < tag->v.tag.tag_parmc; i++) {
+	size_t len = strcspn(tag->v.tag.tag_parmv[i], "=");
+	dico_stream_write(clos->stream, " ", 1);
+	dico_stream_write(clos->stream, tag->v.tag.tag_parmv[i], len);
+	if (tag->v.tag.tag_parmv[i][len]) {
+	    char *arg = tag->v.tag.tag_parmv[i] + len + 1;
+	    dico_stream_write(clos->stream, "=\"", 2);
+	    dico_stream_write(clos->stream, arg, strlen(arg));
+	    dico_stream_write(clos->stream, "\"", 1);
+	}
+    }
+    dico_stream_write(clos->stream, ">", 1);
+    print_html_taglist(tag, clos);
+    dico_stream_write(clos->stream, "</", 2);
+    dico_stream_write(clos->stream, tag->tag_name, strlen(tag->tag_name));
+    dico_stream_write(clos->stream, ">", 1);
+}
+
+static void
+override_html_tag(struct gcide_tag *tag, struct html_closure *clos,
+		  char **parmv)
+{
+    struct gcide_tag tag_copy = *tag;
+    int i;
+    for (i = 0; parmv[i] != NULL; i++)
+	;
+    tag_copy.tag_type = gcide_content_tag;
+    tag_copy.v.tag.tag_parmc = i;
+    tag_copy.v.tag.tag_parmv = parmv;
+    copy_html_tag(&tag_copy, clos);
+}
+
+static void
+print_html_pr(struct gcide_tag *tag, struct html_closure *clos)
+{
+    static char *params[] = {
+	"span",
+	"class=\"pron\"",
+	NULL
+    };
+    if (!(clos->flags & GCIDE_NOPR))
+	override_html_tag(tag, clos, params);
+}
+
+static struct tagdef_html {
+    char const *tag;
+    tag_html_printer printer;
+    char const *html_tag;
+    char const *class;
+} tagdef_html[] = {
+    { "p",   copy_html_tag },
+    { "a",   copy_html_tag },
+    { "pr",  print_html_pr },
+    { "hw",  NULL, "span", "hw" },
+    { "sn",  NULL, "li", "def" },
+    { "ol",  NULL, "ol", "def" },
+    { "grk", NULL, "span", "ets" },
+    { NULL }
+};
+
+static struct tagdef_html *
+find_tagdef_html(char const *name)
+{
+    struct tagdef_html *p;
+    for (p = tagdef_html; p->tag; p++)
+	if (strcmp(p->tag, name) == 0)
+	    return p;
+    return NULL;
+}
+
+static void
+print_html_override(struct gcide_tag *tag, struct html_closure *clos,
+		    char const *tagname, char const *class)
+{
+    char *params[] = {
+	(char*) tagname,
+	NULL,
+	NULL
+    };
+    if (class) {
+	static char const prefix[] = "class=";
+	char *p = malloc(sizeof(prefix) + strlen(class));
+	if (!p)
+	    DICO_LOG_MEMERR();
+	else {
+	    strcpy(p, prefix);
+	    strcat(p, class);
+	    params[1] = p;
+	}
+    }
+    override_html_tag(tag, clos, params);
+    free(params[1]);
+}
+
+static void
+print_html_top(struct gcide_tag *tag, struct html_closure *clos)
+{
+    print_html_override(tag, clos, "div", "definition");
+}
+
+static void
+print_html_tag(struct gcide_tag *tag, struct html_closure *clos)
+{
+    struct tagdef_html *td;
+
+    switch (tag->tag_type) {
+    case gcide_content_top:
+	print_html_top(tag, clos);
+	break;
+
+    case gcide_content_tag:
+	td = find_tagdef_html(tag->tag_name);
+	if (td) {
+	    if (td->html_tag)
+		print_html_override(tag, clos, td->html_tag, td->class);
+	    else
+		td->printer(tag, clos);
+	} else if (gcide_is_block_tag(tag))
+	    print_html_override(tag, clos, "div", tag->tag_name);
+	else
+	    print_html_override(tag, clos, "span", tag->tag_name);
+	break;
+
+    case gcide_content_text:
+	dico_stream_write(clos->stream, tag->v.text, strlen(tag->v.text));
+	break;
+
+    case gcide_content_nl:
+	dico_stream_write(clos->stream, " ", 1);
+	break;
+
+    case gcide_content_br:
+	dico_stream_write(clos->stream, "<br/>", 5);
+	break;
+
+    default:
+	abort ();
+    }
+}
+
+/*
+ * Whenever a <p><sn>(...)</sn>(...)</p> is encountered, replace it with
+ * <sn>\2</sn>.  Throw away the original "sn" tag.
+ */
+static int
+p_sn_join(void *item, void *data)
+{
+    struct gcide_tag *tag = item;
+    struct gcide_tag *head;
+
+    if (gcide_is_tag(tag, "p") &&
+	gcide_is_tag(head = dico_list_head(tag->v.tag.taglist), "sn")) {
+	/* Replace p with sn */
+	free(tag->tag_name);
+	tag->tag_name = head->tag_name;
+	head->tag_name = NULL;
+	dico_list_remove(tag->v.tag.taglist, head, NULL);
+    }
+    return 0;
+}
+
+static void
+q_fixup(dico_list_t list)
+{
+    struct gcide_tag *tag;
+    dico_iterator_t itr;
+    itr = dico_list_iterator(list);
+    tag = dico_iterator_first(itr);
+    while (tag) {
+	if (gcide_is_tag(tag, "q")) {
+	    struct gcide_tag *next = dico_iterator_next(itr), *head;
+	    if (gcide_is_tag(next, "rj") &&
+		(head = dico_list_head(next->v.tag.taglist)) != NULL &&
+		gcide_is_tag(head, "qau")) {
+		char const tagname[] = "gcide_quote";
+		struct gcide_tag *gq = gcide_tag_alloc(tagname, sizeof(tagname)-1);
+
+		/* Get back to <q> and remove it. */
+		dico_iterator_prev(itr);
+		dico_iterator_remove_current(itr, (void**)&tag);
+		/* Add <q> to the <gcide_quote> tag. */
+		dico_list_append(gq->v.tag.taglist, tag);
+
+		/* Advance to <rj> and remove it, */
+		dico_iterator_next(itr);
+		dico_iterator_remove_current(itr, (void**)&tag);
+		/* Add <rj> to the <gcide_quote> tag. */
+		dico_list_append(gq->v.tag.taglist, tag);
+
+		/* Insert <gcide_quote> */
+		dico_iterator_insert_before(itr, gq);
+	    }
+	} else if (tag->tag_type == gcide_content_top ||
+		   tag->tag_type == gcide_content_tag)
+	    q_fixup(tag->v.tag.taglist);
+	tag = dico_iterator_next(itr);
+    }
+    dico_iterator_destroy(&itr);
+}
+
+static int
+output_def_html(dico_stream_t str, struct gcide_db *db,
+		struct gcide_parse_tree *tree)
+{
+    struct html_closure c = {
+	.printer = print_html_tag,
+	.stream  = str,
+	.flags   = db->flags,
+    };
+    dico_iterator_t itr;
+    struct gcide_tag *tag;
+
+    /* Additional fix-ups: */
+
+    /* Join "<p><sn>(.*)</sn>(.*)</p>" -> "<sn>\2</sn>". */
+    dico_list_iterate(tree->root->v.tag.taglist, p_sn_join, NULL);
+
+    /* Additional fixups for <q></q><rj><qau> sequences/ */
+    q_fixup(tree->root->v.tag.taglist);
+
+    itr = dico_list_iterator(tree->root->v.tag.taglist);
+    tag = dico_iterator_first(itr);
+
+    /*
+     * Replace initial <p> tag with its content.
+     */
+    if (gcide_is_tag(tag, "p")) {
+	void *t;
+	dico_iterator_t pitr;
+	struct gcide_tag *p;
+
+	dico_iterator_remove_current(itr, &t);
+	pitr = dico_list_iterator(tag->v.tag.taglist);
+	p = dico_iterator_last(pitr);
+	while (p) {
+	    dico_iterator_remove_current(pitr, &t);
+	    dico_list_prepend(tree->root->v.tag.taglist, p);
+	    p = dico_iterator_prev(pitr);
+	}
+	dico_iterator_destroy(&pitr);
+	gcide_tag_free(tag);
+	tag = dico_iterator_first(itr);
+    }
+
+    /* Find first <sn> tag. */
+    while (tag && !gcide_is_tag(tag, "sn")) {
+	tag = dico_iterator_next(itr);
+    }
+
+    if (tag) {
+	/*
+	 * Move it and all subsequent tags under a new <ol> tag, and
+	 * append that to the end of tag list.
+	 */
+	struct gcide_tag *oltag = gcide_tag_alloc("ol", 2);
+	do {
+	    struct gcide_tag *p;
+	    dico_iterator_remove_current(itr, (void **)&p);
+	    dico_list_append(oltag->v.tag.taglist, p);
+	} while ((tag = dico_iterator_next(itr)) != NULL);
+	dico_list_append(tree->root->v.tag.taglist, oltag);
+
+	dico_iterator_destroy(&itr);
+
+	/*
+	 * Rewrite the content of <ol> so that it contains only
+	 * <sn> tags.  Tuck anything between the two consecutive
+	 * <sn> tags to the tag list of the first one.
+	 */
+	itr = dico_list_iterator(oltag->v.tag.taglist);
+	tag = dico_iterator_first(itr);
+
+	while (tag) {
+	    if (gcide_is_tag(tag, "sn")) {
+		struct gcide_tag *p;
+
+		if (dico_list_count(tag->v.tag.taglist) == 1 &&
+		    (p = dico_list_head(tag->v.tag.taglist)) != NULL &&
+		    p->tag_type == gcide_content_text)
+		    dico_list_clear(tag->v.tag.taglist);
+		while ((p = dico_iterator_next(itr)) != NULL &&
+		       !gcide_is_tag(p, "sn")) {
+		    dico_iterator_remove_current(itr, (void **)&p);
+		    dico_list_append(tag->v.tag.taglist, p);
+		}
+		tag = p;
+	    } else
+		tag = dico_iterator_next(itr);
+	}
+    }
+
+    dico_iterator_destroy(&itr);
+    /* End of fixups. Now output the resulting document. */
+    print_html_tag(tree->root, &c);
+    return 0; // FIXME
 }
 
 static int
@@ -1002,19 +1331,13 @@ output_def(dico_stream_t str, struct gcide_db *db, struct gcide_ref *ref)
     locus.offset = ref->ref_offset;
     tree = gcide_markup_parse(buffer, ref->ref_size, db->flags & GCIDE_DBGLEX,
 			      &locus);
-    if (!tree)
+    if (!tree) {
+	// FIXME: if html?
 	rc = dico_stream_write(str, buffer, ref->ref_size);
-    else {
-	struct print_closure c = {
-	    .printer = print_tag,// FIXME
-	    .stream  = str,
-	    .flags   = db->flags,
-	    .newline = 2,//FIXME
-	    .skip    = 0
-	};
-	print_tag(tree->root, &c);
-	rc = 0; // FIXME
-    }
+    } else if (db->flags & GCIDE_HTML)
+	rc = output_def_html(str, db, tree);
+    else
+	rc = output_def_text(str, db, tree);
     free(buffer);
     return rc;
 }
@@ -1061,6 +1384,21 @@ gcide_free_result(dico_result_t rp)
     dico_list_destroy(&res->list);
 }
 
+static char const *mime_headers[] = {
+    "Content-Type: text/plain; charset=utf-8\n"
+    "Content-Transfer-Encoding: 8bit\n",
+
+    "Content-Type: text/html; charset=utf-8\n"
+    "Content-Transfer-Encoding: 8bit\n"
+};
+
+static char *
+gcide_db_mime_header(dico_handle_t hp)
+{
+    struct gcide_db *db = (struct gcide_db *) hp;
+    return strdup(mime_headers[(db->flags & GCIDE_HTML) != 0]);
+}
+
 struct dico_database_module DICO_EXPORT(gcide, module) = {
     .dico_version = DICO_MODULE_VERSION,
     .dico_capabilities = DICO_CAPA_NONE,
@@ -1074,5 +1412,6 @@ struct dico_database_module DICO_EXPORT(gcide, module) = {
     .dico_output_result = gcide_output_result,
     .dico_result_count = gcide_result_count,
     .dico_compare_count = gcide_compare_count,
-    .dico_free_result = gcide_free_result
+    .dico_free_result = gcide_free_result,
+    .dico_db_mime_header = gcide_db_mime_header
 };

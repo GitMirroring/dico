@@ -73,6 +73,7 @@ void *dico_iterator_current(dico_iterator_t itr);
 dico_iterator_t dico_list_iterator(dico_list_t list);
 void dico_iterator_destroy(dico_iterator_t *ip);
 void *dico_iterator_first(dico_iterator_t ip);
+void *dico_iterator_last(dico_iterator_t ip);
 void *dico_iterator_next(dico_iterator_t ip);
 void *dico_iterator_prev(dico_iterator_t ip);
 void *dico_iterator_item(dico_iterator_t ip, size_t n);
@@ -80,6 +81,9 @@ size_t dico_iterator_position(dico_iterator_t ip);
 
 void dico_iterator_remove_current(dico_iterator_t ip, void **pptr);
 void dico_iterator_set_data(dico_iterator_t ip, void *data);
+
+int dico_iterator_insert_before(dico_iterator_t ip, void *data);
+int dico_iterator_insert_after(dico_iterator_t ip, void *data);
 
 int dico_list_reduce(dico_list_t list, dico_list_reduce_t fn, void *data);
 

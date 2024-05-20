@@ -202,8 +202,16 @@ _iterator_advance(dico_iterator_t ip, struct list_entry *e)
 {
     for (; ip; ip = ip->next) {
 	if (ip->cur == e) {
-	    ip->cur = e->next;
-	    ip->advanced++;
+	    if (e->next) {
+		ip->cur = e->next;
+		ip->pos++;
+		ip->advanced = 1;
+	    } else {
+		ip->cur = e->prev;
+		if (ip->pos)
+		    ip->pos--;
+		ip->advanced = -1;
+	    }
 	}
     }
 }
@@ -220,11 +228,22 @@ dico_iterator_first(dico_iterator_t ip)
 }
 
 void *
+dico_iterator_last(dico_iterator_t ip)
+{
+    if (!ip)
+	return NULL;
+    ip->cur = ip->list->tail;
+    ip->advanced = 0;
+    ip->pos = ip->cur != NULL ? ip->list->count-1 : 0;
+    return dico_iterator_current(ip);
+}
+
+void *
 dico_iterator_next(dico_iterator_t ip)
 {
     if (!ip || !ip->cur)
 	return NULL;
-    if (!ip->advanced) {
+    if (ip->advanced <= 0) {
 	ip->cur = ip->cur->next;
 	ip->pos++;
     }
@@ -237,9 +256,10 @@ dico_iterator_prev(dico_iterator_t ip)
 {
     if (!ip || !ip->cur)
 	return NULL;
-    ip->cur = ip->cur->prev;
-    if (!ip->advanced)
+    if (ip->advanced >= 0) {
+	ip->cur = ip->cur->prev;
 	ip->pos--;
+    }
     ip->advanced = 0;
     return dico_iterator_current(ip);
 }
@@ -248,7 +268,7 @@ void *
 dico_iterator_item(dico_iterator_t ip, size_t n)
 {
     if (n > ip->pos) {
-	if (!ip->advanced) {
+	if (ip->advanced <= 0) {
 	    ip->cur = ip->cur->next;
 	    ip->pos++;
 	}
@@ -259,7 +279,7 @@ dico_iterator_item(dico_iterator_t ip, size_t n)
 	    ip->pos++;
 	}
     } else if (n < ip->pos) {
-	if (!ip->advanced)
+	if (ip->advanced >= 0)
 	    ip->pos--;
 	ip->advanced = 0;
 
@@ -279,6 +299,50 @@ void
 dico_iterator_remove_current(dico_iterator_t ip, void **pptr)
 {
     _dico_list_remove_item(ip->list, ip->cur, pptr);
+}
+
+int
+dico_iterator_insert_before(dico_iterator_t ip, void *data)
+{
+    if (ip->cur == NULL)
+	dico_list_append(ip->list, data);
+    else {
+	struct list_entry *ep = malloc(sizeof(*ep));
+	if (!ep)
+	    return 1;
+	ep->data = data;
+	ep->next = ip->cur;
+	ep->prev = ip->cur->prev;
+	ip->cur->prev = ep;
+	if (ep->prev != NULL)
+	    ep->prev->next = ep;
+	else
+	    ip->list->head = ep;
+	ip->list->count++;
+    }
+    return 0;
+}
+
+int
+dico_iterator_insert_after(dico_iterator_t ip, void *data)
+{
+    if (ip->cur == NULL)
+	dico_list_append(ip->list, data);
+    else {
+	struct list_entry *ep = malloc(sizeof(*ep));
+	if (!ep)
+	    return 1;
+	ep->data = data;
+	ep->prev = ip->cur;
+	ep->next = ip->cur->next;
+	ip->cur->next = ep;
+	if (ep->next != NULL)
+	    ep->next->prev = ep;
+	else
+	    ip->list->tail = ep;
+	ip->list->count++;
+    }
+    return 0;
 }
 
 void
@@ -421,6 +485,8 @@ _dico_list_prepend(struct dico_list *list, void *data)
     ep->data = data;
     ep->next = list->head;
     ep->prev = NULL;
+    if (list->head)
+	list->head->prev = ep;
     list->head = ep;
     if (!list->tail)
 	list->tail = list->head;

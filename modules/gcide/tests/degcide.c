@@ -83,7 +83,6 @@ print_tag(int end, struct gcide_tag *tag, void *data)
 #define GCIDE_NOPR 0x0000001
 #define GOF_INIT   0x0001000
 #define GOF_IGNORE 0x0002000
-#define GOF_AS     0x0004000
 
 static int
 print_text(int end, struct gcide_tag *tag, void *data)
@@ -98,23 +97,10 @@ print_text(int end, struct gcide_tag *tag, void *data)
     case gcide_content_text:
 	if (clos->flags & GOF_IGNORE)
 	    break;
-	if (clos->flags & GOF_AS) {
-	    char *s = tag->v.text;
-
-	    if (strncmp(s, "as", 2) == 0 &&
-		(isspace(s[3]) || ispunct(s[3]))) {
-		fwrite(s, 3, 1, clos->stream);
-		for (s += 3; *s && isspace(*s); s++)
-		    fputc(*s, clos->stream);
-		fprintf(clos->stream, "%s%s", quote[0], s);
-	    } else
-		fprintf(clos->stream, "%s", quote[0]);
-	} else
-	    fprintf(clos->stream, "%s", tag->v.text);
+	fprintf(clos->stream, "%s", tag->v.text);
 	break;
     case gcide_content_tag:
 	if (tag->v.tag.tag_parmc) {
-	    clos->flags &= ~GOF_AS;
 	    if (end) {
 		if (strcmp(tag->tag_name, "pr") == 0 &&
 			 clos->flags & GCIDE_NOPR)
@@ -142,7 +128,7 @@ print_text(int end, struct gcide_tag *tag, void *data)
 		}
 
 		if (strcmp(tag->tag_name, "as") == 0)
-		    clos->flags |= GOF_AS;
+		    fprintf(clos->stream, "%s", quote[0]);
 		else if (strcmp(tag->tag_name, "er") == 0)
 		    fprintf(clos->stream, "%s", ref[0]);
 		else if (strcmp(tag->tag_name, "source") == 0)

@@ -131,6 +131,10 @@ int gcide_parse_tree_inorder(struct gcide_parse_tree *tp,
 
 int gcide_is_block_tag(struct gcide_tag *tag);
 
+struct gcide_tag *gcide_tag_alloc(const char *text, size_t len);
+void gcide_tag_free(struct gcide_tag *tag);
+int gcide_is_tag(struct gcide_tag *tag, char const *name);
+
 typedef struct pollfd *WATCHER;
 
 #if WITH_INOTIFY

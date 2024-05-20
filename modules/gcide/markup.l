@@ -24,6 +24,7 @@
 #include <errno.h>
 #include <sysexits.h>
 #include <setjmp.h>
+#include <ctype.h>
 #include <appi18n.h>
 #include "gcide.h"
 #include "wordsplit.h"
@@ -198,16 +199,26 @@ alloc_tag(enum gcide_content_type type)
     return tag;
 }
 
-static struct gcide_tag *
-alloc_taglist(const char *text, size_t len)
+struct gcide_tag *
+gcide_tag_alloc(const char *text, size_t len)
 {
     struct gcide_tag *tag;
     struct wordsplit ws;
+    size_t i;
 
     if (wordsplit_len(text, len, &ws, WRDSF_DEFFLAGS & ~WRDSF_CESCAPES)) {
 	dico_log(L_ERR, 0, _("cannot parse line %.*s: %s"),
 		 (int)len, text, wordsplit_strerror(&ws));
 	longjmp(errbuf, 1);
+    }
+
+    for (i = 0; i < ws.ws_wordc; i++) {
+	    char *p;
+	    for (p = ws.ws_wordv[i]; *p; p++) {
+		    if (*p == '=')
+			    break;
+		    *p = tolower(*p);
+	    }
     }
     tag = alloc_tag(gcide_content_tag);
     tag->v.tag.tag_parmc = ws.ws_wordc;
@@ -219,20 +230,34 @@ alloc_taglist(const char *text, size_t len)
     return tag;
 }
 
+#define alloc_taglist gcide_tag_alloc
+
+void
+gcide_tag_free(struct gcide_tag *tag)
+{
+    if (tag) {
+	switch (tag->tag_type) {
+	default:
+	    break;
+	case gcide_content_top:
+	case gcide_content_tag:
+	    dico_list_destroy(&tag->v.tag.taglist);
+	}
+	free(tag);
+    }
+}
+
+int
+gcide_is_tag(struct gcide_tag *tag, char const *name)
+{
+    return tag != NULL && tag->tag_type == gcide_content_tag &&
+	strcmp(tag->tag_name, name) == 0;
+}
+
 static int
 free_tag(void *item, void *data)
 {
-    struct gcide_tag *tag = item;
-
-    if (!tag)
-	return 0;
-    switch (tag->tag_type) {
-    default:
-	break;
-    case gcide_content_top:
-    case gcide_content_tag:
-	dico_list_destroy(&tag->v.tag.taglist);
-    }
+    gcide_tag_free(item);
     return 0;
 }
 
@@ -526,6 +551,7 @@ static char const *block_tags[] = {
 	"p",
 	"q",
 	"rj",
+	"gcide_quote",
 	NULL
 };
 
@@ -680,13 +706,61 @@ early_fixup(void *item, void *data)
 	dico_list_iterate(tag->v.tag.taglist, early_fixup, &translate);
 	break;
     case gcide_content_tag:
-	translate = (tag->v.tag.tag_parmc && strcmp(tag->tag_name, "grk") == 0);
+	translate = gcide_is_tag(tag, "grk");
 	dico_list_iterate(tag->v.tag.taglist, early_fixup, &translate);
 	break;
     default:
 	break;
     }
     return 0;
+}
+
+/*
+ * The <as> blocks in GCIDE corpus often begin with "as, ".  This looks strange
+ * if another font is used for <as> content or if it is otherwise marked up.
+ * To avoid this, move "as, " out of <as>block.
+ */
+static void
+as_fixup(struct gcide_tag *tag)
+{
+    dico_iterator_t itr;
+
+    switch (tag->tag_type) {
+    case gcide_content_top:
+    case gcide_content_tag:
+	itr = dico_list_iterator(tag->v.tag.taglist);
+	tag = dico_iterator_first(itr);
+	while (tag) {
+	    if (gcide_is_tag(tag, "as")) {
+		struct gcide_tag *t = dico_list_head(tag->v.tag.taglist);
+		char *s = textspace + t->v.textpos;
+		if (strncmp(s, "as", 2) == 0 &&
+		    (isspace(s[3]) || ispunct(s[3]))) {
+		    int len;
+		    struct gcide_tag *t1;
+
+		    for (len = 3; s[len] && isspace(s[len]); len++);
+		    text_add_str(s, len);
+		    t1 = alloc_tag(gcide_content_text);
+		    t1->v.textpos = text_segment_finish();
+		    dico_iterator_insert_before(itr, t1);
+		    dico_list_remove(tag->v.tag.taglist, t, NULL);
+		    if (s[len]) {
+			t1 = alloc_tag(gcide_content_text);
+			text_add_strz(s + len);
+			t1->v.textpos = text_segment_finish();
+			dico_list_prepend(tag->v.tag.taglist, t1);
+		    }
+		}
+	    } else
+		as_fixup(tag);
+	    tag = dico_iterator_next(itr);
+	}
+	dico_iterator_destroy(&itr);
+	break;
+    default:
+	break;
+    }
 }
 
 struct gcide_parse_tree *
@@ -747,6 +821,7 @@ gcide_markup_parse(char const *text, size_t len, int dbg, struct gcide_locus *lo
     }
 
     early_fixup(current_tag, NULL);
+    as_fixup(current_tag);
 
     tp = malloc(sizeof(*tp));
     if (!tp)
