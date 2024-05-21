@@ -674,7 +674,6 @@ typedef void (*tag_text_printer)(struct gcide_tag *, struct print_text_closure *
 struct print_text_closure {
     tag_text_printer printer;
     dico_stream_t stream;
-    unsigned skip;
     unsigned indent;
     int flags;
     int newline;
@@ -685,11 +684,7 @@ print_text_helper(void *item, void *data)
 {
     struct gcide_tag *tag = item;
     struct print_text_closure *p = data;
-    if (p->skip > 0)
-	p->skip--;
-    else {
-	p->printer(tag, p);
-    }
+    p->printer(tag, p);
     return 0;
 }
 
@@ -899,7 +894,6 @@ print_text_taglist_indent(struct gcide_tag *tag, struct print_text_closure *clos
 	.stream  = clos->stream,
 	.flags   = clos->flags,
 	.newline = clos->newline,
-	.skip    = 0,
 	.indent  = level
     };
     print_text_taglist(tag, &c);
@@ -927,7 +921,6 @@ output_def_text(dico_stream_t str, struct gcide_db *db,
 	    .stream  = str,
 	    .flags   = db->flags,
 	    .newline = 2,
-	    .skip    = 0
 	};
 	print_text_tag(tree->root, &c);
 	return 0; // FIXME

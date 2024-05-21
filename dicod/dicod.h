@@ -180,6 +180,7 @@ struct dicod_database {
 };
 
 #define CONTENT_TRANSFER_ENCODING_HEADER "Content-transfer-encoding"
+#define CONTENT_TYPE_HEADER "Content-Type"
 
 /* dicod.c */
 void dicod_server(int argc, char **argv);

@@ -20,6 +20,7 @@ off_t total_bytes_out;
 
 #define OSTREAM_INITIALIZED       0x01
 #define OSTREAM_DESTROY_TRANSPORT 0x02
+#define OSTREAM_NEWLINE           0x04
 
 struct ostream {
     dico_stream_t transport;
@@ -28,11 +29,29 @@ struct ostream {
     dico_assoc_list_t headers;
 };
 
+static dico_stream_t
+content_type_transport(char const *content_type, dico_stream_t transport)
+{
+    size_t len;
+
+    len = strcspn(content_type, "/");
+    if (len == 4 && strncasecmp(content_type, "text", len) == 0) {
+	if (content_type[len] == 0)
+	    return dico_linetrim_stream(transport, 1024, 1);
+	else {
+	    content_type += len + 1;
+	    len = strcspn(content_type, ";");
+	    if (len == 5 && strncasecmp(content_type, "plain", len) == 0)
+		return dico_linetrim_stream(transport, 1024, 1);
+	}
+    }
+    return NULL;
+}
+
 static int
 print_headers(struct ostream *ostr)
 {
     int rc = 0;
-    const char *enc;
 
     if (ostr->headers) {
 	dico_iterator_t itr;
@@ -51,6 +70,7 @@ print_headers(struct ostream *ostr)
     rc = dico_stream_write(ostr->transport, "\n", 1);
 
     if (rc == 0) {
+	const char *enc;
 	dico_stream_t str;
 
 	if ((enc = dico_assoc_find(ostr->headers,
@@ -58,9 +78,12 @@ print_headers(struct ostream *ostr)
 	    && strcmp(enc, "8bit")) {
 	    str = dico_codec_stream_create(enc, FILTER_ENCODE,
 					   ostr->transport);
-	} else {
+	} else if ((enc = dico_assoc_find(ostr->headers,
+					  CONTENT_TYPE_HEADER)) != NULL)
+	    str = content_type_transport(enc, ostr->transport);
+	else
 	    str = dico_linetrim_stream(ostr->transport, 1024, 1);
-	}
+
 	if (str) {
 	    ostr->transport = str;
 	    ostr->flags |= OSTREAM_DESTROY_TRANSPORT;
@@ -68,7 +91,6 @@ print_headers(struct ostream *ostr)
     }
     return rc;
 }
-
 
 static int
 ostream_write(void *data, const char *buf, size_t size, size_t *pret)
@@ -80,8 +102,13 @@ ostream_write(void *data, const char *buf, size_t size, size_t *pret)
 	    return dico_stream_last_error(ostr->transport);
 	ostr->flags |= OSTREAM_INITIALIZED;
     }
-    if (buf[0] == '.' && dico_stream_write(ostr->transport, ".", 1))
-	return dico_stream_last_error(ostr->transport);
+    if (ostr->flags & OSTREAM_NEWLINE) {
+	ostr->flags &= ~OSTREAM_NEWLINE;
+	if (buf[0] == '.' && dico_stream_write(ostr->transport, ".", 1))
+	    return dico_stream_last_error(ostr->transport);
+    }
+    if (buf[size-1] == '\n')
+	ostr->flags |= OSTREAM_NEWLINE;
     *pret = size;
     return dico_stream_write(ostr->transport, buf, size);
 }
