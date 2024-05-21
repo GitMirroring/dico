@@ -317,12 +317,12 @@ flush_text_segment(void)
 %option noinput
 %option nodefault
 
-%x COMMENT PR HW
+%x COMMENT PR HW PRE
 
 XD [0-9a-f]
 WS [ \t]
 %%
-<INITIAL,PR,HW>{
+<INITIAL,PR,HW,PRE>{
   "<--"    BEGIN_COMMENT("-->");
   "<!"     BEGIN_COMMENT("!>");
   "<"[a-zA-Z][a-zA-Z0-9._-]*">" {
@@ -371,6 +371,8 @@ WS [ \t]
       token_end--;
   }
   \r    ;
+}
+<INITIAL,PR,HW>{
   \n+   {
       flush_text_segment();
       append_tag(alloc_tag(gcide_content_nl));
@@ -378,6 +380,9 @@ WS [ \t]
 }
 <INITIAL>{
   [^<\\\r\n]+  text_add_str(yytext, yyleng);
+}
+<PRE>{
+  [^<\\\r]+ text_add_str(yytext, yyleng);
 }
 <HW>{
   [""`*]       ;
@@ -398,7 +403,7 @@ WS [ \t]
   .|\n         ;
 }
 
-<INITIAL,PR,HW>.  {
+<INITIAL,PR,HW,PRE>.  {
 	if (input_len > 0)
 		dico_log(L_NOTICE, 0,
 			 _("%s:%zu: unmatched character %03o; please report"),
@@ -423,6 +428,8 @@ push_tag(struct gcide_tag *tag)
 	    BEGIN(PR);
     else if (strcmp(current_tag->tag_name, "hw") == 0)
 	    BEGIN(HW);
+    else if (strcmp(current_tag->tag_name, "pre") == 0)
+	    BEGIN(PRE);
     else if (strcmp(current_tag->tag_name, "p") == 0)
 	    first_p_seen = 1;
 }
@@ -442,8 +449,9 @@ pop_tag(const char *tagstr, size_t taglen)
     }
     tagstr = textspace + textpos;
 
-    if (len == 2 && (memcmp(tagstr, "pr", len) == 0 ||
-		     memcmp(tagstr, "hw", len) == 0))
+    if ((len == 2 && (memcmp(tagstr, "pr", len) == 0 ||
+		      memcmp(tagstr, "hw", len) == 0)) ||
+	(len == 3 && memcmp(tagstr, "pre", len) == 0))
 	BEGIN(INITIAL);
 
     if (current_tag->tag_type == gcide_content_tag &&

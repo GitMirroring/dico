@@ -1065,6 +1065,7 @@ static struct tagdef_html {
     { "ol",  NULL, "ol", "def" },
     { "grk", NULL, "span", "ets" },
     { "q",   NULL, "blockquote" },
+    { "pre", NULL, "pre" },
     { NULL }
 };
 
