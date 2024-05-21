@@ -1006,7 +1006,7 @@ print_html_pr(struct gcide_tag *tag, struct html_closure *clos)
 {
     static char *params[] = {
 	"span",
-	"class=\"pron\"",
+	"class=pron",
 	NULL
     };
     if (!(clos->flags & GCIDE_NOPR))
