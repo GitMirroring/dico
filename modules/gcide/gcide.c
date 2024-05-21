@@ -1006,6 +1006,37 @@ print_html_pr(struct gcide_tag *tag, struct html_closure *clos)
 	override_html_tag(tag, clos, params);
 }
 
+static void print_html_override(struct gcide_tag *tag,
+				struct html_closure *clos,
+				char const *tagname, char const *class);
+
+static void
+print_html_er(struct gcide_tag *tag, struct html_closure *clos)
+{
+    struct gcide_tag *elt;
+
+    if (dico_list_count(tag->v.tag.taglist) == 1 &&
+	(elt = dico_list_head(tag->v.tag.taglist)) != NULL &&
+	elt->tag_type == gcide_content_text) {
+	static char *params[] = {
+	    "a",
+	    "class=ref",
+	    NULL,
+	    NULL
+	};
+	static char href[] = "href=/define/";
+
+	size_t len = strlen(elt->v.text);
+	char *ref = malloc(sizeof(href) + len);
+	strcat(strcpy(ref, href), elt->v.text);
+	params[2] = ref;
+	override_html_tag(tag, clos, params);
+	free(ref);
+    } else {
+	print_html_override(tag, clos, "span", tag->tag_name);
+    }
+}
+
 static struct tagdef_html {
     char const *tag;
     tag_html_printer printer;
@@ -1015,6 +1046,7 @@ static struct tagdef_html {
     { "p",   copy_html_tag },
     { "a",   copy_html_tag },
     { "pr",  print_html_pr },
+    { "er",  print_html_er },
     { "hw",  NULL, "span", "hw" },
     { "sn",  NULL, "li", "def" },
     { "ol",  NULL, "ol", "def" },
