@@ -128,10 +128,9 @@ static size_t endtaglen;
     { retstate = YYSTATE; endtag = (end); endtaglen = strlen(endtag); BEGIN(COMMENT); }
 
 static void
-text_add_str(char const *s, size_t l)
+text_assert_size(size_t len)
 {
-    if (textstart == textpos) textstart_offset = token_beg;
-    while (textsize - textpos < l) {
+    while (textsize - textpos < len) {
 	size_t nsize;
 	char *newp;
 
@@ -144,6 +143,13 @@ text_add_str(char const *s, size_t l)
 	textspace = newp;
 	textsize = nsize;
     }
+}
+
+static void
+text_add_str(char const *s, size_t l)
+{
+    if (textstart == textpos) textstart_offset = token_beg;
+    text_assert_size(l);
     memcpy(textspace + textpos, s, l);
     textpos += l;
 }
@@ -362,6 +368,7 @@ WS [ \t]
   [<\\](.|\n) {
       text_add_chr(yytext[0]);
       yyless(1);
+      token_end--;
   }
   \r    ;
   \n+   {
@@ -424,10 +431,16 @@ static void
 pop_tag(const char *tagstr, size_t taglen)
 {
     int len;
+    char *p;
 
-    for (len = 0; len < taglen; len++)
+    text_assert_size(taglen);
+    p = textspace + textpos;
+    for (len = 0; len < taglen; len++) {
 	if (tagstr[len] == ' ' || tagstr[len] == '\t')
 	    break;
+	*p++ = tolower(tagstr[len]);
+    }
+    tagstr = textspace + textpos;
 
     if (len == 2 && (memcmp(tagstr, "pr", len) == 0 ||
 		     memcmp(tagstr, "hw", len) == 0))
