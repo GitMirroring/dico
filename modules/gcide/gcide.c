@@ -1037,6 +1037,18 @@ print_html_er(struct gcide_tag *tag, struct html_closure *clos)
     }
 }
 
+static void
+print_html_source(struct gcide_tag *tag, struct html_closure *clos)
+{
+    static char const *div[] = {
+	"<div class=\"source\">",
+	"</div>"
+    };
+    dico_stream_write(clos->stream, div[0], strlen(div[0]));
+    print_html_override(tag, clos, "span", tag->tag_name);
+    dico_stream_write(clos->stream, div[1], strlen(div[1]));
+}
+
 static struct tagdef_html {
     char const *tag;
     tag_html_printer printer;
@@ -1047,6 +1059,7 @@ static struct tagdef_html {
     { "a",   copy_html_tag },
     { "pr",  print_html_pr },
     { "er",  print_html_er },
+    { "source", print_html_source },
     { "hw",  NULL, "span", "hw" },
     { "sn",  NULL, "li", "def" },
     { "ol",  NULL, "ol", "def" },
