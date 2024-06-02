@@ -1,5 +1,5 @@
 # This file is part of GNU Dico
-# Copyright (C) 2008-2024 Sergey Poznyakoff
+# Copyright (C) 2014-2024 Sergey Poznyakoff
 #
 # GNU Dico is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,21 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with GNU Dico.  If not, see <http://www.gnu.org/licenses/>.
 
-pkginclude_HEADERS = \
- argcv.h\
- assoc.h\
- conv.h\
- diag.h\
- filter.h\
- list.h\
- markup.h\
- parseopt.h\
- strat.h\
- stream.h\
- tokenize.h\
- types.h\
- udb.h\
- url.h\
- utf8.h\
- util.h\
- xlat.h
+SUBDIRS = . tests
+
+moddir=@DICO_MODDIR@
+
+mod_LTLIBRARIES=greek_kbd.la
+
+greek_kbd_la_SOURCES = greek_kbd.c
+greek_kbd_la_LIBADD = ../../lib/libdico.la
+AM_LDFLAGS = -module -avoid-version -no-undefined
+AM_CPPFLAGS = @DICO_MODULE_INCLUDES@

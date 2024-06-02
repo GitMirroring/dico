@@ -878,6 +878,12 @@ struct grecs_keyword kwd_database[] = {
       NULL, offsetof(dicod_database_t, extra),
       member_database_cb },
 
+    { "conv", N_("string"),
+      N_("List of input converters"),
+      grecs_type_string, GRECS_LIST,
+      NULL, offsetof(dicod_database_t, conv),
+      cb_dico_list },
+
     { NULL }
 };
 

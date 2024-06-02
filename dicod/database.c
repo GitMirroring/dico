@@ -49,6 +49,28 @@ dicod_database_init(dicod_database_t *db)
 	dico_log(L_ERR, 0, _("cannot initialize database `%s'"), db->command);
 	return 1;
     }
+
+    if (db->conv) {
+	dico_iterator_t itr = xdico_list_iterator(db->conv);
+	if (!itr)
+	    dico_log(L_ERR, 0, _("cannot initialize converter list for `%s'"), db->name);
+	else {
+	    dico_conv_t conv;
+	    char *p;
+	    for (p = dico_iterator_first(itr); p; p = dico_iterator_next(itr)) {
+		conv = dico_conv_find(p);
+		if (conv) {
+		    dico_iterator_set_data(itr, conv);
+		    free(p);
+		} else
+		    dico_log(L_ERR, 0,
+			     _("undefined converter %s for database %s"),
+			     p, db->name);
+	    }
+	    dico_iterator_destroy(&itr);
+	}
+    }
+
     return 0;
 }
 
@@ -175,12 +197,36 @@ dicod_database_get_languages(dicod_database_t *db, dico_list_t dlist[])
     dlist[1] = db->langlist[1];
 }
 
+static char const *
+convert_input(dicod_database_t *db, const char *word, char **storage)
+{
+    char *cword = NULL;
+
+    if (db->conv) {
+	if (dico_conv_apply(db->conv, word, &cword)) {
+	    dico_log(L_ERR, 0, _("%s: can't convert input word %s"),
+		     db->name, word);
+	    return NULL;
+	}
+	if (cword)
+	    word = cword;
+    }
+    *storage = cword;
+    return word;
+}
+
 dicod_db_result_t *
 dicod_database_match(dicod_database_t *db, const dico_strategy_t strat,
 		     const char *word)
 {
     struct dico_database_module *mod = db->instance->module;
-    dico_result_t res = mod->dico_match(db->mod_handle, strat, word);
+    char *cword = NULL;
+    dico_result_t res;
+
+    if ((word = convert_input(db, word, &cword)) == NULL)
+	return NULL;
+    res = mod->dico_match(db->mod_handle, strat, word);
+    free(cword);
     return dicod_db_result_alloc(db, res);
 }
 
@@ -188,7 +234,13 @@ dicod_db_result_t *
 dicod_database_define(dicod_database_t *db, const char *word)
 {
     struct dico_database_module *mod = db->instance->module;
-    dico_result_t res = mod->dico_define(db->mod_handle, word);
+    char *cword = NULL;
+    dico_result_t res;
+
+    if ((word = convert_input(db, word, &cword)) == NULL)
+	return NULL;
+    res = mod->dico_define(db->mod_handle, word);
+    free(cword);
     return dicod_db_result_alloc(db, res);
 }
 

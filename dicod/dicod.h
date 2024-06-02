@@ -48,6 +48,8 @@
 #include <quotearg.h>
 #include <appi18n.h>
 
+#include <dico/conv.h>
+
 #define EXIT_TIMEOUT 2
 #define UINTMAX_STRSIZE_BOUND INT_BUFSIZE_BOUND(uintmax_t)
 
@@ -166,6 +168,8 @@ struct dicod_database {
     int session_visible; /* Is this database visible in the current session.
 			    This depends on the value of visible and on the
 			    result of dicod_acl_check and dicod_lang_check */
+
+    dico_list_t conv;    /* List of input converters. */
 
     dico_handle_t mod_handle;        /* Dico module handle */
 

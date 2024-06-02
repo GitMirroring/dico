@@ -1,4 +1,4 @@
-GNU Dico NEWS -- history of user-visible changes. 2024-05-12
+GNU Dico NEWS -- history of user-visible changes. 2024-06-02
 See the end of file for copying conditions.
 
 Please send Dico bug reports to <bug-dico@gnu.org.ua>
@@ -31,6 +31,23 @@ Support for obsolescent libpcre has been withdrawn.
 
 When supplied, the module will watch for modifications in the
 dictionary corpus files and rebuild the index file when necessary.
+
+** HTML output
+
+HTML output is enabled by the "html" module option.  It is produced
+only after "OPTION MIME" command command.
+
+* Input conversions
+
+The argument to DEFINE or MATCH command can optionally be modified
+before being used in actual search.  This allows, for example, to
+input search terms in transliteration instead of in the actual script.
+
+Conversions are implemented by loadable modules and are associated
+with individual databases.
+
+This version is shipped with the new module "greek_kbd", which
+implements Greek transliteration.
 
 * Bugfixes
 

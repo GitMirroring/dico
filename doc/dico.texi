@@ -162,6 +162,7 @@ Authentication
 
 Databases
 
+* Input Conversions::
 * Database Visibility::
 * Virtual Databases::
 
@@ -189,6 +190,7 @@ Modules
 * pcre::
 * ldap::
 * pam::
+* greek_kbd::
 
 @command{Gcide}
 
@@ -2387,9 +2389,35 @@ Non-printable characters will be encoded using the
 @end deffn
 
 @menu
+* Input Conversions::
 * Database Visibility::
 * Virtual Databases::
 @end menu
+
+@node Input Conversions
+@subsubsection Input Conversions
+@cindex conversion
+  The argument to @command{DEFINE} or @command{MATCH} command can
+optionally be modified before being used in actual search.  This
+allows, for example, to input search terms in transliteration instead
+of in the actual script.  Such a modification is called @dfn{input
+conversion}.  Each conversion is identified by its name.  Conversions
+are implemented by @dfn{convertors}, which are defined in loadable
+modules, so you will need to load the appropriate ones to be able to
+actually use them.
+
+@deffn {Database} conv @var{name}
+@deffnx {Database} conv ( @var{name0}, @var{name1}, ... )
+@cindex converter
+@cindex input converter
+This statement associates one or more converters with the database.
+Each converter takes a word as input and produces another word on
+output.  If the list of converters is specified, then the produced
+word will be used as input to the next conversion and so on.  Output
+from the last conversion will be used as the actual headword to look up.
+@end deffn
+
+@xref{greek_kbd}, for an example of using input convertors.
 
 @node Database Visibility
 @subsubsection Database Visibility
@@ -3082,6 +3110,7 @@ distribution of GNU Dico version @value{VERSION}.
 * pcre::
 * ldap::
 * pam::
+* greek_kbd::
 @end menu
 
 @node outline
@@ -3292,6 +3321,11 @@ database files are located, therefore the directory must be writable
 for the user @command{dicod} is started as.
 
 Other options are:
+
+@deffn {gcide parameter} html
+Enables HTML output.  To request results in HTML, the client must
+issue @command{OPTION MIME} command.
+@end deffn
 
 @deffn {gcide parameter} idxdir directory
 Specifies the directory where the @file{CIDE.IDX} index file resides
@@ -5024,6 +5058,78 @@ user-db "pam://localhost" @{
 
 The @code{group-resource} statement is not used, because there is no
 mechanism to return textual data from PAM.
+
+@node greek_kbd
+@section @command{greek_kbd}
+
+The @command{greek_kbd} module provides an input converter
+(@pxref{Input Conversions}) for translating greek words from Latin
+@dfn{keyboard transliteration} into Greek script.  A keyboard
+transliteration associates a Greek letter with a corresponding Latin
+one using the standard Greek keyboard layout.  Thus, @samp{a}
+transliterates to @samp{Alpha}, @samp{y} to @samp{Ypsilon}, and
+@samp{u} to @samp{Thita}.  Diacritics are introduced by @samp{:} (for
+diaeresis), and @samp{'} (for acute accent) after the letter they
+apply to.  If a letter has both diaeresis and accent, the marks should
+appear in this order, e.g. @samp{y:'}.
+
+This conversion is applied only if the search term begins with a Latin
+letter.
+
+To load the module, use the following statement:
+
+@example
+load-module greek_kbd;
+@end example
+
+The module takes one parameter:
+
+@table @option
+@item casemap=@var{value}
+Translate letter case on output.  If @var{value} is @samp{keep}, the
+case remains unchanged (this is the default).  If it is @samp{upper},
+letters are converted to upper case, and if it is @samp{lower} they
+are converted to lowercase.
+@end table
+
+For example:
+
+@example
+@group
+load-module greek_kbd @{
+    command "greek_kbd casemap=lower";
+@}
+@end group
+@end example
+
+You can define several converters in one command line, like this:
+
+@example
+@group
+load-module greek_kbd @{
+    command "greek_kbd greek_kbd_lo casemap=lower";
+@}
+@end group
+@end example
+
+In this case, the converter @command{greek_kbd} will use the default
+behavior (keep letter case unchanged) and converter
+@command{greek_kbd_lo} will produce lower-cased output.
+
+The following example illustrates the use of this module with the
+@samp{ell-eng} dictionary from Freedict:
+
+@example
+load-module dictorg @{
+    command "dictorg trim-ws dbdir=/var/db sort";
+@}
+load-module greek_kbd;
+database @{
+    name "ell-eng";
+    handler "dictorg database=ell-eng";
+    conv "greek_kbd";
+@}
+@end example
 
 @node Interface
 @chapter Dico Module Interface

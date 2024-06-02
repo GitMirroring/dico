@@ -1,0 +1,67 @@
+# This file is part of GNU Dico. -*- Autotest -*-
+# Copyright (C) 2016-2024 Sergey Poznyakoff
+#
+# GNU Dico is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GNU Dico is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GNU Dico.  If not, see <http://www.gnu.org/licenses/>.
+
+m4_include(testsuite.inc)
+
+AT_INIT
+
+# -----------------------------------------------------------------------
+
+m4_pushdef([DICOD_TEST],[dicod -L $abs_builddir/.. --runtest greek_kbd])
+
+AT_BANNER([Module greek_kbd])
+
+AT_SETUP([Basic translation])
+AT_KEYWORDS([basic])
+
+AT_CHECK([DICOD_TEST abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ],
+[0],
+[abcdefghijklmnopqrstuvwxyz: αβψδεφγηιξκλμνοπ·ρστθωςχυζ
+ABCDEFGHIJKLMNOPQRSTUVWXYZ: ΑΒΨΔΕΦΓΗΙΞΚΛΜΝΟΠ―ΡΣΤΘΩΣΧΥΖ
+])
+AT_CLEANUP
+
+AT_SETUP([Diacritics])
+AT_KEYWORDS([diacritics])
+AT_CHECK([DICOD_TEST "a'e'i'i:i:'o'y'y:y:'v'" "A'E'I'I:I:'O'Y'Y:Y:'V'"],
+[0],
+[a'e'i'i:i:'o'y'y:y:'v': άέίϊΐόύϋΰώ
+A'E'I'I:I:'O'Y'Y:Y:'V': ΆΈΊΪΪΌΎΫΫΏ
+])
+AT_CLEANUP
+
+AT_SETUP([Casemap])
+AT_KEYWORDS([casemap])
+
+AT_CHECK([DICOD_TEST "glv'ssa" -- casemap=upper],
+[0],
+[glv'ssa: ΓΛΏΣΣΑ
+])
+
+AT_CHECK([DICOD_TEST "GLV'SSA" -- casemap=lower],
+[0],
+[GLV'SSA: γλώσσα
+])
+
+AT_CHECK([DICOD_TEST "Glv'ssa" :grup "Glv'ssa" :grlo "Glv'ssa" -- grup casemap=upper grlo casemap=lower],
+[0],
+[Glv'ssa: Γλώσσα
+Glv'ssa: ΓΛΏΣΣΑ
+Glv'ssa: γλώσσα
+])
+AT_CLEANUP
+
+m4_popdef([DICOD_TEST])
