@@ -54,6 +54,8 @@ dicod/ckpass.c
 modules/dict.org/dictorg.c
 modules/dict.org/dictstr.c
 
+modules/greek_kbd/greek_kbd.c
+
 modules/guile/guile.c
 
 modules/outline/outline.c
