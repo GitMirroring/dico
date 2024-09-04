@@ -36,8 +36,8 @@
 
 @copying
 Published by the Free Software Foundation,
-51 Franklin Street, Fifth Floor,
-Boston, MA 02110-1301 USA 
+31 Milk Street,
+Boston, MA 02196 USA 
 
 Copyright @copyright{} 2008--2024 Sergey Poznyakoff
 
