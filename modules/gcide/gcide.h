@@ -146,3 +146,7 @@ int watcher_is_modified(WATCHER w);
 # define watcher_close(w)
 # define watcher_is_modified(w) 1
 #endif
+
+#ifndef SIZE_MAX
+# define SIZE_MAX ((size_t)-1)
+#endif

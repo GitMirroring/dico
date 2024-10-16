@@ -83,10 +83,6 @@ static unsigned token_end;
  */
 static int first_p_seen;
 
-#ifndef SIZE_MAX
-# define SIZE_MAX ((size_t)-1)
-#endif
-
 #define LOCUS_FILE (base_locus ? base_locus->file : "")
 #define LOCUS_OFF(off) ((base_locus ? base_locus->offset : 0) + off)
 

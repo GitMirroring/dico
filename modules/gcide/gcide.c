@@ -916,14 +916,14 @@ static int
 output_def_text(dico_stream_t str, struct gcide_db *db,
 		struct gcide_parse_tree *tree)
 {
-	struct print_text_closure c = {
-	    .printer = print_text_tag,
-	    .stream  = str,
-	    .flags   = db->flags,
-	    .newline = 2,
-	};
-	print_text_tag(tree->root, &c);
-	return 0; // FIXME
+    struct print_text_closure c = {
+	.printer = print_text_tag,
+	.stream  = str,
+	.flags   = db->flags,
+	.newline = 2,
+    };
+    print_text_tag(tree->root, &c);
+    return 0; // FIXME
 }
 
 struct html_closure;
@@ -1010,14 +1010,107 @@ static void print_html_override(struct gcide_tag *tag,
 				struct html_closure *clos,
 				char const *tagname, char const *class);
 
+struct text_buf
+{
+    char *text;
+    size_t len;
+    size_t cap;
+    int err;
+};
+
+#define TEXT_BUF_INITIALIZER { NULL, 0, 0, 0 }
+
+static void
+text_buf_free(struct text_buf *tb)
+{
+    free(tb->text);
+}
+
+static int
+text_buf_expand(struct text_buf *tb, size_t len)
+{
+    if (tb->err)
+	return -1;
+    while (tb->len + len > tb->cap) {
+	char *p;
+	size_t cap;
+
+	if (tb->cap == 0) {
+	    cap = 32;
+	    p = malloc(cap);
+	} else if (SIZE_MAX / 2 < tb->cap) {
+	    tb->err = ENOMEM;
+	    return -1;
+	} else {
+	    cap = tb->cap * 2;
+	    if ((p = realloc(tb->text, cap)) == NULL) {
+		tb->err = ENOMEM;
+		return -1;
+	    }
+	}
+	tb->text = p;
+	tb->cap = cap;
+    }
+    return 0;
+}
+
+static char *
+text_buf_finish(struct text_buf *tb)
+{
+    if (text_buf_expand(tb, 1))
+	return NULL;
+    tb->text[tb->len] = 0;
+    return tb->text;
+}
+
+static int
+cb_x_text(void *item, void *data)
+{
+    struct gcide_tag *tag = item;
+    struct text_buf *tb = data;
+    size_t len;
+
+    switch (tag->tag_type) {
+    case gcide_content_text:
+	len = strlen(tag->v.text);
+	if (text_buf_expand(tb, len))
+	    return -1;
+	memcpy(tb->text + tb->len, tag->v.text, len);
+	tb->len += len;
+	break;
+
+    case gcide_content_nl:
+	if (text_buf_expand(tb, 1))
+	    return -1;
+	tb->text[tb->len++] = ' ';
+	break;
+
+    default:
+	tb->err = EINVAL;
+	return -1;
+    }
+    return 0;
+}
+
+static char *
+gcide_tag_to_text(struct gcide_tag *t)
+{
+    struct text_buf tb = TEXT_BUF_INITIALIZER;
+    char *ret = NULL;
+    dico_list_iterate(t->v.tag.taglist, cb_x_text, &tb);
+    if ((ret = text_buf_finish(&tb)) == NULL) {
+	errno = tb.err;
+	text_buf_free(&tb);
+    }
+    return ret;
+}
+
 static void
 print_html_er(struct gcide_tag *tag, struct html_closure *clos)
 {
-    struct gcide_tag *elt;
+    char *text;
 
-    if (dico_list_count(tag->v.tag.taglist) == 1 &&
-	(elt = dico_list_head(tag->v.tag.taglist)) != NULL &&
-	elt->tag_type == gcide_content_text) {
+    if ((text = gcide_tag_to_text(tag)) != NULL) {
 	static char *params[] = {
 	    "a",
 	    "class=ref",
@@ -1026,12 +1119,20 @@ print_html_er(struct gcide_tag *tag, struct html_closure *clos)
 	};
 	static char href[] = "href=/define/";
 
-	size_t len = strlen(elt->v.text);
+	size_t len = strlen(text);
 	char *ref = malloc(sizeof(href) + len);
-	strcat(strcpy(ref, href), elt->v.text);
+	if (!ref) {
+	    DICO_LOG_MEMERR();
+	    free(text);
+	    return;
+	}
+	strcat(strcpy(ref, href), text);
+	free(text);
 	params[2] = ref;
 	override_html_tag(tag, clos, params);
 	free(ref);
+    } else if (errno == ENOMEM) {
+	DICO_LOG_MEMERR();
     } else {
 	print_html_override(tag, clos, "span", tag->tag_name);
     }
