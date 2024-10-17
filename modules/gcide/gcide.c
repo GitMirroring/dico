@@ -1069,21 +1069,45 @@ cb_x_text(void *item, void *data)
 {
     struct gcide_tag *tag = item;
     struct text_buf *tb = data;
-    size_t len;
+    size_t len, i, j;
 
     switch (tag->tag_type) {
     case gcide_content_text:
 	len = strlen(tag->v.text);
 	if (text_buf_expand(tb, len))
 	    return -1;
-	memcpy(tb->text + tb->len, tag->v.text, len);
-	tb->len += len;
+	i = j = 0;
+	while (i < len) {
+	    if (tag->v.text[i] == ' ' || tag->v.text[i] == '\t') {
+		i++;
+		j++;
+	    } else {
+		size_t n;
+		if (j > 0) {
+		    tb->text[tb->len++] = ' ';
+		    j = 0;
+		}
+		n = strcspn(tag->v.text + i, " \t");
+		memcpy(tb->text + tb->len, tag->v.text + i, n);
+		tb->len += n;
+		i += n;
+	    }
+	}
 	break;
 
+    case gcide_content_br:
     case gcide_content_nl:
-	if (text_buf_expand(tb, 1))
+	if (!(tb->len > 0 && tb->text[tb->len - 1] == ' ')) {
+	    if (text_buf_expand(tb, 1))
+		return -1;
+	    tb->text[tb->len++] = ' ';
+	}
+	break;
+
+    case gcide_content_tag:
+	dico_list_iterate(tag->v.tag.taglist, cb_x_text, tb);
+	if (tb->err)
 	    return -1;
-	tb->text[tb->len++] = ' ';
 	break;
 
     default:

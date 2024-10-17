@@ -187,6 +187,15 @@ flush_headwords(void)
     at_ent = 1;
 }
 
+static void
+add_space(struct obstack *stk)
+{
+    char *p = obstack_base(stk);
+    int n = obstack_object_size(stk);
+    if (!(n > 0 && p[n-1] == ' '))
+	obstack_1grow(stk, ' ');
+}
+
 #define SET_HWPOS() {\
 	if (at_ent) {\
 	    at_ent = 0;\
@@ -264,9 +273,10 @@ XD [0-9a-f]
 			      infile, line, yytext);
 		 }
 	     }
+  [ \t]      add_space(&stk);
   .          obstack_grow(&stk, yytext, yyleng);
   \n         {
-                obstack_1grow(&stk, ' ');
+                add_space(&stk);
                 advance_line();
              }
 }

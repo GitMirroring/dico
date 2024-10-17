@@ -3404,9 +3404,12 @@ directory where the GCIDE dictionary is installed.  The optional
 it differs from @var{dbdir}.  Available @var{options} are:
 
 @table @option
-@item --debug
-@itemx -d
-Debug lexical analyzer.
+@item --debug=[@var{letters}]
+@itemx -d[@var{letters}]
+Debug lexical analyzer.  Optional argument specifies letters of
+alphabet, for which debug should be enabled.  E.g. @option{--debug=FP}
+enables debugging only for files @file{CIDE.F} and @file{CIDE.P}.
+Without arguments, this option enables debugging for all corpus files.
 
 @item --dry-run
 @itemx -n
