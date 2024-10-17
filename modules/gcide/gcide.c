@@ -700,7 +700,7 @@ print_text_taglist(struct gcide_tag *tag, struct print_text_closure *clos)
 }
 
 static void print_text_as(struct gcide_tag *, struct print_text_closure *);
-static void print_text_er(struct gcide_tag *, struct print_text_closure *);
+static void print_text_ref(struct gcide_tag *, struct print_text_closure *);
 static void print_text_pr(struct gcide_tag *, struct print_text_closure *);
 static void print_text_a(struct gcide_tag *, struct print_text_closure *);
 static void print_text_source(struct gcide_tag *, struct print_text_closure *);
@@ -714,7 +714,8 @@ static struct tagdef_text {
     tag_text_printer printer;
 } tagdef_text[] = {
     { "as",     print_text_as },
-    { "er",     print_text_er },
+    { "er",     print_text_ref },
+    { "cref",   print_text_ref },
     { "pr",     print_text_pr },
     { "a",      print_text_a },
     { "source", print_text_source },
@@ -820,7 +821,7 @@ print_text_as(struct gcide_tag *tag, struct print_text_closure *clos)
 }
 
 static void
-print_text_er(struct gcide_tag *tag, struct print_text_closure *clos)
+print_text_ref(struct gcide_tag *tag, struct print_text_closure *clos)
 {
     static char *ref[2] = { "{" , "}" };
     dico_stream_write(clos->stream, ref[0], strlen(ref[0]));
@@ -1106,7 +1107,7 @@ gcide_tag_to_text(struct gcide_tag *t)
 }
 
 static void
-print_html_er(struct gcide_tag *tag, struct html_closure *clos)
+print_html_ref(struct gcide_tag *tag, struct html_closure *clos)
 {
     char *text;
 
@@ -1156,17 +1157,18 @@ static struct tagdef_html {
     char const *html_tag;
     char const *class;
 } tagdef_html[] = {
-    { "p",   copy_html_tag },
-    { "a",   copy_html_tag },
-    { "pr",  print_html_pr },
-    { "er",  print_html_er },
+    { "p",      copy_html_tag },
+    { "a",      copy_html_tag },
+    { "pr",     print_html_pr },
+    { "er",     print_html_ref },
+    { "cref",   print_html_ref },
     { "source", print_html_source },
-    { "hw",  NULL, "span", "hw" },
-    { "sn",  NULL, "li", "def" },
-    { "ol",  NULL, "ol", "def" },
-    { "grk", NULL, "span", "ets" },
-    { "q",   NULL, "blockquote" },
-    { "pre", NULL, "pre" },
+    { "hw",     NULL, "span", "hw" },
+    { "sn",     NULL, "li", "def" },
+    { "ol",     NULL, "ol", "def" },
+    { "grk",    NULL, "span", "ets" },
+    { "q",      NULL, "blockquote" },
+    { "pre",    NULL, "pre" },
     { NULL }
 };
 

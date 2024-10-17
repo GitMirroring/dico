@@ -33,6 +33,7 @@
 
 int verbose_option;
 int dry_run_option;
+char *debug_letters;
 
 char *dictdir, *idxdir, *infile, *suf;
 char letters[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -198,6 +199,11 @@ flush_headwords(void)
 	SET_HWPOS(); \
 	BEGIN(HEADWORD); }
 
+#define advance_line()					\
+    { line++;						\
+      if (yy_flex_debug)			        \
+	  fprintf(stderr, "# %d %s\n", line, infile);	\
+    }
 %}
 %option 8bit
 %option nounput
@@ -216,10 +222,11 @@ XD [0-9a-f]
   "<asp>"     BEGIN_HEADWORD("asp");
   "<altname>" BEGIN_HEADWORD("altname");
   "<decf>"    BEGIN_HEADWORD("decf");
+  "<col>"     BEGIN_HEADWORD("col");
   "<colf>"    BEGIN_HEADWORD("colf");
   "<conjf>"   BEGIN_HEADWORD("conjf");
   .           ;
-  \n          line++;
+  \n          advance_line();
 }
 <HEADWORD>{
   "</"[a-zA-Z][a-zA-Z]*">" {
@@ -258,17 +265,20 @@ XD [0-9a-f]
 		 }
 	     }
   .          obstack_grow(&stk, yytext, yyleng);
-  \n         line++;
+  \n         {
+                obstack_1grow(&stk, ' ');
+                advance_line();
+             }
 }
 <COMMENT>{
   "-->"      { BEGIN(INITIAL); }
   .          ;
-  \n         line++;
+  \n         advance_line();
 }
 <HTMLCOM>{
   "!>"       { BEGIN(INITIAL); }
   .          ;
-  \n         line++;
+  \n         advance_line();
 }
 %%
 
@@ -279,6 +289,7 @@ yywrap(void)
 
     if (letters[letno] == 0)
 	return 1;
+    yy_flex_debug = debug_letters && strchr(debug_letters, letters[letno]);
     *suf = letters[letno++];
     if (yyin)
 	 fclose(yyin);
