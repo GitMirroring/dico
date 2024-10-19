@@ -76,7 +76,7 @@ master-menu: imprimatur-master-menu
 untabify: imprimatur-untabify
 final: imprimatur-final
 
-GENDOCS=$(srcdir)/gendocs.sh --no-copy-images --html '--init-file=$(abs_srcdir)/html.init'
+GENDOCS = perl gendocs.pl
 
 TEXI2DVI=texi2dvi -t '@set $(RENDITION)' -E
 
@@ -84,10 +84,13 @@ TEXI2DVI=texi2dvi -t '@set $(RENDITION)' -E
 # Make sure you set TEXINPUTS.
 # TEXINPUTS=/usr/share/texmf/pdftex/plain/misc/ is ok for most distributions
 manual:
+	rm -rf manual
 	TEXINPUTS=$(srcdir):$(top_srcdir)/build-aux:$(TEXINPUTS) \
 	 MAKEINFO="$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS)" \
-	 TEXI2DVI="$(TEXI2DVI)" \
-	$(GENDOCS) $(PACKAGE) '$(PACKAGE_NAME) manual'
+	 TEXI2DVI="$(TEXI2DVI) -t @finalout" \
+	 $(GENDOCS) -C manual -o otherdoc.texi $(PACKAGE) otherdoc.texi.in
+	$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -DWEBDOC \
+	   --html --init-file=webdoc.init $(info_TEXINFOS) -o manual
 
 manual.tar.bz2: manual
 	tar cfj manual.tar.bz2 manual

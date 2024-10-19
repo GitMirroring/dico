@@ -67,18 +67,19 @@ Documentation License''.
 @quotation
 @i{D@'edi@'e @`a la m@'emoire de Jacques Brel.}
 @end quotation
+@ifnothtml
 @w{ }
 @page
 @w{ }
 @page
+@end ifnothtml
 @headings on
 
 @ifnothtml
 @page
 @summarycontents
-@end ifnothtml
-
 @page
+@end ifnothtml
 @contents
 
 @ifnottex
@@ -110,6 +111,11 @@ Appendices
 * Libdico::
 * Copying This Manual::  The GNU Free Documentation License.
 * Concept Index::        Index of Concepts.
+@ifset WEBDOC
+@ifhtml
+* This Manual in Other Formats::
+@end ifhtml
+@end ifset
 
 @detailmenu
  --- The Detailed Node Listing ---
@@ -7029,6 +7035,14 @@ file along with your bug report.  This file is created after running
 This is a general index of all issues discussed in this manual.
 
 @printindex cp
+
+@ifset WEBDOC
+@ifhtml
+@node This Manual in Other Formats
+@unnumbered This Manual in Other Formats
+@include otherdoc.texi
+@end ifhtml
+@end ifset
 
 @bye
 
