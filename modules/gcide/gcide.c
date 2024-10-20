@@ -201,10 +201,40 @@ gcide_access_idx(struct gcide_db *db, char *idxname)
 }
 
 static int
+print_idx_error(int rc, char const *idxname, int reindex)
+{
+    switch (rc) {
+    case IDXE_OK:
+	return 0;
+
+    case IDXE_BADFILE:
+	dico_log(L_ERR, 0, _("file `%s' is not a valid gcide index file"),
+		 idxname);
+	break;
+
+    case IDXE_BADVER:
+	dico_log(reindex ? L_WARN : L_ERR, 0,
+		 _("file `%s' has unsupported version number"),
+		 idxname);
+	break;
+
+    case IDXE_CORRUPT:
+	dico_log(L_ERR, 0, _("index file `%s' is corrupted"), idxname);
+	break;
+
+    case IDXE_SYSERR:
+	dico_log(L_ERR, errno, "%s", idxname);
+	break;
+    }
+    return rc;
+}
+
+static int
 gcide_open_idx(struct gcide_db *db)
 {
     int rc = 1;
     char *idxname;
+    int reindex = 1;
 
     idxname = dico_full_file_name(db->idx_dir, "GCIDE.IDX");
     if (!idxname) {
@@ -213,17 +243,28 @@ gcide_open_idx(struct gcide_db *db)
     }
 
     rc = gcide_access_idx(db, idxname);
-    if (rc == 1)
+    if (rc == 1) {
 	rc = run_idxgcide(idxname, db);
+	reindex = 0;
+    }
 
     if (rc == 0) {
 	if (db->idx) {
 	    gcide_idx_file_close(db->idx);
 	    db->idx = NULL;
 	}
-	db->idx = gcide_idx_file_open(idxname, db->idx_cache_size);
-	if (!db->idx)
-	    rc = 1;
+	rc = gcide_idx_file_open(idxname, db->idx_cache_size, &db->idx);
+	if (rc != IDXE_OK) {
+	    print_idx_error(rc, idxname, reindex);
+	    if (rc == IDXE_BADVER && reindex) {
+		rc = run_idxgcide(idxname, db);
+		if (rc == 0) {
+		    rc = gcide_idx_file_open(idxname, db->idx_cache_size,
+					     &db->idx);
+		    print_idx_error(rc, idxname, 0);
+		}
+	    }
+	}
     }
 
     free(idxname);

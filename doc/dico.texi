@@ -314,9 +314,13 @@ found, etc.
 
   GNU Dico is an implementation of dictionary server, which supports a
 wide variety of database formats and is easily extensible using
-several scripting languages.  Apart from the server, the package
-contains a console dictionary client and a window-based browser for
-GCIDE dictionary.
+several scripting languages.  Apart from the server itself, the package
+contains a console dictionary client program (@pxref{dico client}),
+a web interface for the server (@code{dicoweb}), and a window-based
+browser for GCIDE dictionary (@pxref{gcider}).  A sister project
+@uref{https://www.gnu.org.ua/software/dico/dicodock, dicodock}
+provides containerized environment for running the server and web
+interface for it.
 
 @node Overview
 @chapter Overview

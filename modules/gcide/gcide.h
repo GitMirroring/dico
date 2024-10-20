@@ -19,11 +19,12 @@
 /* GCIDE-specific definitions. */
 #define GCIDE_IDX_MAGIC "GCIDEIDX"
 #define GCIDE_IDX_MAGIC_LEN (sizeof(GCIDE_IDX_MAGIC)-1)
-
+#define GCIDE_IDX_VERSION 1
 #define GCIDE_IDX_HEADER_PAGESIZE 10240
 
 struct gcide_idx_header {
     char ihdr_magic[GCIDE_IDX_MAGIC_LEN];
+    int  ihdr_version;
     unsigned long ihdr_pagesize;
     unsigned long ihdr_maxpageref;
     unsigned long ihdr_num_pages;
@@ -39,6 +40,7 @@ struct gcide_ref {
     unsigned long ref_offset;
     unsigned long ref_size;
     char *ref_headword;
+    char ref_primary;
 };
 
 struct gcide_page_header {
@@ -62,7 +64,16 @@ struct gcide_locus {
     size_t offset;
 };
 
-gcide_idx_file_t gcide_idx_file_open(const char *name, size_t cachesize);
+enum {
+    IDXE_OK,
+    IDXE_BADFILE,
+    IDXE_BADVER,
+    IDXE_CORRUPT,
+    IDXE_SYSERR
+};
+
+int gcide_idx_file_open(const char *name, size_t cachesize,
+			struct gcide_idx_file **ret_file);
 void gcide_idx_file_close(gcide_idx_file_t file);
 size_t gcide_idx_headwords(struct gcide_idx_file *file);
 size_t gcide_idx_defs(struct gcide_idx_file *file);

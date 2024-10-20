@@ -85,56 +85,55 @@ _open_index(struct gcide_idx_file *file)
     struct stat st;
 
     if (_idx_full_read(file, &file->header, sizeof(file->header)))
-	return 1;
+	return IDXE_SYSERR;
     if (memcmp(file->header.ihdr_magic, GCIDE_IDX_MAGIC,
-	       GCIDE_IDX_MAGIC_LEN)) {
-	dico_log(L_ERR, 0, _("file `%s' is not a valid gcide index file"),
-		 file->name);
-	return 1;
-    }
+	       GCIDE_IDX_MAGIC_LEN))
+	return IDXE_BADFILE;
 
-    if (fstat(file->fd, &st)) {
-	dico_log(L_ERR, errno, "fstat `%s'", file->name);
-	return 1;
-    }
+    if (file->header.ihdr_version != GCIDE_IDX_VERSION)
+	return IDXE_BADVER;
+
+    if (fstat(file->fd, &st))
+	return IDXE_SYSERR;
 
     total = (file->header.ihdr_num_pages + 1) * file->header.ihdr_pagesize;
-    if (total != st.st_size) {
-	dico_log(L_ERR, 0, _("index file `%s' is corrupted"), file->name);
-	return 1;
-    }
-    return 0;
+    if (total != st.st_size)
+	return IDXE_CORRUPT;
+
+    return IDXE_OK;
 }
 
-struct gcide_idx_file *
-gcide_idx_file_open(const char *name, size_t cachesize)
+int
+gcide_idx_file_open(const char *name, size_t cachesize,
+		    struct gcide_idx_file **ret_file)
 {
-    int fd;
+    int rc, ec;
     struct gcide_idx_file *file;
 
     file = calloc(1, sizeof(*file));
-    if (!file) {
-	DICO_LOG_ERRNO();
-	return NULL;
-    }
+    if (!file)
+	return IDXE_SYSERR;
+
+    rc = IDXE_SYSERR;
     file->name = strdup(name);
-    if (!file->name) {
-	DICO_LOG_ERRNO();
-	free(file);
-	return NULL;
+    if (file->name) {
+	int fd = open(name, O_RDONLY);
+	if (fd != -1) {
+	    file->fd = fd;
+	    rc = _open_index(file);
+	    if (rc == IDXE_OK) {
+		file->cache_size = cachesize;
+		*ret_file = file;
+		return rc;
+	    }
+	}
     }
-    fd = open(name, O_RDONLY);
-    if (fd == -1) {
-	dico_log(L_ERR, errno, _("cannot open index file `%s'"), name);
-	free(file);
-    }
-    file->fd = fd;
-    if (_open_index(file)) {
-	_free_index(file);
-	return NULL;
-    }
-    file->cache_size = cachesize;
-    return file;
+
+    /* Error exit */
+    ec = errno;
+    _free_index(file);
+    errno = ec;
+    return rc;
 }
 
 void

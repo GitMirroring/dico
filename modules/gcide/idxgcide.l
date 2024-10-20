@@ -44,6 +44,7 @@ char *idxname;
 FILE *idxfile;
 struct gcide_idx_header idx_header = {
     GCIDE_IDX_MAGIC,
+    GCIDE_IDX_VERSION,
     GCIDE_IDX_HEADER_PAGESIZE
 };
 struct gcide_idx_page *idx_page;
@@ -108,8 +109,10 @@ refcmp(const void *a, const void *b)
 {
     struct gcide_ref const *aref = a;
     struct gcide_ref const *bref = b;
-
-    return utf8_strcasecmp(aref->ref_headword, bref->ref_headword);
+    int res = utf8_strcasecmp(aref->ref_headword, bref->ref_headword);
+    if (res == 0)
+	res = bref->ref_primary - aref->ref_primary;
+    return res;
 }
 
 static void
@@ -134,7 +137,7 @@ flush_refs()
 static int
 strrefcmp(void const *a, void const *b)
 {
-    return utf8_strcasecmp(*(char**)a, *(char**)b);
+    return utf8_strcasecmp(*(char**)a + 1, *(char**)b + 1);
 }
 
 static void
@@ -162,10 +165,10 @@ flush_headwords(void)
 	for (i = 0; i < hc; i++) {
 	    struct gcide_ref ref;
 
-	    if (i > 0 && utf8_strcasecmp(hv[i], hv[i-1]) == 0)
+	    if (i > 0 && utf8_strcasecmp(hv[i] + 1, hv[i-1] + 1) == 0)
 		continue;
 
-	    p = hv[i];
+	    p = hv[i] + 1;
 	    if (verbose_option > 1)
 		dico_log(L_INFO, 0, "%s: %c %lu %lu", p, letters[letno-1],
 			 headword_position, size);
@@ -177,6 +180,7 @@ flush_headwords(void)
 	    ref.ref_offset = headword_position;
 	    ref.ref_size = size;
 	    ref.ref_headword = p;
+	    ref.ref_primary = hv[i][0] - '0';
 	    obstack_grow(&refstk, &ref, sizeof(ref));
 	    idx_header.ihdr_num_headwords++;
 	}
@@ -196,15 +200,22 @@ add_space(struct obstack *stk)
 	obstack_1grow(stk, ' ');
 }
 
+static inline void
+mark_primary(int prim)
+{
+    obstack_1grow(&stk, prim ? '1' : '0');
+}
+
 #define SET_HWPOS() {\
 	if (at_ent) {\
 	    at_ent = 0;\
 	    headword_position = char_position;\
 	}\
  }
-#define BEGIN_HEADWORD(end) \
+#define BEGIN_HEADWORD(end, prim)		\
     {   retstate = YYSTATE; \
 	endtag = (end); \
+	mark_primary(prim); \
 	SET_HWPOS(); \
 	BEGIN(HEADWORD); }
 
@@ -225,15 +236,15 @@ XD [0-9a-f]
 <INITIAL>{
   "<--"       { BEGIN(COMMENT); }
   "<!"        { BEGIN(HTMLCOM); }
-  ("\\'d8")?"<hw>"  { BEGIN_HEADWORD("hw"); }
+  ("\\'d8")?"<hw>"  { BEGIN_HEADWORD("hw", 1); }
   "<mhw>"     SET_HWPOS();
   "<p><ent>"  flush_headwords();
-  "<asp>"     BEGIN_HEADWORD("asp");
-  "<altname>" BEGIN_HEADWORD("altname");
-  "<decf>"    BEGIN_HEADWORD("decf");
-  "<col>"     BEGIN_HEADWORD("col");
-  "<colf>"    BEGIN_HEADWORD("colf");
-  "<conjf>"   BEGIN_HEADWORD("conjf");
+  "<asp>"     BEGIN_HEADWORD("asp", 1);
+  "<altname>" BEGIN_HEADWORD("altname", 1);
+  "<decf>"    BEGIN_HEADWORD("decf", 1);
+  "<col>"     BEGIN_HEADWORD("col", 0);
+  "<colf>"    BEGIN_HEADWORD("colf", 0);
+  "<conjf>"   BEGIN_HEADWORD("conjf", 0);
   .           ;
   \n          advance_line();
 }
