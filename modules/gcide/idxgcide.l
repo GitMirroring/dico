@@ -240,7 +240,7 @@ XD [0-9a-f]
   "<mhw>"     SET_HWPOS();
   "<p><ent>"  flush_headwords();
   "<asp>"     BEGIN_HEADWORD("asp", 1);
-  "<altname>" BEGIN_HEADWORD("altname", 1);
+  "<altname>" BEGIN_HEADWORD("altname", 0);
   "<decf>"    BEGIN_HEADWORD("decf", 1);
   "<col>"     BEGIN_HEADWORD("col", 0);
   "<colf>"    BEGIN_HEADWORD("colf", 0);
