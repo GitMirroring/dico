@@ -1564,7 +1564,7 @@ utf8_iter_end_p(struct utf8_iterator *itr)
 int
 utf8_iter_err_p(struct utf8_iterator *itr)
 {
-    return itr->end;
+    return itr->err;
 }
 
 int

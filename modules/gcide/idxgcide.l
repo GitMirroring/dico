@@ -140,6 +140,15 @@ strrefcmp(void const *a, void const *b)
     return utf8_strcasecmp(*(char**)a + 1, *(char**)b + 1);
 }
 
+static char *
+wstrim(char *p)
+{
+    int c = *p++;
+    p = utf8_space_trim(p);
+    *--p = c;
+    return p;
+}
+
 static void
 flush_headwords(void)
 {
@@ -153,9 +162,17 @@ flush_headwords(void)
 	char **hv;
 	int i, hc = 0;
 
-	for (p = headword; *p; p += strlen(p) + 1) {
+	for (p = headword; *p; ) {
+	    /* Save pointer to next word. */
+	    char *q = p + strlen(p) + 1;
+
+	    /* Strip initial and trailing whitespace */
+	    p = wstrim(p);
 	    obstack_grow(&stk, &p, sizeof(p));
 	    hc++;
+
+	    /* Get next word. */
+	    p = q;
 	}
 
 	hv = obstack_finish(&stk);

@@ -42,6 +42,7 @@ int utf8_iter_first(struct utf8_iterator *itr, char *ptr);
 int utf8_iter_next(struct utf8_iterator *itr);
 
 int utf8_mbtowc_internal (void *data, int (*read) (void*), unsigned int *pwc);
+int utf8_mbtowc(unsigned int *pwc, const char *r, size_t len);
 int utf8_wctomb (char *r, unsigned int wc);
 
 int utf8_symcmp(char *a, char *b);
@@ -91,6 +92,17 @@ void utf8_wc_strlower(unsigned *str);
 
 int utf8_wc_is_alnum(unsigned wc);
 int utf8_wc_is_space(unsigned wc);
+char *utf8_space_elim(char const *str, size_t *len);
+char *utf8_space_trim(char *str);
+
+static inline int
+utf8_iter_isspace(struct utf8_iterator *itr)
+{
+    unsigned int wc;
+    if (utf8_mbtowc(&wc, itr->curptr, itr->length) < 0)
+	return 0;
+    return utf8_wc_is_space(wc);
+}
 
 int utf8_table_check(unsigned wc, unsigned const *start, int const *count,
 		     size_t size);
