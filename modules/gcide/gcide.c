@@ -25,6 +25,7 @@
 #include "gcide.h"
 #include <errno.h>
 #include <appi18n.h>
+#include <assert.h>
 
 #define GCIDE_NOPR     0x01
 #define GCIDE_DBGLEX   0x02
@@ -109,44 +110,72 @@ gcide_template_name(struct gcide_db *db, int let)
     return db->tmpl_name;
 }
 
+static inline char *
+idxgcide_name(struct gcide_db *db)
+{
+    return db->idxgcide ? db->idxgcide : idxgcide_program;
+}
+
 static int
-run_idxgcide(char *idxname, struct gcide_db *db)
+gcide_run_idxgcide(struct gcide_db *db, int fd)
 {
     pid_t pid;
     int status;
-    char *idxgcide = db->idxgcide ? db->idxgcide : idxgcide_program;
+    char *idxgcide = idxgcide_name(db);
 
-    dico_log(L_NOTICE, 0, _("gcide_open_idx: creating index %s"),
-	     idxname);
+    dico_log(L_NOTICE, 0, _("gcide_run_idxgcide: creating index %s/%s"),
+	     db->idx_dir, GCIDE_IDX_FILE_NAME);
     if (access(idxgcide, X_OK)) {
-	dico_log(L_ERR, errno, _("gcide_open_idx: cannot run %s"),
+	dico_log(L_ERR, errno, _("gcide_run_idxgcide: cannot run %s"),
 		 idxgcide);
 	return 1;
     }
     pid = fork();
     if (pid == 0) {
-	execl(idxgcide, idxgcide, db->db_dir, db->idx_dir, NULL);
+	char *argv[6];
+	int i = 0;
+
+	argv[i++] = idxgcide;
+	if (fd > 0) {
+	    char buf[16];
+	    char *p = buf + sizeof(buf);
+
+	    *p = 0;
+	    while (fd > 0) {
+		assert(p > buf);
+		*--p = fd % 10 + '0';
+		fd /= 10;
+	    }
+
+	    argv[i++] = "-#";
+	    argv[i++] = p;
+	}
+	argv[i++] = db->db_dir;
+	argv[i++] = db->idx_dir;
+	argv[i] = NULL;
+	execv(idxgcide, argv);
+	_exit(127);
     }
     if (pid == -1) {
-	dico_log(L_ERR, errno, _("gcide_open_idx: fork failed"));
+	dico_log(L_ERR, errno, _("gcide_run_idxgcide: fork failed"));
 	return 1;
     }
     if (waitpid(pid, &status, 0) != pid) {
-	dico_log(L_ERR, errno, _("gcide_open_idx: %s failed"), idxgcide);
+	dico_log(L_ERR, errno, _("gcide_run_idxgcide: %s failed"), idxgcide);
 	kill(pid, SIGKILL);
-	return 1;
+	return -1;
     }
     if (!WIFEXITED(status)) {
-	dico_log(L_ERR, 0, _("gcide_open_idx: %s failed"), idxgcide);
-	return 1;
+	dico_log(L_ERR, 0, _("gcide_run_idxgcide: %s failed"), idxgcide);
+	return -1;
     }
 
     status = WEXITSTATUS(status);
     if (status) {
 	dico_log(L_ERR, 0,
-		 _("gcide_open_idx: %s exited with status %d"),
+		 _("gcide_run_idxgcide: %s exited with status %d"),
 		 idxgcide, status);
-	return 1;
+	return -1;
     }
     return 0;
 }
@@ -172,6 +201,28 @@ gcide_check_files(struct gcide_db *db)
 	    t = st.st_mtime;
     }
     db->latest_change = t;
+    return 0;
+}
+
+static int
+gcide_db_reindex(struct gcide_db *db, int force)
+{
+    if (!force) {
+	struct stat st;
+	if (fstat(gcide_idx_fileno(db->idx), &st))
+	    return -1;
+	if (gcide_check_files(db))
+	    return -1;
+	force = db->latest_change > st.st_mtime;
+    }
+    if (force) {
+	if (gcide_idx_lock(db->idx, 1)) {
+	    dico_log(L_ERR, errno, _("gcide: can't lock index file"));
+	    return -1;
+	}
+	gcide_run_idxgcide(db, gcide_idx_fileno(db->idx));
+	return gcide_idx_reopen(db->idx);
+    }
     return 0;
 }
 
@@ -236,7 +287,7 @@ gcide_open_idx(struct gcide_db *db)
     char *idxname;
     int reindex = 1;
 
-    idxname = dico_full_file_name(db->idx_dir, "GCIDE.IDX");
+    idxname = dico_full_file_name(db->idx_dir, GCIDE_IDX_FILE_NAME);
     if (!idxname) {
 	DICO_LOG_MEMERR();
 	return 1;
@@ -244,7 +295,7 @@ gcide_open_idx(struct gcide_db *db)
 
     rc = gcide_access_idx(db, idxname);
     if (rc == 1) {
-	rc = run_idxgcide(idxname, db);
+	rc = gcide_run_idxgcide(db, -1);
 	reindex = 0;
     }
 
@@ -253,13 +304,16 @@ gcide_open_idx(struct gcide_db *db)
 	    gcide_idx_file_close(db->idx);
 	    db->idx = NULL;
 	}
-	rc = gcide_idx_file_open(idxname, db->idx_cache_size, &db->idx);
+	rc = gcide_idx_file_open(idxname, db->idx_cache_size,
+				 db->flags & GCIDE_WATCHER,
+				 &db->idx);
 	if (rc != IDXE_OK) {
 	    print_idx_error(rc, idxname, reindex);
-	    if (rc == IDXE_BADVER && reindex) {
-		rc = run_idxgcide(idxname, db);
+	    if (reindex && (rc == IDXE_BADVER || rc == IDXE_CORRUPT)) {
+		rc = gcide_run_idxgcide(db, -1);
 		if (rc == 0) {
 		    rc = gcide_idx_file_open(idxname, db->idx_cache_size,
+					     db->flags & GCIDE_WATCHER,
 					     &db->idx);
 		    print_idx_error(rc, idxname, 0);
 		}
@@ -359,8 +413,7 @@ static int
 reload_if_changed(struct gcide_db *db)
 {
     if ((db->flags & GCIDE_WATCHER) && watcher_is_modified(db->watcher)) {
-	gcide_check_files(db);
-	if (gcide_open_idx(db)) {
+	if (gcide_db_reindex(db, 0)) {
 	    db->flags |= GCIDE_IDX_FAIL;
 	} else {
 	    db->flags &= ~GCIDE_IDX_FAIL;
@@ -577,7 +630,7 @@ match_key(struct gcide_ref *ref, void *data)
     return 0;
 }
 
-static dico_result_t
+static struct gcide_result *
 gcide_match_all(struct gcide_db *db, const dico_strategy_t strat,
 		const char *word)
 {
@@ -615,7 +668,7 @@ gcide_match_all(struct gcide_db *db, const dico_strategy_t strat,
 	res->compare_count = gcide_idx_defs(db->idx);
     }
 
-    return (dico_result_t) res;
+    return res;
 }
 
 static dico_result_t
@@ -623,38 +676,39 @@ gcide_match(dico_handle_t hp, const dico_strategy_t strat, const char *word)
 {
     struct gcide_db *db = (struct gcide_db *) hp;
     matcher_t matcher = find_matcher(strat->name);
-    gcide_iterator_t itr;
     struct gcide_result *res = NULL;
 
+    gcide_idx_lock(db->idx, 0);
+
     if (reload_if_changed(db))
-	return NULL;
-
-    if (!matcher)
-	return gcide_match_all(db, strat, word);
-    itr = matcher(db, word);
-    if (itr) {
-	res = calloc(1, sizeof(*res));
-	if (!res) {
-	    DICO_LOG_ERRNO();
+	res = NULL;
+    else if (!matcher)
+	res = gcide_match_all(db, strat, word);
+    else {
+	gcide_iterator_t itr = matcher(db, word);
+	if (itr) {
+	    res = calloc(1, sizeof(*res));
+	    if (!res) {
+		DICO_LOG_ERRNO();
+	    } else {
+		res->type = result_match;
+		res->db = db;
+		res->list = gcide_create_result_list(1);
+		if (res->list) {
+		    do
+			gcide_result_list_append(res->list,
+						 gcide_iterator_ref(itr));
+		    while (gcide_iterator_next(itr) == 0);
+		    res->compare_count = gcide_iterator_compare_count(itr);
+		} else {
+		    free(res);
+		    res = NULL;
+		}
+	    }
 	    gcide_iterator_free(itr);
-	    return NULL;
 	}
-
-	res->type = result_match;
-	res->db = db;
-	res->list = gcide_create_result_list(1);
-	if (!res->list) {
-	    free(res);
-	    gcide_iterator_free(itr);
-	    return NULL;
-	}
-
-	do
-	    gcide_result_list_append(res->list, gcide_iterator_ref(itr));
-	while (gcide_iterator_next(itr) == 0);
-	res->compare_count = gcide_iterator_compare_count(itr);
-	gcide_iterator_free(itr);
     }
+    gcide_idx_unlock(db->idx);
     return (dico_result_t) res;
 }
 
@@ -662,36 +716,36 @@ static dico_result_t
 gcide_define(dico_handle_t hp, const char *word)
 {
     struct gcide_db *db = (struct gcide_db *) hp;
-    gcide_iterator_t itr;
     struct gcide_result *res = NULL;
 
+    gcide_idx_lock(db->idx, 0);
     if (reload_if_changed(db))
-	return NULL;
-
-    itr = exact_match(db, word);
-    if (itr) {
-	res = calloc(1, sizeof(*res));
-	if (!res) {
-	    DICO_LOG_ERRNO();
-	    gcide_iterator_free(itr);
-	    return NULL;
+	res = NULL;
+    else {
+	gcide_iterator_t itr = exact_match(db, word);
+	if (itr) {
+	    res = calloc(1, sizeof(*res));
+	    if (!res) {
+		DICO_LOG_ERRNO();
+	    } else {
+		res->type = result_define;
+		res->db = db;
+		res->list = gcide_create_result_list(0);
+		if (res->list) {
+		    do
+			gcide_result_list_append(res->list,
+						 gcide_iterator_ref(itr));
+		    while (gcide_iterator_next(itr) == 0);
+		    res->compare_count = gcide_iterator_compare_count(itr);
+		} else {
+		    free(res);
+		    res = NULL;
+		}
+		gcide_iterator_free(itr);
+	    }
 	}
-
-	res->type = result_define;
-	res->db = db;
-	res->list = gcide_create_result_list(0);
-	if (!res->list) {
-	    free(res);
-	    gcide_iterator_free(itr);
-	    return NULL;
-	}
-
-	do
-	    gcide_result_list_append(res->list, gcide_iterator_ref(itr));
-	while (gcide_iterator_next(itr) == 0);
-	res->compare_count = gcide_iterator_compare_count(itr);
-	gcide_iterator_free(itr);
     }
+    gcide_idx_unlock(db->idx);
     return (dico_result_t) res;
 }
 

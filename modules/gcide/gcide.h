@@ -21,6 +21,7 @@
 #define GCIDE_IDX_MAGIC_LEN (sizeof(GCIDE_IDX_MAGIC)-1)
 #define GCIDE_IDX_VERSION 1
 #define GCIDE_IDX_HEADER_PAGESIZE 10240
+#define GCIDE_IDX_FILE_NAME "GCIDE.IDX"
 
 struct gcide_idx_header {
     char ihdr_magic[GCIDE_IDX_MAGIC_LEN];
@@ -72,9 +73,15 @@ enum {
     IDXE_SYSERR
 };
 
-int gcide_idx_file_open(const char *name, size_t cachesize,
+int gcide_idx_file_open(const char *name, size_t cachesize, int rw,
 			struct gcide_idx_file **ret_file);
 void gcide_idx_file_close(gcide_idx_file_t file);
+
+int gcide_idx_lock(struct gcide_idx_file *file, int ex);
+int gcide_idx_unlock(struct gcide_idx_file *file);
+int gcide_idx_reopen(struct gcide_idx_file *file);
+int gcide_idx_fileno(struct gcide_idx_file *file);
+
 size_t gcide_idx_headwords(struct gcide_idx_file *file);
 size_t gcide_idx_defs(struct gcide_idx_file *file);
 

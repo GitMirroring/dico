@@ -23,7 +23,7 @@ echo "quit" | \
  tr -d '\r' | sed 's/^\(2[[25][0-9]]\) .*/\1/;s/ *$//;s|'"$IDXDIR"'/*||'
 ],
 [0],
-[dicod: Notice: gcide_open_idx: creating index GCIDE.IDX
+[dicod: Notice: gcide_run_idxgcide: creating index GCIDE.IDX
 220
 221
 ])

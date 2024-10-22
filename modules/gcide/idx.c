@@ -18,12 +18,14 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/file.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <dico.h>
 #include "gcide.h"
 #include <errno.h>
 #include <appi18n.h>
+#include <assert.h>
 
 struct gcide_idx_cache {
     size_t pageno;
@@ -44,15 +46,23 @@ struct gcide_idx_file {
 #define REF_NOT_FOUND ((size_t)-1)
 
 static void
-_free_index(struct gcide_idx_file *file)
+_free_cache(struct gcide_idx_file *file)
 {
     size_t i;
-    free(file->name);
     for (i = 0; i < file->cache_used; i++) {
 	free(file->cache[i]->page);
 	free(file->cache[i]);
     }
     free(file->cache);
+    file->cache = NULL;
+    file->cache_used = 0;
+}
+
+static void
+_free_index(struct gcide_idx_file *file)
+{
+    _free_cache(file);
+    free(file->name);
     free(file);
 }
 
@@ -68,8 +78,9 @@ _idx_full_read(struct gcide_idx_file *file, void *buf, size_t size)
 	    dico_log(L_ERR, errno, _("error reading from `%s'"), file->name);
 	    return -1;
 	} else if (rc == 0) {
-	    dico_log(L_ERR, errno, _("short read while reading from `%s'"),
+	    dico_log(L_ERR, 0, _("short read while reading from `%s'"),
 		     file->name);
+	    errno = 0;
 	    return -1;
 	}
 	p += rc;
@@ -78,14 +89,27 @@ _idx_full_read(struct gcide_idx_file *file, void *buf, size_t size)
     return 0;
 }
 
-static int
-_open_index(struct gcide_idx_file *file)
+int
+gcide_idx_fileno(struct gcide_idx_file *file)
+{
+    return file->fd;
+}
+
+int
+gcide_idx_reopen(struct gcide_idx_file *file)
 {
     off_t total;
     struct stat st;
 
-    if (_idx_full_read(file, &file->header, sizeof(file->header)))
+    _free_cache(file);
+
+    if (lseek(file->fd, 0, SEEK_SET)) {
+	dico_log(L_ERR, errno, _("error rewinding `%s'"), file->name);
 	return IDXE_SYSERR;
+    }
+
+    if (_idx_full_read(file, &file->header, sizeof(file->header)))
+	return errno ? IDXE_SYSERR : IDXE_CORRUPT;
     if (memcmp(file->header.ihdr_magic, GCIDE_IDX_MAGIC,
 	       GCIDE_IDX_MAGIC_LEN))
 	return IDXE_BADFILE;
@@ -104,7 +128,7 @@ _open_index(struct gcide_idx_file *file)
 }
 
 int
-gcide_idx_file_open(const char *name, size_t cachesize,
+gcide_idx_file_open(const char *name, size_t cachesize, int rw,
 		    struct gcide_idx_file **ret_file)
 {
     int rc, ec;
@@ -117,10 +141,10 @@ gcide_idx_file_open(const char *name, size_t cachesize,
     rc = IDXE_SYSERR;
     file->name = strdup(name);
     if (file->name) {
-	int fd = open(name, O_RDONLY);
+	int fd = open(name, rw ? O_RDWR : O_RDONLY);
 	if (fd != -1) {
 	    file->fd = fd;
-	    rc = _open_index(file);
+	    rc = gcide_idx_reopen(file);
 	    if (rc == IDXE_OK) {
 		file->cache_size = cachesize;
 		*ret_file = file;
@@ -143,6 +167,26 @@ gcide_idx_file_close(struct gcide_idx_file *file)
 	close(file->fd);
 	_free_index(file);
     }
+}
+
+int
+gcide_idx_lock(struct gcide_idx_file *file, int ex)
+{
+    struct flock fl;
+    fl.l_type = ex ? F_WRLCK : F_RDLCK;
+    fl.l_whence = SEEK_SET;
+    fl.l_start = fl.l_len = (off_t)0;
+    return fcntl (file->fd, F_SETLKW, &fl);
+}
+
+int
+gcide_idx_unlock(struct gcide_idx_file *file)
+{
+    struct flock fl;
+    fl.l_type = F_UNLCK;
+    fl.l_whence = SEEK_SET;
+    fl.l_start = fl.l_len = (off_t)0;
+    return fcntl (file->fd, F_SETLK, &fl);
 }
 
 size_t

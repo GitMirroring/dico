@@ -3443,6 +3443,12 @@ size in bytes.  The following case-insensitive suffixes can be used:
 specifying kilobytes, megabytes and gigabytes (ouch!) correspondingly.
 
 The default page size is 10240 bytes.
+
+@item -# @var{fd}
+@itemx --file-descriptor=@var{fd}
+Operate on the index file which is open at file descriptor @var{fd}.
+The @command{gcide} module uses this option to pass the descriptor of
+the @file{GCIDE.IDX} file to the indexer.
 @end table
 
 @node wordnet

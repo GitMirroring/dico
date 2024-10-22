@@ -238,7 +238,7 @@ mark_primary(int prim)
 
 #define advance_line()					\
     { line++;						\
-      if (yy_flex_debug)			        \
+      if (yy_flex_debug)				\
 	  fprintf(stderr, "# %d %s\n", line, infile);	\
     }
 %}
@@ -304,9 +304,9 @@ XD [0-9a-f]
   [ \t]      add_space(&stk);
   .          obstack_grow(&stk, yytext, yyleng);
   \n         {
-                add_space(&stk);
-                advance_line();
-             }
+		add_space(&stk);
+		advance_line();
+	     }
 }
 <COMMENT>{
   "-->"      { BEGIN(INITIAL); }
@@ -343,6 +343,7 @@ yywrap(void)
     return 0;
 }
 
+static int inherit_fd;
 #include "idxgcide-cli.h"
 
 /* Usage: idxgcide DICTDIR [IDXDIR] */
@@ -390,16 +391,24 @@ main(int argc, char **argv)
     }
     suf = infile + strlen(infile) - 1;
 
-    if (dry_run_option)
+    if (dry_run_option && !inherit_fd)
 	idxname = "/dev/null";
     else
-	idxname = dico_full_file_name(idxdir, "GCIDE.IDX");
+	idxname = dico_full_file_name(idxdir, GCIDE_IDX_FILE_NAME);
     if (!idxname) {
 	DICO_LOG_MEMERR();
 	exit(EX_UNAVAILABLE);
     }
 
-    idxfile = fopen(idxname, "w");
+    if (inherit_fd) {
+	if (ftruncate(inherit_fd, 0)) {
+	    dico_log(L_ERR, errno, _("cannot truncate index file `%s'"), idxname);
+	    exit(EX_CANTCREAT);
+	}
+	idxfile = fdopen(inherit_fd, "w");
+    } else {
+	idxfile = fopen(idxname, "w");
+    }
     if (!idxfile) {
 	dico_log(L_ERR, errno, _("cannot create index file `%s'"), idxname);
 	exit(EX_CANTCREAT);
