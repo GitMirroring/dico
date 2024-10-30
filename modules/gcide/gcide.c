@@ -138,7 +138,7 @@ gcide_run_idxgcide(struct gcide_db *db, int fd)
 	argv[i++] = idxgcide;
 	if (fd > 0) {
 	    char buf[16];
-	    char *p = buf + sizeof(buf);
+	    char *p = buf + sizeof(buf) - 1;
 
 	    *p = 0;
 	    while (fd > 0) {

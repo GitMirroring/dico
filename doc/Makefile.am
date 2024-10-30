@@ -32,7 +32,7 @@ config.man: $(top_srcdir)/configure.ac $(top_srcdir)/doc/Makefile.am
 
 dicod.8 dicod.conf.5: config.man
 
-EXTRA_DIST = dicod.8in dicod.conf.5in gendocs.sh
+EXTRA_DIST = dicod.8in dicod.conf.5in gendocs.pl
 CLEANFILES=dicod.8 dicod.conf.5
 DISTCLEANFILES=config.man
 
@@ -44,9 +44,6 @@ dico_TEXINFOS=\
  proto.texi\
  strat.texi\
  strftime.texi
-
-EXTRA_DIST += \
- gendocs_template
 
 clean-local:
 	rm -rf manual
