@@ -1,23 +1,9 @@
-GNU Dico NEWS -- history of user-visible changes. 2024-06-02
+GNU Dico NEWS -- history of user-visible changes. 2024-12-31
 See the end of file for copying conditions.
 
 Please send Dico bug reports to <bug-dico@gnu.org.ua>
 
-Version 2.11.90 (git)
-
-* pcre module now requires libpcre2
-
-Support for obsolescent libpcre has been withdrawn.
-
-* Dicoweb
-
-** Switch to Python 3.11+ with type hints
-** Upgrade Django to version 4.2
-** Improve desktop and mobile views using HTML5
-** Implement a dark mode
-** Use Poetry and pyproject.toml
-** Integrate Pylint and Mypy for development
-** Implement various fixes and improvements
+Version 2.12, 2024-12-31
 
 * The gcide module
 
@@ -48,6 +34,20 @@ with individual databases.
 
 This version is shipped with the new module "greek_kbd", which
 implements Greek transliteration.
+
+* Dicoweb
+
+** Switch to Python 3.11+ with type hints
+** Upgrade Django to version 4.2
+** Improve desktop and mobile views using HTML5
+** Implement a dark mode
+** Use Poetry and pyproject.toml
+** Integrate Pylint and Mypy for development
+** Implement various fixes and improvements
+
+* pcre module now requires libpcre2
+
+Support for obsolescent libpcre has been withdrawn.
 
 * Bugfixes
 
