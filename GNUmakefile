@@ -2,6 +2,7 @@
 # 
 ifneq (,$(wildcard Makefile))
  include Makefile
+ include maint/release.mk
 configure.ac: configure.boot
 	./bootstrap
 else
