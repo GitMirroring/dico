@@ -27,6 +27,7 @@
 #include <errno.h>
 #include <sysexits.h>
 #include <appi18n.h>
+#include <parseopt.h>
 #include "gcide.h"
 }
 %{
@@ -344,19 +345,146 @@ yywrap(void)
 }
 
 static int inherit_fd;
-#include "idxgcide-cli.h"
+
+static int
+optset_debug(struct parseopt *po, struct optdef *opt, char *arg)
+{
+    debug_letters = arg ? arg : letters;
+    return 0;
+}
+
+static int
+optset_pagesize(struct parseopt *po, struct optdef *opt, char *arg)
+{
+    char *p;
+
+    idx_header.ihdr_pagesize = strtoul(arg, &p, 10);
+    switch (*p) {
+    case 0:
+	break;
+    case 'g':
+    case 'G':
+	idx_header.ihdr_pagesize <<= 10;
+    case 'm':
+    case 'M':
+	idx_header.ihdr_pagesize <<= 10;
+    case 'k':
+    case 'K':
+	idx_header.ihdr_pagesize <<= 10;
+	break;
+    default:
+	dico_log(L_ERR, 0, _("not a valid size: %s"), arg);
+	exit(EX_USAGE);
+    }
+    return 0;
+}
+
+static int
+optset_inherit_fd(struct parseopt *po, struct optdef *opt, char *arg)
+{
+    inherit_fd = atoi(arg);
+    if (inherit_fd <= 0) {
+	dico_log(L_ERR, 0, _("bad file descriptor: %s"), arg);
+	exit(EX_USAGE);
+    }
+    return 0;
+}
+
+static struct optdef options[] = {
+    {
+	.opt_name = "debug",
+	.opt_argdoc = N_("[LETTERS]"),
+	.opt_doc = N_("debug mode"),
+	.opt_flags = OPTFLAG_ARG_OPTIONAL,
+	.opt_set = optset_debug
+    },
+    {
+	.opt_name = "d",
+	.opt_flags = OPTFLAG_ALIAS
+    },
+
+    {
+	.opt_name = "dry-run",
+	.opt_doc = N_("dry run: do nothing, but print everything"),
+	.opt_set = optset_incr,
+	.opt_ptr = &dry_run_option
+    },
+    {
+	.opt_name = "n",
+	.opt_flags = OPTFLAG_ALIAS
+    },
+
+    {
+	.opt_name = "verbose",
+	.opt_doc = N_("increase verbosity"),
+	.opt_set = optset_incr,
+	.opt_ptr = &verbose_option
+    },
+    {
+	.opt_name = "v",
+	.opt_flags = OPTFLAG_ALIAS
+    },
+
+    {
+	.opt_name = "page-size",
+	.opt_argdoc = N_("NUMBER"),
+	.opt_doc = N_("set index page size"),
+	.opt_set = optset_pagesize
+    },
+
+    {
+	.opt_name = "p",
+	.opt_flags = OPTFLAG_ALIAS
+    },
+
+    {
+	.opt_name = "file-descriptor",
+	.opt_argdoc = N_("DESCR"),
+	.opt_doc = N_("modify file at the supplied descriptor"),
+    },
+    {
+	.opt_name = "#",
+	.opt_flags = OPTFLAG_ALIAS,
+	.opt_set = optset_inherit_fd
+    },
+
+    { NULL }
+}, *optdef[] = { options, NULL };
+
+extern void xdico_version_hook(WORDWRAP_FILE wf, struct parseopt *po);
+
+static struct parseopt po = {
+    .po_descr = N_("standalone indexer for GCIDE dictionaries"),
+    .po_argdoc = N_("DICTDIR [IDXDIR]"),
+    .po_optdef = optdef,
+    .po_package_name = PACKAGE_NAME,
+    .po_package_url = PACKAGE_URL,
+    .po_bugreport_address = PACKAGE_BUGREPORT,
+    .po_version_hook = xdico_version_hook
+};
+
 
 /* Usage: idxgcide DICTDIR [IDXDIR] */
 int
 main(int argc, char **argv)
 {
-    int index;
-
     appi18n_init();
     dico_set_program_name(argv[0]);
     yy_flex_debug = 0;
 
-    get_options(argc, argv, &index);
+    if (parseopt_getopt(&po, argc, argv) == OPT_ERR) {
+	dico_log(L_CRIT, errno, _("parseopt_getopt failed"));
+	exit(1);
+    }
+    parseopt_argv(&po, &argc, &argv);
+
+    if (argc < 1 || argc > 2) {
+	dico_log(L_ERR, 0, _("bad number of arguments"));
+	exit(EX_USAGE);
+    }
+
+    if (dry_run_option)
+	verbose_option++;
 
     idx_page = malloc(idx_header.ihdr_pagesize);
     if (!idx_page) {
@@ -374,13 +502,6 @@ main(int argc, char **argv)
     }
     idx_header.ihdr_maxpageref--;
 
-    argc -= index;
-    argv += index;
-
-    if (argc < 1 || argc > 2) {
-	dico_log(L_ERR, 0, _("bad number of arguments"));
-	exit(EX_USAGE);
-    }
     dictdir = argv[0];
     idxdir = argc == 2 ? argv[1] : dictdir;
 

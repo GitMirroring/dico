@@ -81,6 +81,7 @@ dico_stream_t xdico_transcript_stream_create(dico_stream_t transport,
 int stream_writez(dico_stream_t str, const char *buf);
 int stream_printf(dico_stream_t str, const char *fmt, ...);
 void stream_write_multiline(dico_stream_t str, const char *text);
+void stream_write_version(dico_stream_t str);
 
 /* xtkn.c */
 void xdico_tokenize_string(struct dico_tokbuf *tb, char *str);

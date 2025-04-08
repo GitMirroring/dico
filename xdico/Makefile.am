@@ -1,5 +1,5 @@
 # This file is part of GNU Dico
-# Copyright (C) 1998-2024 Sergey Poznyakoff
+# Copyright (C) 1998-2025 Sergey Poznyakoff
 #
 # GNU Dico is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@ SUBDIRS = gnu
 
 AM_CPPFLAGS = \
  @DICO_PROG_CONFIG@\
+ @PARSEOPT_INCLUDES@\
  -I${top_srcdir}/include\
  -I${srcdir}/gnu\
  -I${builddir}/gnu\
@@ -33,6 +34,7 @@ libxdico_la_SOURCES=\
  iputil.c\
  timer.c\
  userprivs.c\
+ verhook.c\
  xalloc-die.c\
  xhostname.c\
  xscript.c\

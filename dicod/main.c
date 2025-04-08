@@ -17,6 +17,12 @@
 #include <dicod.h>
 #include <pwd.h>
 #include <grp.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#include <getopt.h>
+#include <parseopt.h>
 
 int foreground;     /* Run in foreground mode */
 int single_process; /* Single process mode */
@@ -125,8 +131,352 @@ grecs_list_iterate(struct grecs_list *list, grecs_list_iterator_t fun,
 	    break;
     }
 }
+
+/* Command line parsing */
+static struct grecs_txtacc *pp_cmd_acc;
 
+enum {
+    OPT_START = 255,
+    OPT_CONFIG,
+    OPT_STDERR,
+    OPT_SYSLOG,
+    OPT_NO_TRANSCRIPT,
+    OPT_SOURCE_INFO,
+    OPT_TRACE_GRAMMAR,
+    OPT_TRACE_LEX,
+    OPT_CONFIG_HELP,
+    OPT_PREPROCESSOR,
+    OPT_NO_PREPROCESSOR,
 
+};
+
+static struct optdef options[] = {
+    {
+	.opt_flags = OPTFLAG_DOC,
+	.opt_doc = N_("Select program mode")
+    },
+
+    {
+	.opt_name = "E",
+	.opt_doc = N_("preprocess configuration file and exit")
+    },
+
+    {
+	.opt_name = "lint",
+	.opt_doc = N_("check configuration file syntax and exit"),
+    },
+    {
+	.opt_name = "t",
+	.opt_flags = OPTFLAG_ALIAS
+    },
+
+    {
+	.opt_name = "inetd",
+	.opt_doc = N_("inetd mode"),
+    },
+    {
+	.opt_name = "i",
+	.opt_flags = OPTFLAG_ALIAS
+    },
+
+    {
+	.opt_name = "runtest",
+	.opt_doc =
+	N_("run unit tests for module; subsequent arguments are treated"
+	   " as module name and unit test arguments; the -- marker"
+	   " introduces module initialization arguments"),
+    },
+    {
+	.opt_name = "r",
+	.opt_flags = OPTFLAG_ALIAS
+    },
+
+    {
+	.opt_flags = OPTFLAG_DOC,
+	.opt_doc = N_("Modifiers")
+    },
+
+    {
+	.opt_name = "config",
+	.opt_argdoc = N_("FILE"),
+	.opt_doc = N_("read this configuration file"),
+	.opt_code = OPT_CONFIG
+    },
+
+    {
+	.opt_name = "foreground",
+	.opt_doc = N_("operate in foreground"),
+    },
+    {
+	.opt_name = "f",
+	.opt_flags = OPTFLAG_ALIAS
+    },
+
+    {
+	.opt_name = "stderr",
+	.opt_doc = N_("output diagnostic to stderr"),
+	.opt_code = OPT_STDERR
+    },
+
+    {
+	.opt_name = "syslog",
+	.opt_doc = N_("output diagnostic to syslog (default)"),
+	.opt_code = OPT_SYSLOG
+    },
+
+    {
+	.opt_name = "single-process",
+	.opt_doc = N_("single-process mode"),
+    },
+    {
+	.opt_name = "s",
+	.opt_flags = OPTFLAG_ALIAS
+    },
+
+    {
+	.opt_name = "load-dir",
+	.opt_argdoc = N_("DIR"),
+	.opt_doc = N_("prepend DIR to the module load path"),
+    },
+    {
+	.opt_name = "L",
+	.opt_flags = OPTFLAG_ALIAS
+    },
+
+    {
+	.opt_flags = OPTFLAG_DOC,
+	.opt_doc = N_("Debugging")
+    },
+
+    {
+	.opt_name = "transcript",
+	.opt_doc = N_("enable session transcript"),
+    },
+    {
+	.opt_name = "T",
+	.opt_flags = OPTFLAG_ALIAS
+    },
+
+    {
+	.opt_name = "no-transcript",
+	.opt_doc = N_("disable session transcript"),
+	.opt_code = OPT_NO_TRANSCRIPT
+    },
+
+    {
+	.opt_name = "debug",
+	.opt_argdoc = N_("NUMBER"),
+	.opt_doc = N_("set debug verbosity level"),
+    },
+    {
+	.opt_name = "x",
+	.opt_flags = OPTFLAG_ALIAS
+    },
+
+    {
+	.opt_name = "source-info",
+	.opt_doc =
+	N_("include source line information in the debugging output"),
+	.opt_code = OPT_SOURCE_INFO
+    },
+
+    {
+	.opt_name = "trace-grammar",
+	.opt_doc = N_("trace parsing of configuration file"),
+	.opt_code = OPT_TRACE_GRAMMAR
+    },
+
+    {
+	.opt_name = "trace-lex",
+	.opt_doc = N_("trace config file lexer"),
+	.opt_code = OPT_TRACE_LEX
+    },
+
+    {
+	.opt_flags = OPTFLAG_DOC,
+	.opt_doc = N_("Additional help")
+    },
+
+    {
+	.opt_name = "config-help",
+	.opt_doc = N_("show configuration file summary"),
+	.opt_code = OPT_CONFIG_HELP
+    },
+
+    {
+	.opt_flags = OPTFLAG_DOC,
+	.opt_doc = N_("Preprocessor control")
+    },
+
+    {
+	.opt_name = "preprocessor",
+	.opt_argdoc = N_("PROG"),
+	.opt_doc = N_("use PROG as a preprocessor for config file"),
+	.opt_code = OPT_PREPROCESSOR
+    },
+
+    {
+	.opt_name = "no-preprocessor",
+	.opt_doc = N_("do not use external preprocessor"),
+	.opt_code = OPT_NO_PREPROCESSOR
+    },
+
+    {
+	.opt_name = "include-dir",
+	.opt_argdoc = N_("DIR"),
+	.opt_doc =
+	N_("add directory DIR to the list of directories to be searched"
+	   " for preprocessor include files"),
+    },
+    {
+	.opt_name = "I",
+	.opt_flags = OPTFLAG_ALIAS
+    },
+
+    {
+	.opt_name = "define",
+	.opt_argdoc = N_("SYMBOL[=VALUE]"),
+	.opt_doc = N_("define a preprocessor symbol")
+    },
+    {
+	.opt_name = "D",
+	.opt_flags = OPTFLAG_ALIAS
+    },
+
+    { NULL }
+}, *optdef[] = { options, NULL };
+
+static void
+setopt(struct parseopt *po, int code, char *optarg)
+{
+    struct dicod_conf_override *conf = po->po_hook_data;
+
+    switch (code) {
+    case 'E':
+	mode = MODE_PREPROC;
+	break;
+
+    case 't':
+	config_lint_option = 1;
+	break;
+
+    case 'i':
+	mode = MODE_INETD;
+	break;
+
+    case 'r':
+	mode = MODE_TEST;
+	/* Stop further option processng. */
+	po->po_eopt = 1; /* FIXME: not documented. */
+	break;
+
+    case OPT_CONFIG:
+	config_file = optarg;
+	break;
+
+    case 'f':
+	foreground = 1;
+	break;
+
+    case OPT_STDERR:
+	log_to_stderr = 1;
+	break;
+
+    case OPT_SYSLOG:
+	log_to_stderr = 0;
+	break;
+
+    case 's':
+	single_process = 1;
+	break;
+
+    case 'L':
+	prepend_load_path = xdico_list_create();
+	dico_list_set_free_item(prepend_load_path, dicod_free_item, NULL);
+	xdico_list_append(prepend_load_path, xstrdup(optarg));
+	break;
+
+    case 'T':
+	conf->transcript = 1;
+	break;
+
+    case OPT_NO_TRANSCRIPT:
+	conf->transcript = 0;
+	break;
+
+    case 'x':
+	debug_level_str = optarg;
+	debug_level = atoi(optarg);
+	break;
+
+    case OPT_SOURCE_INFO:
+	debug_source_info = 1;
+	break;
+
+    case OPT_TRACE_GRAMMAR:
+	grecs_gram_trace(1);
+	break;
+
+    case OPT_TRACE_LEX:
+	grecs_lex_trace(1);
+	break;
+
+    case OPT_CONFIG_HELP:
+	config_help();
+	exit(0);
+	break;
+
+    case OPT_PREPROCESSOR:
+	grecs_preprocessor = optarg;
+	break;
+
+    case OPT_NO_PREPROCESSOR:
+	grecs_preprocessor = NULL;
+	break;
+
+    case 'I':
+	grecs_preproc_add_include_dir(optarg);
+	break;
+
+    case 'D':{
+	    char *p;
+
+	    if (!pp_cmd_acc)
+		pp_cmd_acc = grecs_txtacc_create();
+	    grecs_txtacc_grow(pp_cmd_acc, " \"-D", 4);
+	    for (p = optarg; *p; p++) {
+		if (*p == '\\' || *p == '"')
+		    grecs_txtacc_grow_char(pp_cmd_acc, '\\');
+		grecs_txtacc_grow_char(pp_cmd_acc, *p);
+	    }
+	    grecs_txtacc_grow_char(pp_cmd_acc, '"');
+	    break;
+	}
+
+    default:
+	po->po_error(po, PO_MSG_ERR,
+		     "internal error at %s:%d\n", __FILE__, __LINE__);
+	abort();
+    }
+}
+
+extern void xdico_version_hook(WORDWRAP_FILE wf, struct parseopt *po);
+
+static char *dicod_extra_args[] = {
+    N_("[OPTIONS] -r|--runtest MODULE [ARG...] [-- ARG...]"),
+    NULL
+};
+
+static struct parseopt po = {
+    .po_descr = N_("GNU dictionary server"),
+    .po_optdef = optdef,
+    .po_setopt = setopt,
+    .po_package_name = PACKAGE_NAME,
+    .po_package_url = PACKAGE_URL,
+    .po_bugreport_address = PACKAGE_BUGREPORT,
+    .po_version_hook = xdico_version_hook,
+    .po_program_args = dicod_extra_args
+};
 
 /* Configuration */
 int
@@ -1736,6 +2086,8 @@ main(int argc, char **argv)
 {
     int rc = 0;
     struct dicod_conf_override ovr;
+    int targc;
+    char **targv;
 
     appi18n_init();
     dico_set_program_name(argv[0]);
@@ -1761,7 +2113,29 @@ main(int argc, char **argv)
     config_init();
     init_conf_override(&ovr);
 
-    get_options(&argc, &argv, &ovr);
+    po.po_hook_data = &ovr;
+    if (parseopt_getopt(&po, argc, argv) == OPT_ERR) {
+	dico_die(EX_UNAVAILABLE, L_CRIT, errno, _("parseopt_getopt failed"));
+	exit(1);
+    }
+    parseopt_argv(&po, &targc, &targv);
+    parseopt_free(&po);
+
+    if (pp_cmd_acc && grecs_preprocessor) {
+	char *args, *cmd;
+
+	grecs_txtacc_grow_char(pp_cmd_acc, 0);
+	args = grecs_txtacc_finish(pp_cmd_acc, 0);
+	cmd = grecs_malloc(strlen(grecs_preprocessor) + strlen(args) + 1);
+	strcpy(cmd, grecs_preprocessor);
+	strcat(cmd, args);
+	grecs_preprocessor = cmd;
+    }
+    grecs_txtacc_free(pp_cmd_acc);
+
+    if (mode != MODE_TEST && targc)
+	dico_die(EX_USAGE, L_CRIT, 0, _("unexpected arguments"));
+
     if (!config_lint_option)
 	dicod_log_setup();
 
@@ -1769,7 +2143,7 @@ main(int argc, char **argv)
 	exit(grecs_preprocess(config_file, 0) ? EX_CONFIG : 0);
     else if (mode == MODE_TEST) {
 	dicod_loader_init();
-	exit(dicod_module_test(argc, argv));
+	exit(dicod_module_test(targc, targv));
     }
 
     config_parse();

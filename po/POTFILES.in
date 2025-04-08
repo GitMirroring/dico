@@ -1,6 +1,6 @@
 # List of Dico files which contain translatable strings.
 
-# Copyright (C) 1998-2024 Sergey Poznyakoff
+# Copyright (C) 1998-2025 Sergey Poznyakoff
 #
 # Dico is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
 # along with Dico.  If not, see <http://www.gnu.org/licenses/>.
 
 xdico/userprivs.c
+xdico/verhook.c
 xdico/xstream.c
 xdico/gnu/quotearg.c
 xdico/gnu/obstack.c
@@ -31,7 +32,6 @@ dico/connect.c
 dico/dico.c
 dico/func.c
 dico/autologin.c
-dico/cmdline.c
 dico/lookup.c
 dico/saslauth.c
 
@@ -41,7 +41,6 @@ dicod/acl.c
 dicod/dbtext.c
 dicod/auth.c
 dicod/main.c
-dicod/cmdline.c
 dicod/loader.c
 dicod/alias.c
 dicod/server.c
@@ -66,7 +65,6 @@ modules/gcide/ent.c
 modules/gcide/gcide.c
 modules/gcide/grk.c
 modules/gcide/idx.c
-modules/gcide/idxgcide-cli.opt
 modules/gcide/idxgcide.l
 modules/gcide/markup.l
 modules/gcide/webchr.c
@@ -84,3 +82,7 @@ grecs/src/sockaddr.c
 grecs/src/symtab.c
 grecs/src/tree.c
 grecs/wordsplit/wordsplit.c
+
+parseopt/help.c
+parseopt/optset.c
+parseopt/parseopt.c

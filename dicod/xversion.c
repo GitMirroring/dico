@@ -20,7 +20,7 @@ static void
 dicod_xversion(dico_stream_t str, int argc, char **argv)
 {
     stream_writez(str, "110 ");
-    stream_writez(str, (char*)program_version);
+    stream_write_version(str);
     dico_stream_write(str, "\n", 1);
 }
 

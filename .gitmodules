@@ -10,3 +10,6 @@
 [submodule "gnulib"]
 	path = gnulib
 	url = git://git.savannah.gnu.org/gnulib.git
+[submodule "parseopt"]
+	path = parseopt
+	url = git://git.gnu.org.ua/parseopt.git

@@ -64,3 +64,13 @@ stream_write_multiline(dico_stream_t str, const char *text)
     if (len)
 	dico_stream_writeln(str, itr.curptr - len, len);
 }
+
+void
+stream_write_version(dico_stream_t str)
+{
+    stream_writez(str, dico_program_name);
+    stream_writez(str, " (");
+    stream_writez(str, PACKAGE_NAME);
+    stream_writez(str, ") ");
+    stream_writez(str, PACKAGE_VERSION);
+}

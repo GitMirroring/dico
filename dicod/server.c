@@ -582,7 +582,8 @@ dicod_server(int argc, char **argv)
 {
     int rc;
 
-    dico_log(L_INFO, 0, _("%s started"), program_version);
+    dico_log(L_INFO, 0, _("%s (%s) %s started"),
+	     dico_program_name, PACKAGE_NAME, PACKAGE_VERSION);
 
     if (user_id) {
 	if (getuid())
@@ -637,12 +638,18 @@ dicod_server(int argc, char **argv)
     if (restart) {
 	int i;
 
-	dico_log(L_INFO, 0, _("%s restarting"), program_version);
+	dico_log(L_INFO, 0, _("%s (%s) %s restarting"),
+		 dico_program_name,
+		 PACKAGE_NAME,
+		 PACKAGE_VERSION);
 	for (i = getmaxfd(); i > 2; i--)
 	    close(i);
 	execv(argv[0], argv);
 	dico_die(EX_UNAVAILABLE, L_ERR|L_CONS, errno, _("Cannot restart"));
     } else
-	dico_log(L_INFO, 0, _("%s terminating"), program_version);
+	dico_log(L_INFO, 0, _("%s (%s) %s terminating"),
+		 dico_program_name,
+		 PACKAGE_NAME,
+		 PACKAGE_VERSION);
     exit(rc);
 }

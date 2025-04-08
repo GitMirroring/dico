@@ -1,5 +1,5 @@
 # This file is part of GNU Dico
-# Copyright (C) 1998-2024 Sergey Poznyakoff
+# Copyright (C) 1998-2025 Sergey Poznyakoff
 #
 # GNU Dico is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,14 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with GNU Dico.  If not, see <http://www.gnu.org/licenses/>.
 
-ACLOCAL_AMFLAGS = -I m4 -I am -I grecs/am -I gint -I imprimatur
-
 SUBDIRS=\
  .\
  include\
  examples\
  gint\
  grecs\
+ parseopt\
  xdico\
  lib\
  dicod\

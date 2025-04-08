@@ -1,5 +1,5 @@
 # This file is part of GNU Dico
-# Copyright (C) 1998-2024 Sergey Poznyakoff
+# Copyright (C) 1998-2025 Sergey Poznyakoff
 #
 # GNU Dico is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@ dicod_SOURCES=\
  auth.c\
  capa.c\
  ckpass.c\
- cmdline.c\
  commands.c\
  database.c\
  dbtext.c\
@@ -66,6 +65,7 @@ AM_LFLAGS = -dvp
 LDADD=\
  ../xdico/libxdico.la\
  ../lib/libdico.la\
+ @PARSEOPT_LDADD@\
  @LIBINTL@ @LIBICONV@\
  @LIBDICOSASL@\
  @GSASL_LIBS@\
@@ -73,13 +73,7 @@ LDADD=\
 
 # dicod_DEPENDENCIES=@LTDLDEPS@
 
-SUFFIXES=.opt .c
-
-.opt.c:
-	$(AM_V_GEN)m4 -s $(top_srcdir)/@GRECS_SUBDIR@/build-aux/getopt.m4 $< > $@
-
-BUILT_SOURCES=cmdline.c
-EXTRA_DIST=cmdline.opt pp-setup
+EXTRA_DIST=pp-setup
 
 incdir=$(pkgdatadir)/$(VERSION)/include
 inc_DATA = @DEFAULT_PP_SETUP@

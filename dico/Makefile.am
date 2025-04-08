@@ -1,5 +1,5 @@
 # This file is part of GNU Dico
-# Copyright (C) 1998-2024 Sergey Poznyakoff
+# Copyright (C) 1998-2025 Sergey Poznyakoff
 #
 # GNU Dico is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
 bin_PROGRAMS = dico
 dico_SOURCES = \
  autologin.c\
- cmdline.c\
  connect.c\
  dico-priv.h\
  dico.c\
@@ -30,6 +29,7 @@ dico_SOURCES = \
 LDADD=\
  ../xdico/libxdico.la\
  ../lib/libdico.la\
+ @PARSEOPT_LDADD@\
  $(READLINE_LIBS)\
  @LIBINTL@ @LIBICONV@\
  @LIBDICOSASL@\
@@ -40,10 +40,3 @@ AM_CPPFLAGS=\
  -I${srcdir}\
  @DICO_PROG_INCLUDES@
 
-SUFFIXES=.opt .c
-
-.opt.c:
-	$(AM_V_GEN)m4 -s $(top_srcdir)/@GRECS_SUBDIR@/build-aux/getopt.m4 $< > $@
-
-BUILT_SOURCES=cmdline.c 
-EXTRA_DIST=cmdline.opt 

@@ -12,7 +12,7 @@
 dnl <HEADING#>
 dnl Process this file with -*- autoconf -*- to produce a configure script. 
 # This file is part of GNU Dico
-# Copyright (C) 1998-2024 Sergey Poznyakoff
+# Copyright (C) 1998-2025 Sergey Poznyakoff
 #
 # GNU Dico is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ AC_INIT([GNU dico], 2.12, [bug-dico@gnu.org])
 AC_CONFIG_SRCDIR([dicod/main.c])
 AC_CONFIG_HEADERS(include/prog/config.h include/lib/config.h)
 AC_CONFIG_AUX_DIR([build-aux])
-AC_CONFIG_MACRO_DIR(m4)	
+AC_CONFIG_MACRO_DIRS([m4 am grecs/am parseopt gint imprimatur])
 AM_INIT_AUTOMAKE([1.16.5 nostdinc gnits tar-ustar dist-bzip2 dist-xz std-options subdir-objects])
 
 dnl Enable silent rules by default:
@@ -160,6 +160,7 @@ AC_SUBST([DICO_PROG_INCLUDES],[dnl
  -I$(top_builddir)/include\
  -I$(top_srcdir)/xdico/gnu\
  -I$(top_builddir)/xdico/gnu\
+ $(PARSEOPT_INCLUDES)\
  $(GRECS_INCLUDES)'])
 
 AC_SUBST([DICO_MODULE_INCLUDES],[dnl
@@ -175,13 +176,15 @@ AC_SUBST([DEFAULT_PP_SETUP])
 if test -z "$DEFAULT_PREPROCESSOR"; then
    DEFAULT_PP_SETUP=pp-setup
 fi
-GRECS_SETUP(grecs, [shared tests getopt git2chg sockaddr-list])
+GRECS_SETUP(grecs, [shared tests git2chg sockaddr-list])
 # Don't install pp-setup if they disabled preprocessor.
 # FIXME: use_ext_pp is an internal grecs variable.
 if test "$use_ext_pp" == no; then
    unset DEFAULT_PP_SETUP
 fi
 GRECS_HOST_PROJECT_INCLUDES='$(DICO_LIB_CONFIG) -I$(top_builddir)/include'
+
+PARSEOPT_SETUP(,[CPPFLAGS='$(DICO_LIB_CONFIG) -I$(top_builddir)/include'])
 
 # Tcl/tk
 AC_ARG_WITH([tk],

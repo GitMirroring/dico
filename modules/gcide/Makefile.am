@@ -39,6 +39,7 @@ idxgcide_LDADD = \
  libgcide.la\
  ../../xdico/libxdico.la\
  ../../lib/libdico.la\
+ $(PARSEOPT_LDADD)\
  $(LIBICONV) \
  @LIBINTL@
 idxgcide_CPPFLAGS =\
@@ -48,11 +49,3 @@ idxgcide_CPPFLAGS =\
 noinst_HEADERS = gcide.h
 
 AM_LFLAGS=-d
-
-SUFFIXES=.opt .h
-
-.opt.h:
-	$(AM_V_GEN)m4 -s $(top_srcdir)/@GRECS_SUBDIR@/build-aux/getopt.m4 $< > $@
-
-BUILT_SOURCES=idxgcide-cli.h
-EXTRA_DIST=idxgcide-cli.opt

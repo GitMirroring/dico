@@ -18,7 +18,6 @@
 
 char *msg_id;
 
-
 struct capa_print {
     size_t num;
     dico_stream_t stream;
@@ -64,7 +63,7 @@ initial_banner(dico_stream_t str)
     if (initial_banner_text)
 	stream_writez(str, initial_banner_text);
     else
-	stream_writez(str, (char*) program_version);
+	stream_write_version(str);
     dico_stream_write(str, " ", 1);
     output_capabilities(str);
     dico_stream_write(str, " ", 1);
