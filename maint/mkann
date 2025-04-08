@@ -1,0 +1,137 @@
+#! /bin/sh
+# NAME
+#   mkann - generate program release announce.
+#
+# SYNOPSIS
+#   mkann [-o FILE] -p PACKAGE [-t TYPE] [-u URL] -v VERSION ARCHIVES...
+#
+# DESCRIPTION
+#   Produces on the standard output an announce file, listing
+#   source archives, their checksums and short summary of user-
+#   visible changes.
+#
+
+package=
+version=
+release_type=
+url=
+output=
+
+while getopts "o:p:t:u:v:" OPTION
+do
+    case $OPTION in
+	o) exec > $OPTARG;;
+	p) package=$OPTARG;;
+	t) release_type=$OPTARG;;
+	u) url=$OPTARG;;
+	v) version=$OPTARG;;
+	--) break;;
+	*)  exit 1
+    esac
+done	      
+      
+shift $(($OPTIND - 1))
+
+if [ -z "$package" ]; then
+    echo >&2 "$0: package name not given; use -p option"
+    exit 1
+fi
+
+if [ -z "$version" ]; then
+    echo >&2 "$0: version not given; use -v option"
+    exit 1
+fi
+
+detect_rt() {
+    set -- $(echo "$version" | tr . ' ')
+    if test "$#" -gt 2 && test $3 -gt 50; then
+	release_type=alpha
+    else
+        release_type=stable
+    fi
+}
+
+if [ -z "$release_type" ]; then
+    detect_rt
+fi
+
+case $release_type in
+    stable)
+	d=ftp;;
+    alpha)
+	d=alpha;;
+    *)
+	echo >&2 "$0: unrecognized release type"
+	exit 1
+esac
+
+if [ -z "$url" ]; then
+    url=https://download.gnu.org.ua/$d/$package
+fi
+
+version_rx='^Version '$(echo "$version" | sed -e 's/\./\\./g')'([^.].*)?$'
+if grep -m 1 ^Version NEWS | egrep -q "$version_rx"; then
+    :
+else
+    echo >&2 "$0: No release info for version $version in NEWS"
+    exit 1
+fi
+
+if [ $# -eq 0 ]; then
+    echo >&2 "$0: no arguments given"
+    exit 1
+fi
+
+# #########################
+# Create announce template
+# #########################
+
+fmt <<EOF
+Hello,
+
+This is to inform you that $package version $version is available for
+download.  This is a $release_type release.  See the end of this message
+for a list of important changes.
+EOF
+
+echo ""
+echo "Here are the compressed sources:"
+echo ""
+for file
+do
+    s=$(ls -lh $file | cut -d ' ' -f 5)
+    printf "  %-67s %s\n" $url/$file $s
+done
+echo ""
+
+printsums() {
+    local p=$1
+    shift
+    for file
+    do
+	${p}sum $file
+    done
+}
+
+echo "Here are the checksums:"
+echo ""
+
+for algo in md5 sha1 sha256
+do
+    echo $algo | tr a-z A-Z
+    echo $algo | sed s/./-/g
+    printsums $algo $*
+    echo ""
+done
+    
+echo "Noteworthy changes in this release:"
+echo ""
+cat NEWS | \
+    tr -d '\f' | \
+    sed -r -n -e "/$version_rx/,/^Version/p" | \
+    sed -e 1d -e '$d' |
+    sed -e '/./,$!d' \
+        -e :a -e '/^\n*$/{' -e '$d' -e N -e ba -e '}' | fmt
+
+
+
