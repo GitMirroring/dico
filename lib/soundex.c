@@ -100,6 +100,8 @@ dico_soundex(const char *text, char codestr[DICO_SOUNDEX_SIZE])
 	return -1;
     s = input;
     do {
+	if (*s == 0)
+	    break;
 	codestr[0] = utf8_wc_toupper(*s++);
     } while (codestr[0] > 127 || (prev = soundex_code(codestr[0])) == 0);
     for (i = 1; i < DICO_SOUNDEX_SIZE-1 && *s; s++) {
