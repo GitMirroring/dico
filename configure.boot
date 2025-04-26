@@ -176,7 +176,7 @@ AC_SUBST([DEFAULT_PP_SETUP])
 if test -z "$DEFAULT_PREPROCESSOR"; then
    DEFAULT_PP_SETUP=pp-setup
 fi
-GRECS_SETUP(grecs, [shared tests git2chg sockaddr-list])
+GRECS_SETUP(tests, git2chg, sockaddr-list)
 # Don't install pp-setup if they disabled preprocessor.
 # FIXME: use_ext_pp is an internal grecs variable.
 if test "$use_ext_pp" == no; then

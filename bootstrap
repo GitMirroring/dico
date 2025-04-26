@@ -1084,6 +1084,11 @@ sub reconf {
     make_pristine_conf();
 }
 
+sub grecs_setup {
+    error("Setting up grecs", fd => \*STDOUT) unless $quiet;
+    run("./grecs/bootstrap -q -t shared sockaddr-list");
+}
+
 sub get_pkg_info {
 	my $m4_prog = q{divert(-1)
 changequote([,])
@@ -1248,6 +1253,7 @@ if ($addmod) {
 } elsif (-d '.git' || $force) {
     error("Initializing submodules", fd => \*STDOUT) unless $quiet;
     run('git submodule update --init --recursive') if -d '.git';
+    grecs_setup();
     make_tree();
     modproc();
     gnulib_init();

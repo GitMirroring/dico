@@ -481,11 +481,12 @@ static struct parseopt po = {
 /* Configuration */
 int
 cb_dico_list(enum grecs_callback_command cmd,
-	     grecs_locus_t *locus,
+	     grecs_node_t *node,
 	     void *varptr,
-	     grecs_value_t *value,
 	     void *cb_data)
 {
+    grecs_locus_t *locus = &node->locus;
+    grecs_value_t *value = node->v.value;
     dico_list_t *plist = varptr, list;
 
     if (*plist)
@@ -525,11 +526,12 @@ cb_dico_list(enum grecs_callback_command cmd,
 
 int
 cb_dico_sockaddr_list(enum grecs_callback_command cmd,
-		      grecs_locus_t *locus,
-		      void *varptr,
-		      grecs_value_t *value,
-		      void *cb_data)
+	 grecs_node_t *node,
+	 void *varptr,
+	 void *cb_data)
 {
+    grecs_locus_t *locus = &node->locus;
+    grecs_value_t *value = node->v.value;
     dico_list_t *plist = varptr, list;
     struct grecs_sockaddr *sp;
 
@@ -587,11 +589,12 @@ cb_dico_sockaddr_list(enum grecs_callback_command cmd,
 
 int
 allow_cb(enum grecs_callback_command cmd,
-	 grecs_locus_t *locus,
+	 grecs_node_t *node,
 	 void *varptr,
-	 grecs_value_t *value,
 	 void *cb_data)
 {
+    grecs_locus_t *locus = &node->locus;
+    grecs_value_t *value = node->v.value;
     dicod_acl_t acl = varptr;
 
     if (cmd != grecs_callback_set_value) {
@@ -604,11 +607,12 @@ allow_cb(enum grecs_callback_command cmd,
 
 int
 deny_cb(enum grecs_callback_command cmd,
-	grecs_locus_t *locus,
-	void *varptr,
-	grecs_value_t *value,
-	void *cb_data)
+	 grecs_node_t *node,
+	 void *varptr,
+	 void *cb_data)
 {
+    grecs_locus_t *locus = &node->locus;
+    grecs_value_t *value = node->v.value;
     dicod_acl_t acl = varptr;
     if (cmd != grecs_callback_set_value) {
 	grecs_error(locus, 0, _("Unexpected block statement"));
@@ -620,11 +624,12 @@ deny_cb(enum grecs_callback_command cmd,
 
 int
 acl_cb(enum grecs_callback_command cmd,
-       grecs_locus_t *locus,
-       void *varptr,
-       grecs_value_t *value,
-       void *cb_data)
+	 grecs_node_t *node,
+	 void *varptr,
+	 void *cb_data)
 {
+    grecs_locus_t *locus = &node->locus;
+    grecs_value_t *value = node->v.value;
     void **pdata = cb_data;
     dicod_acl_t acl;
 
@@ -671,11 +676,12 @@ struct grecs_keyword kwd_acl[] = {
 
 int
 apply_acl_cb(enum grecs_callback_command cmd,
-	     grecs_locus_t *locus,
+	     grecs_node_t *node,
 	     void *varptr,
-	     grecs_value_t *value,
 	     void *cb_data)
 {
+    grecs_locus_t *locus = &node->locus;
+    grecs_value_t *value = node->v.value;
     dicod_acl_t *pacl = varptr;
 
     if (cmd != grecs_callback_set_value) {
@@ -696,11 +702,12 @@ apply_acl_cb(enum grecs_callback_command cmd,
 
 int
 set_user(enum grecs_callback_command cmd,
-	 grecs_locus_t *locus,
+	 grecs_node_t *node,
 	 void *varptr,
-	 grecs_value_t *value,
 	 void *cb_data)
 {
+    grecs_locus_t *locus = &node->locus;
+    grecs_value_t *value = node->v.value;
     struct passwd *pw;
     char *s;
 
@@ -733,36 +740,14 @@ set_user(enum grecs_callback_command cmd,
     return 0;
 }
 
-static int set_supp_group(enum grecs_callback_command cmd,
-			  grecs_locus_t *locus,
-			  void *varptr,
-			  grecs_value_t *value,
-			  void *cb_data);
-
 static int
 set_supp_group_iter(grecs_value_t *value, void *data)
 {
-    return set_supp_group(grecs_callback_set_value,
-			  &value->locus, NULL, value, NULL);
-}
-
-static int
-set_supp_group(enum grecs_callback_command cmd,
-	       grecs_locus_t *locus,
-	       void *varptr,
-	       grecs_value_t *value,
-	       void *cb_data)
-{
-    if (cmd != grecs_callback_set_value) {
-	grecs_error(locus, 0, _("Unexpected block statement"));
-	return 1;
-    }
-
     if (!group_list) {
 	group_list = xdico_list_create();
 	dico_list_set_free_item(group_list, dicod_free_item, NULL);
     }
-
+    
     if (value->type == GRECS_TYPE_LIST)
 	grecs_list_iterate(value->v.list, set_supp_group_iter, NULL);
     else {
@@ -773,14 +758,16 @@ set_supp_group(enum grecs_callback_command cmd,
 	    char *q;
 	    unsigned long n = strtoul(s + 1, &q, 0);
 	    if (*q) {
-		grecs_error(locus, 0, _("not a valid GID number: %s"), s);
+		grecs_error(&value->locus, 0, _("not a valid GID number: %s"),
+			    s);
 		return 1;
 	    }
 	    gid = n;
 	} else {
 	    struct group *group = getgrnam(s);
 	    if (!group) {
-		grecs_error(locus, 0, _("%s: unknown group"), value->v.string);
+		grecs_error(&value->locus, 0, _("%s: unknown group"),
+			    value->v.string);
 		return 1;
 	    }
 	    gid = group->gr_gid;
@@ -790,16 +777,33 @@ set_supp_group(enum grecs_callback_command cmd,
 	*gp = gid;
 	xdico_list_append(group_list, gp);
     }
+
+    return 0;
+}
+
+static int
+set_supp_group(enum grecs_callback_command cmd,
+	       grecs_node_t *node,
+	       void *varptr,
+	       void *cb_data)
+{
+    if (cmd != grecs_callback_set_value) {
+	grecs_error(&node->locus, 0, _("Unexpected block statement"));
+	return 1;
+    }
+    set_supp_group_iter(node->v.value, NULL);
     return 0;
 }
 
 int
 set_mode(enum grecs_callback_command cmd,
-	 grecs_locus_t *locus,
+	 grecs_node_t *node,
 	 void *varptr,
-	 grecs_value_t *value,
 	 void *cb_data)
 {
+    grecs_locus_t *locus = &node->locus;
+    grecs_value_t *value = node->v.value;
+
     static struct xlat_tab tab[] = {
 	{ "daemon", MODE_DAEMON },
 	{ "inetd", MODE_INETD },
@@ -842,11 +846,12 @@ static struct xlat_tab syslog_facility_tab[] = {
 
 int
 set_log_facility(enum grecs_callback_command cmd,
-		 grecs_locus_t *locus,
-		 void *varptr,
-		 grecs_value_t *value,
-		 void *cb_data)
+	 grecs_node_t *node,
+	 void *varptr,
+	 void *cb_data)
 {
+    grecs_locus_t *locus = &node->locus;
+    grecs_value_t *value = node->v.value;
     const char *str;
 
     if (cmd != grecs_callback_set_value) {
@@ -894,11 +899,12 @@ _add_simple_module(grecs_value_t *value, void *unused_data)
 
 int
 load_module_cb(enum grecs_callback_command cmd,
-	       grecs_locus_t *locus,
+	       grecs_node_t *node,
 	       void *varptr,
-	       grecs_value_t *value,
 	       void *cb_data)
 {
+    grecs_locus_t *locus = &node->locus;
+    grecs_value_t *value = node->v.value;
     dicod_module_instance_t *inst;
     void **pdata = cb_data;
 
@@ -953,11 +959,11 @@ cmp_database_name(const void *item, const void *data, void *closure)
 
 static int
 set_database(enum grecs_callback_command cmd,
-	     grecs_locus_t *locus,
+	     grecs_node_t *node,
 	     void *varptr,
-	     grecs_value_t *value,
 	     void *cb_data)
 {
+    grecs_locus_t *locus = &node->locus;
     dicod_database_t *dict;
     void **pdata = cb_data;
 
@@ -1002,11 +1008,12 @@ set_database(enum grecs_callback_command cmd,
 
 int
 set_dict_handler(enum grecs_callback_command cmd,
-		 grecs_locus_t *locus,
+		 grecs_node_t *node,
 		 void *varptr,
-		 grecs_value_t *value,
 		 void *cb_data)
 {
+    grecs_locus_t *locus = &node->locus;
+    grecs_value_t *value = node->v.value;
     dicod_module_instance_t *inst;
     dicod_database_t *db = varptr;
     struct wordsplit ws;
@@ -1047,44 +1054,39 @@ set_dict_handler(enum grecs_callback_command cmd,
     return 0;
 }
 
-int enable_capability(enum grecs_callback_command cmd,
-		      grecs_locus_t *locus,
-		      void *varptr,
-		      grecs_value_t *value,
-		      void *cb_data);
-
 int
 set_capability(grecs_value_t *value, void *data)
 {
-    return enable_capability(grecs_callback_set_value,
-			     &value->locus, NULL, value, NULL);
-}
-
-int
-enable_capability(enum grecs_callback_command cmd,
-		  grecs_locus_t *locus,
-		  void *varptr,
-		  grecs_value_t *value,
-		  void *cb_data)
-{
-    if (cmd != grecs_callback_set_value) {
-	grecs_error(locus, 0, _("Unexpected block statement"));
-	return 1;
-    }
     if (value->type == GRECS_TYPE_LIST)
-	grecs_list_iterate(value->v.list, set_capability, locus);
+	grecs_list_iterate(value->v.list, set_capability, &value->locus);
     else if (dicod_capa_add(value->v.string))
-	grecs_error(locus, 0, _("unknown capability: %s"), value->v.string);
+	grecs_error(&value->locus, 0, _("unknown capability: %s"),
+		    value->v.string);
     return 0;
 }
 
 int
-mime_headers_cb (enum grecs_callback_command cmd,
-		 grecs_locus_t *locus,
-		 void *varptr,
-		 grecs_value_t *value,
-		 void *cb_data)
+enable_capability(enum grecs_callback_command cmd,
+		  grecs_node_t *node,
+		  void *varptr,
+		  void *cb_data)
 {
+    if (cmd != grecs_callback_set_value) {
+	grecs_error(&node->locus, 0, _("Unexpected block statement"));
+	return 1;
+    }
+    set_capability(node->v.value, NULL);
+    return 0;
+}
+
+int
+mime_headers_cb(enum grecs_callback_command cmd,
+		grecs_node_t *node,
+		void *varptr,
+		void *cb_data)
+{
+    grecs_locus_t *locus = &node->locus;
+    grecs_value_t *value = node->v.value;
     dico_assoc_list_t *pasc = varptr;
     const char *enc;
 
@@ -1121,11 +1123,12 @@ struct grecs_keyword kwd_load_module[] = {
 
 int
 member_database_cb(enum grecs_callback_command cmd,
-		   grecs_locus_t *locus,
+		   grecs_node_t *node,
 		   void *varptr,
-		   grecs_value_t *value,
 		   void *cb_data)
 {
+    grecs_locus_t *locus = &node->locus;
+    grecs_value_t *value = node->v.value;
     dico_list_t *listptr = varptr;
     char const *dbname;
     enum mime_cond cond = cond_any;
@@ -1265,11 +1268,12 @@ struct grecs_keyword kwd_user_db[] = {
 
 int
 user_db_config(enum grecs_callback_command cmd,
-	       grecs_locus_t *locus,
+	       grecs_node_t *node,
 	       void *varptr,
-	       grecs_value_t *value,
 	       void *cb_data)
 {
+    grecs_locus_t *locus = &node->locus;
+    grecs_value_t *value = node->v.value;
     struct user_db_conf *cfg = varptr;
     void **pdata = cb_data;
 
@@ -1320,11 +1324,12 @@ init_user_db(void)
 
 int
 alias_cb(enum grecs_callback_command cmd,
-	 grecs_locus_t *locus,
+	 grecs_node_t *node,
 	 void *varptr,
-	 grecs_value_t *value,
 	 void *cb_data)
 {
+    grecs_locus_t *locus = &node->locus;
+    grecs_value_t *value = node->v.value;
     char **argv;
     int argc;
     int i;
@@ -1354,11 +1359,12 @@ alias_cb(enum grecs_callback_command cmd,
 #ifdef WITH_GSASL
 int
 sasl_cb(enum grecs_callback_command cmd,
-	grecs_locus_t *locus,
+	grecs_node_t *node,
 	void *varptr,
-	grecs_value_t *value,
 	void *cb_data)
 {
+    grecs_locus_t *locus = &node->locus;
+    grecs_value_t *value = node->v.value;
     if (cmd == grecs_callback_set_value) {
 	if (value->type != GRECS_TYPE_STRING)
 	    grecs_error(locus, 0, _("expected boolean value but found list"));
@@ -1412,11 +1418,12 @@ flush_strat_forward(void)
 
 int
 strategy_cb(enum grecs_callback_command cmd,
-	    grecs_locus_t *locus,
+	    grecs_node_t *node,
 	    void *varptr,
-	    grecs_value_t *value,
 	    void *cb_data)
 {
+    grecs_locus_t *locus = &node->locus;
+    grecs_value_t *value = node->v.value;
     void **pdata = cb_data;
 
     switch (cmd) {
@@ -1456,11 +1463,12 @@ strategy_cb(enum grecs_callback_command cmd,
 
 int
 strategy_deny_all_cb(enum grecs_callback_command cmd,
-		     grecs_locus_t *locus,
+		     grecs_node_t *node,
 		     void *varptr,
-		     grecs_value_t *value,
 		     void *cb_data)
 {
+    grecs_locus_t *locus = &node->locus;
+    grecs_value_t *value = node->v.value;
     int bv;
 
     if (cmd != grecs_callback_set_value) {
@@ -1495,11 +1503,12 @@ add_deny_word(grecs_value_t *val, void *data)
 
 int
 strategy_deny_word_cb(enum grecs_callback_command cmd,
-		      grecs_locus_t *locus,
+		      grecs_node_t *node,
 		      void *varptr,
-		      grecs_value_t *value,
 		      void *cb_data)
 {
+    grecs_locus_t *locus = &node->locus;
+    grecs_value_t *value = node->v.value;
     struct compile_pattern_closure cpc;
 
     if (cmd != grecs_callback_set_value) {
@@ -1538,71 +1547,65 @@ strategy_deny_length(enum grecs_callback_command cmd,
 	grecs_error(locus, 0, _("Expected number"));
     return 0;
 }
-
+ 
 int
 strategy_deny_length_lt_cb(enum grecs_callback_command cmd,
-			   grecs_locus_t *locus,
-			   void *varptr,
-			   grecs_value_t *value,
-			   void *cb_data)
+	 grecs_node_t *node,
+	 void *varptr,
+	 void *cb_data)
 {
-    return strategy_deny_length(cmd, locus, *(dico_list_t*) varptr,
-				value, cmp_lt);
+    return strategy_deny_length(cmd, &node->locus, *(dico_list_t*) varptr,
+				node->v.value, cmp_lt);
 }
 
 int
 strategy_deny_length_le_cb(enum grecs_callback_command cmd,
-			   grecs_locus_t *locus,
+			   grecs_node_t *node,
 			   void *varptr,
-			   grecs_value_t *value,
 			   void *cb_data)
 {
-    return strategy_deny_length(cmd, locus, *(dico_list_t*) varptr,
-				value, cmp_le);
+    return strategy_deny_length(cmd, &node->locus, *(dico_list_t*) varptr,
+				node->v.value, cmp_le);
 }
 
 int
 strategy_deny_length_gt_cb(enum grecs_callback_command cmd,
-			   grecs_locus_t *locus,
+			   grecs_node_t *node,
 			   void *varptr,
-			   grecs_value_t *value,
 			   void *cb_data)
 {
-    return strategy_deny_length(cmd, locus, *(dico_list_t*) varptr,
-				value, cmp_gt);
+    return strategy_deny_length(cmd, &node->locus, *(dico_list_t*) varptr,
+				node->v.value, cmp_gt);
 }
 
 int
 strategy_deny_length_ge_cb(enum grecs_callback_command cmd,
-			   grecs_locus_t *locus,
+			   grecs_node_t *node,
 			   void *varptr,
-			   grecs_value_t *value,
 			   void *cb_data)
 {
-    return strategy_deny_length(cmd, locus, *(dico_list_t*) varptr,
-				value, cmp_ge);
+    return strategy_deny_length(cmd, &node->locus, *(dico_list_t*) varptr,
+				node->v.value, cmp_ge);
 }
 
 int
 strategy_deny_length_eq_cb(enum grecs_callback_command cmd,
-			   grecs_locus_t *locus,
+			   grecs_node_t *node,
 			   void *varptr,
-			   grecs_value_t *value,
 			   void *cb_data)
 {
-    return strategy_deny_length(cmd, locus, *(dico_list_t*) varptr,
-				value, cmp_eq);
+    return strategy_deny_length(cmd, &node->locus, *(dico_list_t*) varptr,
+				node->v.value, cmp_eq);
 }
 
 int
 strategy_deny_length_ne_cb(enum grecs_callback_command cmd,
-			   grecs_locus_t *locus,
+			   grecs_node_t *node,
 			   void *varptr,
-			   grecs_value_t *value,
 			   void *cb_data)
 {
-    return strategy_deny_length(cmd, locus, *(dico_list_t*) varptr,
-				value, cmp_ne);
+    return strategy_deny_length(cmd, &node->locus, *(dico_list_t*) varptr,
+				node->v.value, cmp_ne);
 }
 
 struct grecs_keyword kwd_strategy[] = {
@@ -1711,7 +1714,8 @@ struct grecs_keyword keywords[] = {
       N_("Set inactivity timeout."),
       grecs_type_uint, GRECS_DFLT, &inactivity_timeout },
     { "listen", N_("addr"), N_("Listen on these addresses."),
-      grecs_type_sockaddr, GRECS_LIST, &listen_addr, 0, cb_dico_sockaddr_list },
+      grecs_type_sockaddr, GRECS_LIST, &listen_addr, 0,
+      cb_dico_sockaddr_list },
     { "initial-banner-text", N_("text"),
       N_("Display this text in the initial 220 banner"),
       grecs_type_string, GRECS_DFLT|GRECS_CONST, &initial_banner_text },
