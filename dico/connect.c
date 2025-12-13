@@ -130,7 +130,7 @@ dict_auth(struct dict_connection *conn, dico_url_t url)
     return 1;
 }
 
-char *
+char const *
 get_homedir(void)
 {
     char *homedir = getenv("HOME");
@@ -141,10 +141,84 @@ get_homedir(void)
     return homedir;
 }
 
+static int
+stem_getvar(char **ret, const char *var, size_t len, void *clos)
+{
+    if (strncmp("STEM", var, len) == 0) {
+	if ((*ret = strdup((char*)clos)) == NULL)
+	    return WRDSE_NOSPACE;
+	return WRDSE_OK;
+    }
+    return WRDSE_UNDEF;
+}
+
+static int
+stem_stripdot(char **ret, const char *cmd, size_t len, char **argv, void *clos)
+{
+    char *s;
+
+    if (strcmp(argv[0], "stripdot")) {
+	*ret = strdup("unrecognized command");
+	return WRDSE_USERERR;
+    }
+
+    s = argv[1];
+    if (s[0] == '.')
+	s++;
+    if ((*ret = strdup(s)) == NULL)
+	return WRDSE_NOSPACE;
+    return WRDSE_OK;
+}
+
+char *
+config_file_name(char const *stem)
+{
+    static char *pfx[] = {
+	"$XDG_CONFIG_HOME/dico/$(stripdot $STEM)",
+	"$HOME/.config/dico/$(stripdot $STEM)",
+	"$HOME/$STEM",
+	"$STEM"
+    };
+    struct wordsplit ws;
+    int i;
+    int wsflags = WRDSF_ENV | WRDSF_GETVAR | WRDSF_CLOSURE | WRDSF_OPTIONS |
+	WRDSF_NOSPLIT |	WRDSF_UNDEF;
+    char *retval = NULL;
+
+    ws.ws_env = (const char **) environ;
+    ws.ws_getvar = stem_getvar;
+    ws.ws_command = stem_stripdot;
+    ws.ws_closure = (void*)stem;
+    ws.ws_options = WRDSO_GETVARPREF;
+    for (i = 0; i < DICO_ARRAY_SIZE(pfx); i++) {
+	int rc = wordsplit(pfx[i], &ws, wsflags);
+	wsflags |= WRDSF_REUSE;
+	switch (rc) {
+	case WRDSE_OK:
+	    if (access(ws.ws_wordv[0], F_OK) == 0) {
+		retval = ws.ws_wordv[0];
+		ws.ws_wordv[0] = NULL;
+		break;
+	    }
+	    break;
+
+	case WRDSE_UNDEF:
+	    continue;
+
+	default:
+	    dico_log(L_CRIT, 0, "INTERNAL ERROR at %s:%d: %s",
+		     __FILE__, __LINE__, wordsplit_strerror(&ws));
+	}
+    }
+
+    wordsplit_free(&ws);
+    return retval;
+}
+
 int
 ds_tilde_expand(const char *str, char **output)
 {
-    char *dir;
+    char const *dir;
 
     if (str[0] != '~')
 	return 0;
@@ -215,11 +289,11 @@ auth_cred_get(char *host, struct auth_cred *cred)
 	}
 
 	if (!flags && DEFAULT_AUTOLOGIN_FILE) {
-	    char *home = get_homedir();
-	    char *filename = dico_full_file_name(home,
-						 DEFAULT_AUTOLOGIN_FILE);
-	    parse_autologin(filename, host, cred, &flags);
-	    free(filename);
+	    char *filename = config_file_name(DEFAULT_AUTOLOGIN_FILE);
+	    if (filename) {
+		parse_autologin(filename, host, cred, &flags);
+		free(filename);
+	    }
 	}
 	if (flags & AUTOLOGIN_NOAUTH)
 	    return GETCRED_NOAUTH;

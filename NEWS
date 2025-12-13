@@ -1,7 +1,26 @@
-GNU Dico NEWS -- history of user-visible changes. 2024-12-31
+GNU Dico NEWS -- history of user-visible changes. 2025-12-13
 See the end of file for copying conditions.
 
 Please send Dico bug reports to <bug-dico@gnu.org.ua>
+
+Version 2.12.90 (git)
+
+* XDG base directory specification support.
+
+The dico command searches for its per-user initialization file in the
+following locations:
+
+ $XDG_CONFIG_HOME/dico/dico
+ $HOME/.config/dico/dico
+ $HOME/.dico
+
+Similarly, the default autologin file is searched in the following
+locations:
+
+ $XDG_CONFIG_HOME/dico/dicologin
+ $HOME/.config/dico/dicologin
+ $HOME/.dicologin
+
 
 Version 2.12, 2024-12-31
 

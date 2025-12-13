@@ -53,6 +53,8 @@
 # include <readline/history.h>
 #endif
 
+#define DICO_INIT_FILE ".dico"
+
 enum dico_client_mode {
     mode_define,
     mode_match,
@@ -164,7 +166,8 @@ int dict_define(struct dict_connection *conn, char *database, char *word);
 int dict_match(struct dict_connection *conn, char *database, char *strategy,
 	       char *word);
 
-char *get_homedir(void);
+char const *get_homedir(void);
+char *config_file_name(char const *stem);
 int ds_tilde_expand(const char *str, char **output);
 
 #define GETCRED_OK     0

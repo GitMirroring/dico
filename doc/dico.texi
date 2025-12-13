@@ -6519,11 +6519,29 @@ Quit the shell.
 @cindex init file
 @cindex initialization file
 @findex .dico
+@cindex XDG
+@findex .config/dico
   When you start @command{dico}, it automatically executes commands from its
-@dfn{initialization files} (or @dfn{init files}, for short), normally
-called @file{.dico}.  Two init files are read: the one
-located in your home directory, and the one from the current working
-directory.  It is not an error if any or both of these files are absent.
+@dfn{initialization files} (or @dfn{init files}, for short).  Two init
+files are looked for.  The first is called @dfn{per-user initialization}
+file and contains settings specific for the current user.  There are
+several locations where @command{dico} searches for this file.  These
+locations are searched in order listed below, @command{dico} will load
+the first file found, and subsequent locations will not be examined.
+
+  The locations searched are:
+
+@table @file
+@item $XDG_CONFIG_HOME/dico/dico
+@item $HOME/.config/dico/dico
+@item $HOME/.dico
+@end table
+
+After loading per-user init file, @command{dico} looks for file
+@file{.dico} in the user's home directory. If that file exists, it is
+parsed as well. This can be used to modify per-user configuration.
+
+  It is not an error if any or both of these files are absent.
 
   These files contain a series of @command{dico} commands, as
 described in @ref{Interactive Mode}, with the only difference that
@@ -6606,9 +6624,20 @@ authentication information for various @acronym{DICT} servers.  At
 most two autologin files are consulted: first the session-specific
 file, if it is supplied by @command{autologin} command (@pxref{Program
 Settings, autologin}) or by the @option{--autologin} command line
-option, next the default file @file{.dicologin} in the user's home
-directory.  The default autologin file is examined only if 
-no matching record was found in the session-specific one.
+option, next the default autologin file. The latter is searched in
+several locations, similarly to the @command{dico} init file
+(@pxref{Initialization File}. These locations are:
+
+@table @file
+@item $XDG_CONFIG_HOME/dico/dicologin
+@item $HOME/.config/dico/dicologin
+@item $HOME/.dicologin
+@end table
+
+The first file found, will be loaded.
+
+  The default autologin file is examined only if no matching record was
+found in the session-specific one.
 
   The autologin file format is similar to that of @file{.netrc} file
 used by @command{ftp} utility.

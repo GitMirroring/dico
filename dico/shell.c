@@ -398,6 +398,7 @@ parse_init_script(const char *name)
 	    dico_log(L_ERR, errno, _("Cannot open init file %s"), name);
 	return;
     }
+    XDICO_DEBUG_F1(1, _("Reading initialization file %s"), name);
     scr.buf = NULL;
     scr.size = 0;
     parse_script_file(name, script_getline, &scr);
@@ -408,10 +409,12 @@ parse_init_script(const char *name)
 void
 parse_init_scripts(void)
 {
-    char *name = dico_full_file_name(get_homedir(), ".dico");
-    parse_init_script(name);
-    free(name);
-    parse_init_script(".dico");
+    char *name = config_file_name(DICO_INIT_FILE);
+    if (name) {
+	parse_init_script(name);
+	free(name);
+    }
+    parse_init_script(DICO_INIT_FILE);
 }
 
 
