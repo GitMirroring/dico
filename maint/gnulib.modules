@@ -15,7 +15,6 @@ fprintftime
 inttostr
 inttypes
 getline
-getopt-gnu
 getpass-gnu
 gettext-h
 gettimeofday
