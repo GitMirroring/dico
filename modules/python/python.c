@@ -1,6 +1,6 @@
 /* This file is part of GNU Dico.
    Copyright (C) 2008, 2012 Wojciech Polak
-   Copyright (C) 2019-2024 Sergey Poznyakoff
+   Copyright (C) 2019-2026 Sergey Poznyakoff
 
    GNU Dico is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -100,7 +100,7 @@ _PySelectionKey_str (PyObject *self)
 }
 
 static PyTypeObject PySelectionKeyType = {
-    PyObject_HEAD_INIT(&PyType_Type)
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)
     .tp_name = "DicoSelectionKey",
     .tp_basicsize = sizeof (PySelectionKey),
     .tp_dealloc = _PySelectionKey_dealloc,
@@ -185,7 +185,7 @@ _PyStrategy_str (PyObject *self)
 }
 
 static PyTypeObject PyStrategyType = {
-    PyObject_HEAD_INIT(&PyType_Type)
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)
     .tp_name = "DicoStrategy",
     .tp_basicsize = sizeof (PyStrategy),
     .tp_dealloc = _PyStrategy_dealloc,
